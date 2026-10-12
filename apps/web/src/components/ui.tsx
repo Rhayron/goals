@@ -5,7 +5,7 @@ import { Art, type ArtName } from './art'
 
 export function Card({ title, actions, className, children }: { title?: ReactNode; actions?: ReactNode; className?: string; children: ReactNode }) {
   return (
-    <section className={clsx('rounded-2xl border border-line bg-surface p-5 shadow-[0_2px_12px_-4px_rgba(60,40,20,0.12)]', className)}>
+    <section className={clsx('min-w-0 rounded-2xl border border-line bg-surface p-5 shadow-[0_2px_12px_-4px_rgba(60,40,20,0.12)]', className)}>
       {(title || actions) && (
         <header className="mb-4 flex items-center justify-between gap-3">
           {title && <h2 className="text-xs font-semibold uppercase tracking-wider text-muted">{title}</h2>}
