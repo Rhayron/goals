@@ -1,0 +1,26 @@
+{
+  "name": "rumo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c yellow,magenta \"npm run dev -w @rumo/api\" \"npm run dev -w @rumo/web\"",
+    "build": "npm run build -w @rumo/web && npm run build -w @rumo/api",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "lint": "npm run lint -w @rumo/web",
+    "db:up": "docker compose -f compose.yaml -f compose.dev.yaml up -d db",
+    "db:migrate": "npm run migrate -w @rumo/api"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "~5.8.3",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

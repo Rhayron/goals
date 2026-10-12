@@ -2,4 +2,9 @@ node_modules/
 dist/
 .DS_Store
 *.local
-.env*
+*.log
+.env
+.env.*
+!.env.example
+# uploads locais da api em desenvolvimento
+apps/api/data/
