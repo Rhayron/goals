@@ -1,0 +1,10 @@
+# Para hosts sem acesso ao npm/Docker Hub: compile antes (cd app && npm run build) e envie app/dist.
+services:
+  rumo:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.static
+    container_name: rumo
+    restart: unless-stopped
+    ports:
+      - "${RUMO_PORT:-8080}:80"
