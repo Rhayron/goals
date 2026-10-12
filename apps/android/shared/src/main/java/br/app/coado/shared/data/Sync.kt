@@ -64,6 +64,7 @@ class SyncManager(private val app: CoadoCore) {
         _status.value = SyncStatus.Syncing
         val store = app.store
         return try {
+            app.beforeSync()
             val pending = store.pending.value
             val prefs = store.prefs.value
             val req = SyncRequest(

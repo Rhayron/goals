@@ -51,6 +51,9 @@ abstract class CoadoCore : Application() {
     /** o relógio prende a atividade em andamento à notificação; o celular põe os botões */
     open fun decorateTimerNotification(builder: NotificationCompat.Builder, state: TimerState, now: Long) {}
 
+    /** antes de subir: o celular recolhe o que o relógio deixou no Data Layer */
+    open suspend fun beforeSync() {}
+
     /** depois de uma sincronização boa: o celular republica o recorte para o relógio */
     open suspend fun afterSync(snapshot: Snapshot) {}
 

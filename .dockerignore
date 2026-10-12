@@ -10,3 +10,5 @@
 !.env.example
 apps/api/data
 apps/web/.dockerignore
+# apps nativos: projeto Gradle, não entra nas imagens
+apps/android

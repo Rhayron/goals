@@ -76,7 +76,9 @@ class Store(context: Context) {
      * Recorte novo da conta. O que ele já contém deixa de estar pendente, e as durações da conta
      * passam a valer se nenhuma edição local espera envio.
      */
-    suspend fun setSnapshot(s: Snapshot) = lock.withLock {
+    suspend fun setSnapshot(s: Snapshot) {
+        awaitLoaded()
+        lock.withLock {
         _snapshot.value = s
         write(SNAPSHOT, s, serializer())
         val known = s.studies.map { it.id }.toSet()
@@ -96,8 +98,12 @@ class Store(context: Context) {
             updatePrefsLocked { it.copy(prefsDirty = false) }
         }
     }
+    }
 
-    suspend fun updatePrefs(fn: (LocalPrefs) -> LocalPrefs) = lock.withLock { updatePrefsLocked(fn) }
+    suspend fun updatePrefs(fn: (LocalPrefs) -> LocalPrefs) {
+        awaitLoaded()
+        lock.withLock { updatePrefsLocked(fn) }
+    }
 
     private suspend fun updatePrefsLocked(fn: (LocalPrefs) -> LocalPrefs) {
         val next = fn(_prefs.value)
@@ -106,23 +112,34 @@ class Store(context: Context) {
         write(PREFS, next, serializer())
     }
 
-    suspend fun setTimer(t: TimerState) = lock.withLock {
+    suspend fun setTimer(t: TimerState) {
+        awaitLoaded()
+        lock.withLock {
         _timer.value = t
         write(TIMER, t, serializer())
     }
+    }
 
-    suspend fun setDraft(d: Draft?) = lock.withLock {
+    suspend fun setDraft(d: Draft?) {
+        awaitLoaded()
+        lock.withLock {
         _draft.value = d
         write(DRAFT, d, serializer())
     }
+    }
 
-    suspend fun addPending(studies: List<Study>, reviews: List<Review>) = lock.withLock {
+    suspend fun addPending(studies: List<Study>, reviews: List<Review>) {
+        awaitLoaded()
+        lock.withLock {
         val next = Pending(_pending.value.studies + studies, _pending.value.reviews + reviews)
         _pending.value = next
         write(PENDING, next, serializer())
     }
+    }
 
-    suspend fun removePending(studyIds: Set<String>, reviewIds: Set<String>) = lock.withLock {
+    suspend fun removePending(studyIds: Set<String>, reviewIds: Set<String>) {
+        awaitLoaded()
+        lock.withLock {
         val next = Pending(
             _pending.value.studies.filter { it.id !in studyIds },
             _pending.value.reviews.filter { it.id !in reviewIds },
@@ -130,9 +147,12 @@ class Store(context: Context) {
         _pending.value = next
         write(PENDING, next, serializer())
     }
+    }
 
     /** Sai da conta: token, recorte e pendências vão embora; os ajustes do aparelho ficam */
-    suspend fun signOut() = lock.withLock {
+    suspend fun signOut() {
+        awaitLoaded()
+        lock.withLock {
         _snapshot.value = null
         write(SNAPSHOT, null, serializer<Snapshot>())
         _pending.value = Pending()
@@ -140,6 +160,7 @@ class Store(context: Context) {
         _draft.value = null
         write(DRAFT, null, serializer<Draft>())
         updatePrefsLocked { it.copy(token = "", accountName = "", accountEmail = "", timerPrefs = null, prefsDirty = false, lastSyncAt = 0, lastSyncError = "") }
+    }
     }
 
     private companion object {

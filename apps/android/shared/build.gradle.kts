@@ -14,9 +14,13 @@ android {
         minSdk = 26
     }
 
+    // o servidor padrão do build de debug: o npm run dev visto do emulador, ou o que vier em
+    // ./gradlew -Pcoado.server=http://192.168.3.2:5173 (o computador na rede de casa)
+    val devServer = (project.findProperty("coado.server") as String?)?.takeIf { it.isNotBlank() } ?: "http://10.0.2.2:5173"
+
     buildTypes {
         debug {
-            buildConfigField("String", "DEFAULT_SERVER", "\"http://10.0.2.2:5173\"")
+            buildConfigField("String", "DEFAULT_SERVER", "\"$devServer\"")
         }
         release {
             buildConfigField("String", "DEFAULT_SERVER", "\"https://coado.app.br\"")

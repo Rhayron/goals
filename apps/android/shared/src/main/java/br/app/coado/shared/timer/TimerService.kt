@@ -30,20 +30,20 @@ class TimerService : Service() {
         val state = app.store.timer.value
         if (!state.active || intent?.action == ACTION_STOP) {
             // chegou pelo startForegroundService: precisa passar pelo startForeground antes de sair
-            startForeground(ID, notification(app, state, System.currentTimeMillis()))
+            goForeground(notification(app, state, System.currentTimeMillis()))
             stopForeground(STOP_FOREGROUND_REMOVE)
             stopSelf()
             return START_NOT_STICKY
         }
-        startForeground(ID, notification(app, state, System.currentTimeMillis()))
+        goForeground(notification(app, state, System.currentTimeMillis()))
         return START_NOT_STICKY
     }
 
-    private fun startForeground(id: Int, notification: Notification) {
+    private fun goForeground(notification: Notification) {
         if (Build.VERSION.SDK_INT >= 34) {
-            super.startForeground(id, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+            startForeground(ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
         } else {
-            super.startForeground(id, notification)
+            startForeground(ID, notification)
         }
     }
 
