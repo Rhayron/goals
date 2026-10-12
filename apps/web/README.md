@@ -1,4 +1,4 @@
-# Rumo — web
+# Coado — web
 
 SPA em React 19 + Vite + Tailwind. Em produção roda num nginx que também encaminha `/api` para a api;
 em desenvolvimento o Vite faz esse proxy (`vite.config.ts`). Veja o [README da raiz](../../README.md) para subir tudo.

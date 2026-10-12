@@ -1,5 +1,5 @@
 import raw from './import-petrobras.json'
-import { emptyState } from '@rumo/shared'
+import { emptyState } from '@coado/shared'
 import type { AppState, Planning, Study, Subject, Topic } from '../lib/types'
 import { addDays, SUBJECT_COLORS, uid } from '../lib/utils'
 

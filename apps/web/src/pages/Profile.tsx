@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Coffee, Laptop, Loader2, LogOut, Pencil, Smartphone, Sparkles, Trash2 } from 'lucide-react'
-import type { SessionInfo, StorageUsage, FilesResponse } from '@rumo/shared'
+import { Coffee, Laptop, Loader2, LogOut, Pencil, Smartphone, Sparkles, Trash2, Watch } from 'lucide-react'
+import type { SessionInfo, StorageUsage, FilesResponse } from '@coado/shared'
 import { PageHeader } from '../components/Layout'
 import { Button, Card, Modal } from '../components/ui'
 import { Avatar } from '../components/account'
@@ -190,10 +190,13 @@ function NumbersCard() {
 
 /** "Chrome · Windows" a partir do user-agent */
 function describeAgent(ua: string | null) {
-  if (!ua) return { label: 'Navegador desconhecido', mobile: false }
+  if (!ua) return { label: 'Navegador desconhecido', mobile: false, watch: false }
+  // sessão de aparelho pareado (apps/watch): "Coado Watch (modelo)"
+  const watch = /^Coado Watch(?: \((.+)\))?/.exec(ua)
+  if (watch) return { label: `Relógio Coado${watch[1] ? ` · ${watch[1]}` : ''}`, mobile: false, watch: true }
   const browser = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'Navegador'
   const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : ''
-  return { label: os ? `${browser} · ${os}` : browser, mobile: /Mobi|Android|iPhone/.test(ua) }
+  return { label: os ? `${browser} · ${os}` : browser, mobile: /Mobi|Android|iPhone/.test(ua), watch: false }
 }
 
 const ago = (iso: string) => {
@@ -250,7 +253,7 @@ function SessionsCard() {
         <ul className="divide-y divide-line">
           {sessions.map((s) => {
             const a = describeAgent(s.userAgent)
-            const Icon = a.mobile ? Smartphone : Laptop
+            const Icon = a.watch ? Watch : a.mobile ? Smartphone : Laptop
             return (
               <li key={s.id} className="flex items-center gap-3 py-2.5">
                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-surface-2 text-muted">

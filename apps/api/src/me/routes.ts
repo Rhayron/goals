@@ -1,4 +1,4 @@
-import { ProfilePatchSchema, type Me, type SessionInfo } from '@rumo/shared'
+import { ProfilePatchSchema, type Me, type SessionInfo } from '@coado/shared'
 import type { FastifyInstance } from 'fastify'
 import { clearSessionCookie } from '../auth/sessions'
 import { findUser, toMe } from '../auth/users'

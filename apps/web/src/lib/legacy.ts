@@ -1,14 +1,14 @@
-import { emptyState, type AppState } from '@rumo/shared'
+import { emptyState, type AppState } from '@coado/shared'
 import { SUBJECT_COLORS } from './utils'
 
 /*
- * Antes da conta, o Rumo guardava tudo no localStorage. Na primeira entrada oferecemos trazer
+ * Antes da conta (quando o app ainda se chamava Rumo), tudo ficava no localStorage. Na primeira entrada oferecemos trazer
  * esses dados para a conta; depois a chave é renomeada para não perguntar de novo.
  */
 
 const LEGACY_KEY = 'rumo:v1'
 const MIGRATED_KEY = 'rumo:v1:migrado'
-const THEME_KEY = 'rumo:tema'
+const THEME_KEY = 'coado:tema'
 
 /** Paleta usada antes do tema café; cores nela são trocadas pelas pastéis equivalentes */
 const LEGACY_COLORS = [

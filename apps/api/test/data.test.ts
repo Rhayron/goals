@@ -1,4 +1,4 @@
-import { emptyState, type AppState, type Plan, type Study, type Subject, type Topic } from '@rumo/shared'
+import { emptyState, type AppState, type Plan, type Study, type Subject, type Topic } from '@coado/shared'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { client, DB_URL, devLogin, setup, type TestCtx } from './helpers'
 
@@ -38,8 +38,8 @@ describe.skipIf(!DB_URL)('sincronização', () => {
 
   beforeAll(async () => {
     ctx = await setup()
-    ana = client(ctx.app, await devLogin(ctx.app, 'ana@rumo.test', 'Ana'))
-    bia = client(ctx.app, await devLogin(ctx.app, 'bia@rumo.test', 'Bia'))
+    ana = client(ctx.app, await devLogin(ctx.app, 'ana@coado.test', 'Ana'))
+    bia = client(ctx.app, await devLogin(ctx.app, 'bia@coado.test', 'Bia'))
   })
   afterAll(() => ctx?.close())
 

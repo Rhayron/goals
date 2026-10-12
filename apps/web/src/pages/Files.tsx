@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { Download, ExternalLink, FileArchive, FileImage, FileSpreadsheet, FileText, File as FileIcon, Loader2, Pencil, Search, Trash2, UploadCloud } from 'lucide-react'
-import type { FileMeta, FilesResponse, StorageUsage } from '@rumo/shared'
+import type { FileMeta, FilesResponse, StorageUsage } from '@coado/shared'
 import { PageHeader } from '../components/Layout'
 import { Card, ColorDot, Empty, IconButton, confirmAction } from '../components/ui'
 import { EnvelopeArt } from '../components/cafe-art'

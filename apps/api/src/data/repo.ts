@@ -1,5 +1,5 @@
-import type { AppState, Planning, Settings, SyncRequest, TimerPrefs } from '@rumo/shared'
-import { DEFAULT_REVIEW_INTERVALS, DEFAULT_TIMER_PREFS } from '@rumo/shared'
+import type { AppState, Planning, Settings, SyncRequest, TimerPrefs } from '@coado/shared'
+import { DEFAULT_REVIEW_INTERVALS, DEFAULT_TIMER_PREFS } from '@coado/shared'
 import type { Db } from '../db'
 import { DELETE_ORDER, ENTITIES, UPSERT_ORDER, type Entity } from './entities'
 

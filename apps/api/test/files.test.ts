@@ -1,6 +1,6 @@
 import { readdir } from 'node:fs/promises'
 import { join } from 'node:path'
-import type { FileMeta, FilesResponse } from '@rumo/shared'
+import type { FileMeta, FilesResponse } from '@coado/shared'
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import { sanitizeFileName } from '../src/files/routes'
 import { client, DB_URL, devLogin, multipart, setup, type TestCtx } from './helpers'
@@ -105,7 +105,7 @@ describe.skipIf(!DB_URL)('arquivos', () => {
   })
 
   it('outra conta não enxerga o arquivo', async () => {
-    const other = client(ctx.app, await devLogin(ctx.app, 'outra@rumo.test'))
+    const other = client(ctx.app, await devLogin(ctx.app, 'outra@coado.test'))
     expect((await other.get(`/api/files/${pdf.id}/content`)).statusCode).toBe(404)
     expect((await other.del(`/api/files/${pdf.id}`)).statusCode).toBe(404)
     expect(((await other.get('/api/files')).json() as FilesResponse).files).toEqual([])

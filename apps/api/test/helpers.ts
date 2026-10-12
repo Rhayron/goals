@@ -21,6 +21,12 @@ export function fakeOAuth(identities: Record<string, Partial<GoogleIdentity>> = 
       if (!id) throw new Error('code inválido')
       return { sub: code, email: `${code}@gmail.test`, emailVerified: true, name: code, picture: null, nonce: null, ...id }
     },
+    // o "id_token" falso é o próprio nome da identidade; qualquer outro é recusado
+    async verifyIdToken(idToken) {
+      const id = identities[idToken]
+      if (!id) throw new Error('id_token inválido')
+      return { sub: idToken, email: `${idToken}@gmail.test`, emailVerified: true, name: idToken, picture: null, nonce: null, ...id }
+    },
   }
 }
 
@@ -35,7 +41,7 @@ export async function setup(env: Record<string, string> = {}, oauth: OAuthClient
   const pool = createPool(DB_URL!)
   await pool.query('drop schema public cascade; create schema public')
   await migrate(pool)
-  const uploadDir = await mkdtemp(join(tmpdir(), 'rumo-uploads-'))
+  const uploadDir = await mkdtemp(join(tmpdir(), 'coado-uploads-'))
   const config = loadConfig({
     NODE_ENV: 'test',
     DATABASE_URL: DB_URL,
@@ -70,15 +76,15 @@ export function cookieFrom(res: { headers: Record<string, unknown> }, name: stri
 }
 
 /** Entra pelo login de desenvolvimento e devolve o cookie de sessão */
-export async function devLogin(app: FastifyInstance, email = 'ana@rumo.test', name = 'Ana') {
+export async function devLogin(app: FastifyInstance, email = 'ana@coado.test', name = 'Ana') {
   const res = await app.inject({
     method: 'POST',
     url: '/api/auth/dev',
-    headers: { 'x-rumo-request': '1' },
+    headers: { 'x-coado-request': '1' },
     payload: { email, name },
   })
   if (res.statusCode !== 204) throw new Error(`login falhou: ${res.statusCode} ${res.body}`)
-  return cookieFrom(res, 'rumo_session')!
+  return cookieFrom(res, 'coado_session')!
 }
 
 /** Cliente autenticado com o cabeçalho anti-CSRF */
@@ -89,7 +95,7 @@ export function client(app: FastifyInstance, cookie?: string) {
       url,
       payload: payload as InjectOptions['payload'],
       ...extra,
-      headers: { 'x-rumo-request': '1', ...(cookie && { cookie }), ...extra.headers },
+      headers: { 'x-coado-request': '1', ...(cookie && { cookie }), ...extra.headers },
     })
   return {
     get: (url: string) => call('GET', url),
@@ -102,7 +108,7 @@ export function client(app: FastifyInstance, cookie?: string) {
 
 /** Corpo multipart/form-data montado à mão para o inject */
 export function multipart(fields: Record<string, string>, file?: { name: string; type: string; content: Buffer | string }) {
-  const boundary = `----rumo${Math.random().toString(16).slice(2)}`
+  const boundary = `----coado${Math.random().toString(16).slice(2)}`
   const chunks: Buffer[] = []
   for (const [k, v] of Object.entries(fields)) {
     chunks.push(Buffer.from(`--${boundary}\r\nContent-Disposition: form-data; name="${k}"\r\n\r\n${v}\r\n`))

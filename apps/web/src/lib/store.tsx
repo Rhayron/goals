@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from 'react'
-import { diffState } from '@rumo/shared'
+import { diffState } from '@coado/shared'
 import type {
   AppState,
   Category,
@@ -17,6 +17,7 @@ import type {
 import { addDays, nowTime, today, uid } from './utils'
 import { emptyState, seededState } from '../data/seed'
 import { api } from './api'
+import { native } from './native'
 import { applyTheme, cacheTheme } from './legacy'
 import { SyncEngine, type SyncStatus } from './sync'
 
@@ -444,7 +445,11 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
     openStudy: (draft) => setStudyDraft(draft ?? {}),
     closeStudy: () => setStudyDraft(null),
     timer,
-    openTimer: (req) => setTimer(req ?? {}),
+    openTimer: (req) => {
+      const app = native()
+      if (app) app.openTimer(JSON.stringify(req ?? {}))
+      else setTimer(req ?? {})
+    },
     closeTimer: () => setTimer(null),
     ...actions,
     sync: { status: syncStatus, errorMessage: engine.errorMessage, retry: () => engine.retry(), flush: () => engine.flush(), reload },

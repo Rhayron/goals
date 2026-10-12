@@ -1,5 +1,5 @@
 {
-  "name": "@rumo/web",
+  "name": "@coado/web",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,7 +11,7 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
-    "@rumo/shared": "*",
+    "@coado/shared": "*",
     "lucide-react": "^0.511.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

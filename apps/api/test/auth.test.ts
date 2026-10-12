@@ -27,7 +27,7 @@ describe.skipIf(!DB_URL)('auth', () => {
     expect(start.statusCode).toBe(302)
     const location = new URL(start.headers.location as string)
     expect(location.searchParams.get('code_challenge')).toMatch(/^[\w-]{43}$/)
-    const flowCookie = cookieFrom(start, 'rumo_oauth')!
+    const flowCookie = cookieFrom(start, 'coado_oauth')!
     expect(flowCookie).toBeTruthy()
     return flowCookie
   }
@@ -42,20 +42,20 @@ describe.skipIf(!DB_URL)('auth', () => {
     const res = await ctx.app.inject({ method: 'GET', url: '/api/me' })
     expect(res.statusCode).toBe(401)
     expect(res.json()).toMatchObject({ error: 'unauthorized' })
-    const bad = await ctx.app.inject({ method: 'GET', url: '/api/state', headers: { cookie: 'rumo_session=invalido' } })
+    const bad = await ctx.app.inject({ method: 'GET', url: '/api/state', headers: { cookie: 'coado_session=invalido' } })
     expect(bad.statusCode).toBe(401)
   })
 
   it('informa os métodos de login disponíveis', async () => {
     const res = await ctx.app.inject({ method: 'GET', url: '/api/auth/config' })
-    expect(res.json()).toEqual({ google: true, devLogin: true })
+    expect(res.json()).toEqual({ google: true, devLogin: true, googleClientId: 'client-id' })
   })
 
   it('login de desenvolvimento cria a conta com padrões', async () => {
-    const cookie = await devLogin(ctx.app, 'dev1@rumo.test', 'Dev Um')
+    const cookie = await devLogin(ctx.app, 'dev1@coado.test', 'Dev Um')
     const me = await client(ctx.app, cookie).get('/api/me')
     expect(me.statusCode).toBe(200)
-    expect(me.json()).toMatchObject({ email: 'dev1@rumo.test', name: 'Dev Um', avatarUrl: null, onboardedAt: null })
+    expect(me.json()).toMatchObject({ email: 'dev1@coado.test', name: 'Dev Um', avatarUrl: null, onboardedAt: null })
 
     const state = (await client(ctx.app, cookie).get('/api/state')).json()
     expect(state.categories.map((c: { id: string }) => c.id).sort()).toEqual(['questoes', 'revisao', 'teoria'])
@@ -73,7 +73,7 @@ describe.skipIf(!DB_URL)('auth', () => {
     })
     expect(res.statusCode).toBe(302)
     expect(res.headers.location).toBe('/?authError=state')
-    expect(cookieFrom(res, 'rumo_session')).toBeUndefined()
+    expect(cookieFrom(res, 'coado_session')).toBeUndefined()
   })
 
   it('callback sem o cookie do fluxo é recusado', async () => {
@@ -111,6 +111,9 @@ describe.skipIf(!DB_URL)('auth: fluxo completo do Google', () => {
             nonce: code === 'outronce' ? 'diferente' : lastNonce,
           }
         },
+        async verifyIdToken() {
+          throw new Error('não usado neste teste')
+        },
       },
     )
   })
@@ -125,7 +128,7 @@ describe.skipIf(!DB_URL)('auth: fluxo completo do Google', () => {
     return ctx.app.inject({
       method: 'GET',
       url: `/api/auth/google/callback?code=${code}&state=${state}`,
-      headers: { cookie: cookieFrom(start, 'rumo_oauth')! },
+      headers: { cookie: cookieFrom(start, 'coado_oauth')! },
     })
   }
 
@@ -133,7 +136,7 @@ describe.skipIf(!DB_URL)('auth: fluxo completo do Google', () => {
     const res = await flow('joana', '/estatisticas')
     expect(res.statusCode).toBe(302)
     expect(res.headers.location).toBe('/estatisticas')
-    const cookie = cookieFrom(res, 'rumo_session')!
+    const cookie = cookieFrom(res, 'coado_session')!
     expect(cookie).toBeTruthy()
     const setCookie = String(res.headers['set-cookie'])
     expect(setCookie).toMatch(/HttpOnly/)
@@ -147,9 +150,9 @@ describe.skipIf(!DB_URL)('auth: fluxo completo do Google', () => {
   })
 
   it('segundo login reaproveita a conta e mantém o nome editado', async () => {
-    const first = cookieFrom(await flow('joana'), 'rumo_session')!
+    const first = cookieFrom(await flow('joana'), 'coado_session')!
     await client(ctx.app, first).patch('/api/me', { name: 'Jô' })
-    const again = cookieFrom(await flow('joana'), 'rumo_session')!
+    const again = cookieFrom(await flow('joana'), 'coado_session')!
     const me = (await client(ctx.app, again).get('/api/me')).json()
     expect(me.name).toBe('Jô')
     const { rows } = await ctx.pool.query("select count(*)::int as n from users where email = 'joana@gmail.test'")
@@ -186,9 +189,9 @@ describe.skipIf(!DB_URL)('perfil e sessões', () => {
   })
 
   it('lista e encerra sessões', async () => {
-    const a = await devLogin(ctx.app, 'multi@rumo.test')
-    const b = await devLogin(ctx.app, 'multi@rumo.test')
-    const c = await devLogin(ctx.app, 'multi@rumo.test')
+    const a = await devLogin(ctx.app, 'multi@coado.test')
+    const b = await devLogin(ctx.app, 'multi@coado.test')
+    const c = await devLogin(ctx.app, 'multi@coado.test')
     const list = (await client(ctx.app, a).get('/api/me/sessions')).json()
     expect(list).toHaveLength(3)
     expect(list.filter((s: { current: boolean }) => s.current)).toHaveLength(1)
@@ -204,7 +207,7 @@ describe.skipIf(!DB_URL)('perfil e sessões', () => {
   })
 
   it('logout encerra a sessão', async () => {
-    const cookie = await devLogin(ctx.app, 'sair@rumo.test')
+    const cookie = await devLogin(ctx.app, 'sair@coado.test')
     const res = await client(ctx.app, cookie).post('/api/auth/logout')
     expect(res.statusCode).toBe(204)
     expect((await client(ctx.app, cookie).get('/api/me')).statusCode).toBe(401)
@@ -232,7 +235,7 @@ describe.skipIf(!DB_URL)('login de desenvolvimento desligado', () => {
   it('não existe e o Google aparece como indisponível', async () => {
     const res = await client(ctx.app).post('/api/auth/dev', {})
     expect(res.statusCode).toBe(404)
-    expect((await ctx.app.inject({ method: 'GET', url: '/api/auth/config' })).json()).toEqual({ google: false, devLogin: false })
+    expect((await ctx.app.inject({ method: 'GET', url: '/api/auth/config' })).json()).toEqual({ google: false, devLogin: false, googleClientId: null })
     const google = await ctx.app.inject({ method: 'GET', url: '/api/auth/google' })
     expect(google.headers.location).toBe('/?authError=config')
   })

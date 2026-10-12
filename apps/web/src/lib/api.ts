@@ -1,4 +1,4 @@
-import { CSRF_HEADER, type ApiErrorBody } from '@rumo/shared'
+import { CSRF_HEADER, type ApiErrorBody } from '@coado/shared'
 
 /** Erro HTTP da api (status 0 = sem conexão) */
 export class ApiError extends Error {

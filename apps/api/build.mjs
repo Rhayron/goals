@@ -1,10 +1,10 @@
 // Empacota a API com esbuild. Dependências npm ficam externas (instaladas no container);
-// o @rumo/shared é código TypeScript do monorepo e entra no bundle.
+// o @coado/shared é código TypeScript do monorepo e entra no bundle.
 import { readFile, rm } from 'node:fs/promises'
 import { build } from 'esbuild'
 
 const pkg = JSON.parse(await readFile(new URL('./package.json', import.meta.url), 'utf8'))
-const external = Object.keys(pkg.dependencies).filter((name) => name !== '@rumo/shared')
+const external = Object.keys(pkg.dependencies).filter((name) => name !== '@coado/shared')
 
 await rm(new URL('./dist', import.meta.url), { recursive: true, force: true })
 

@@ -1,4 +1,4 @@
-import { diffState, type AppState } from '@rumo/shared'
+import { diffState, type AppState } from '@coado/shared'
 import { api, ApiError } from './api'
 
 /*

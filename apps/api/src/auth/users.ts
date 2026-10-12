@@ -1,4 +1,4 @@
-import { BUILTIN_CATEGORIES, DEFAULT_REVIEW_INTERVALS, DEFAULT_TIMER_PREFS, type Me } from '@rumo/shared'
+import { BUILTIN_CATEGORIES, DEFAULT_REVIEW_INTERVALS, DEFAULT_TIMER_PREFS, type Me } from '@coado/shared'
 import type { Db } from '../db'
 
 export interface UserRow {

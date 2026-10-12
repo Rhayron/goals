@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import type { AppState } from '@rumo/shared'
+import type { AppState } from '@coado/shared'
 import { AuthProvider, useAuth } from './lib/auth'
 import { api, ApiError } from './lib/api'
 import { StoreProvider } from './lib/store'

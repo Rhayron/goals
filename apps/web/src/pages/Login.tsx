@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Loader2, RefreshCcw } from 'lucide-react'
-import type { AuthConfig, AuthErrorCode } from '@rumo/shared'
+import type { AuthConfig, AuthErrorCode } from '@coado/shared'
 import { useAuth } from '../lib/auth'
+import { native } from '../lib/native'
 import { Logo } from '../components/Layout'
 import { CafeSceneArt, Equalizer, GoogleG, VinylArt } from '../components/cafe-art'
 import { clsx } from '../lib/utils'
@@ -57,6 +58,9 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
   }, [])
 
   const google = () => {
+    // na WebView do app o Google recusa o fluxo web: o app faz o login nativo e renova a sessão daqui
+    const app = native()
+    if (app) return app.signIn()
     setBusy('google')
     signInWithGoogle()
   }

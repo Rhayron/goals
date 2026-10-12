@@ -21,6 +21,8 @@ const EnvSchema = z.object({
   AUTH_DEV_LOGIN: bool,
   TRUST_PROXY: bool,
   SESSION_TTL_DAYS: z.coerce.number().positive().default(30),
+  /** sessões de aparelhos pareados (relógio): não têm como refazer o login com frequência */
+  DEVICE_SESSION_TTL_DAYS: z.coerce.number().positive().default(365),
 })
 
 export interface Config {
@@ -36,6 +38,8 @@ export interface Config {
   /** cookies com Secure quando o app é servido por https */
   secureCookies: boolean
   sessionTtlMs: number
+  /** validade das sessões de aparelhos pareados (Bearer) */
+  deviceTtlMs: number
   devLogin: boolean
   trustProxy: boolean
   uploads: { dir: string; maxFileSize: number; quota: number }
@@ -67,6 +71,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     sessionSecret: e.SESSION_SECRET,
     secureCookies: appUrl.startsWith('https://'),
     sessionTtlMs: e.SESSION_TTL_DAYS * 24 * 60 * 60 * 1000,
+    deviceTtlMs: e.DEVICE_SESSION_TTL_DAYS * 24 * 60 * 60 * 1000,
     devLogin: e.AUTH_DEV_LOGIN && e.NODE_ENV !== 'production',
     trustProxy: e.TRUST_PROXY,
     uploads: { dir: e.UPLOAD_DIR, maxFileSize: Math.round(e.UPLOAD_MAX_FILE_MB * MB), quota: Math.round(e.UPLOAD_QUOTA_MB * MB) },

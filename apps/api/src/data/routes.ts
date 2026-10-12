@@ -1,4 +1,4 @@
-import { AppStateSchema, sanitizeState, SyncRequestSchema, type AppState, type SyncResponse } from '@rumo/shared'
+import { AppStateSchema, sanitizeState, SyncRequestSchema, type AppState, type SyncResponse } from '@coado/shared'
 import type { FastifyInstance } from 'fastify'
 import { tx } from '../db'
 import type { Deps } from '../deps'

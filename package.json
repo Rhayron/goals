@@ -1,5 +1,5 @@
 {
-  "name": "rumo",
+  "name": "coado",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -7,13 +7,13 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently -k -n api,web -c yellow,magenta \"npm run dev -w @rumo/api\" \"npm run dev -w @rumo/web\"",
-    "build": "npm run build -w @rumo/web && npm run build -w @rumo/api",
+    "dev": "concurrently -k -n api,web -c yellow,magenta \"npm run dev -w @coado/api\" \"npm run dev -w @coado/web\"",
+    "build": "npm run build -w @coado/web && npm run build -w @coado/api",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
-    "lint": "npm run lint -w @rumo/web",
+    "lint": "npm run lint -w @coado/web",
     "db:up": "docker compose -f compose.yaml -f compose.dev.yaml up -d db",
-    "db:migrate": "npm run migrate -w @rumo/api"
+    "db:migrate": "npm run migrate -w @coado/api"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",

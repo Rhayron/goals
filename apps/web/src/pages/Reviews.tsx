@@ -249,7 +249,7 @@ function IntervalsCard() {
         <Info size={18} className="mt-0.5 shrink-0 text-brand-500" />
         <p>
           Revisar o conteúdo em intervalos crescentes combate a curva do esquecimento e fixa a matéria na memória de longo prazo. Ao
-          registrar um estudo, o Rumo agenda revisões automaticamente nos intervalos abaixo.
+          registrar um estudo, o Coado agenda revisões automaticamente nos intervalos abaixo.
         </p>
       </div>
 

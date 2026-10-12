@@ -51,7 +51,7 @@ export function Logo({ className }: { className?: string }) {
         <path d="M12 10c0-2 2-2 2-4" fill="none" strokeWidth="1.6" strokeLinecap="round" className="animate-steam stroke-brand-400" style={{ transformOrigin: '13px 10px' }} />
         <path d="M17 10c0-2 2-2 2-4" fill="none" strokeWidth="1.6" strokeLinecap="round" className="animate-steam stroke-brand-400" style={{ transformOrigin: '18px 10px', animationDelay: '1.4s' }} />
       </svg>
-      <span className="font-display text-2xl font-bold tracking-tight">rumo</span>
+      <span className="font-display text-2xl font-bold tracking-tight">coado</span>
     </div>
   )
 }

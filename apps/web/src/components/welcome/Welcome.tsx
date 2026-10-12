@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, ArrowRight, Check, Loader2, X } from 'lucide-react'
-import type { AppState } from '@rumo/shared'
+import type { AppState } from '@coado/shared'
 import { firstName, useAuth, useMe } from '../../lib/auth'
 import { markLegacyMigrated, readLegacyState } from '../../lib/legacy'
 import { useStore } from '../../lib/store'
@@ -26,7 +26,7 @@ const STEPS: Step[] = [
   {
     kicker: 'boas-vindas',
     title: (name) => `Puxa uma cadeira, ${name}.`,
-    body: 'O Rumo é uma cafeteria de estudos: um cantinho calmo para planejar sua preparação, estudar no seu ritmo e ver a evolução acontecer. Em alguns goles a gente te mostra a casa.',
+    body: 'O Coado é uma cafeteria de estudos: um cantinho calmo para planejar sua preparação, estudar no seu ritmo e ver a evolução acontecer. Em alguns goles a gente te mostra a casa.',
     art: <CatWindowArt className="w-full" />,
   },
   {
@@ -43,7 +43,7 @@ const STEPS: Step[] = [
   {
     kicker: 'gole 2 · coe sem pressa',
     title: () => 'Cronômetro e registro de estudos',
-    body: 'Dê o play e estude. Ao terminar, o Rumo já sugere o registro com o tempo cronometrado.',
+    body: 'Dê o play e estude. Ao terminar, o Coado já sugere o registro com o tempo cronometrado.',
     bullets: [
       'Cronômetro, pomodoro e temporizador: o botão ⏱ fica sempre no canto da tela',
       'Registre questões, páginas e vídeos de cada sessão',
@@ -54,7 +54,7 @@ const STEPS: Step[] = [
   {
     kicker: 'gole 3 · sirva no ritmo certo',
     title: () => 'Planejamento em ciclo ou semana',
-    body: 'Diga quanto tempo tem e quais matérias pesam mais; o Rumo monta a sequência para você.',
+    body: 'Diga quanto tempo tem e quais matérias pesam mais; o Coado monta a sequência para você.',
     bullets: [
       'Ciclo de estudos gerado pelo peso e pelo seu domínio de cada disciplina',
       'Ou uma grade semanal com os dias que você tem livres',

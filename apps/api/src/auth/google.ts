@@ -15,6 +15,8 @@ export interface OAuthClient {
   authorizationUrl(params: { state: string; codeChallenge: string; nonce: string }): string
   /** Troca o code pelo id_token e o valida (assinatura, emissor, audiência, validade) */
   exchangeCode(code: string, codeVerifier: string): Promise<GoogleIdentity>
+  /** Valida um id_token obtido no aparelho (Sign in with Google do Android) */
+  verifyIdToken(idToken: string): Promise<GoogleIdentity>
 }
 
 const AUTH_URL = 'https://accounts.google.com/o/oauth2/v2/auth'
@@ -24,6 +26,19 @@ const ISSUERS = ['https://accounts.google.com', 'accounts.google.com']
 
 export function createGoogleClient(cfg: { clientId: string; clientSecret: string; redirectUri: string }): OAuthClient {
   const jwks = createRemoteJWKSet(new URL(JWKS_URL))
+
+  const verify = async (idToken: string): Promise<GoogleIdentity> => {
+    const { payload } = await jwtVerify(idToken, jwks, { issuer: ISSUERS, audience: cfg.clientId })
+    if (typeof payload.sub !== 'string' || typeof payload.email !== 'string') throw new Error('id_token incompleto')
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      emailVerified: payload.email_verified === true,
+      name: typeof payload.name === 'string' && payload.name ? payload.name : payload.email.split('@')[0],
+      picture: typeof payload.picture === 'string' ? payload.picture : null,
+      nonce: typeof payload.nonce === 'string' ? payload.nonce : null,
+    }
+  }
 
   return {
     authorizationUrl({ state, codeChallenge, nonce }) {
@@ -59,17 +74,9 @@ export function createGoogleClient(cfg: { clientId: string; clientSecret: string
       if (!res.ok) throw new Error(`Google respondeu ${res.status} na troca do code`)
       const body = (await res.json()) as { id_token?: string }
       if (!body.id_token) throw new Error('Resposta do Google sem id_token')
-
-      const { payload } = await jwtVerify(body.id_token, jwks, { issuer: ISSUERS, audience: cfg.clientId })
-      if (typeof payload.sub !== 'string' || typeof payload.email !== 'string') throw new Error('id_token incompleto')
-      return {
-        sub: payload.sub,
-        email: payload.email,
-        emailVerified: payload.email_verified === true,
-        name: typeof payload.name === 'string' && payload.name ? payload.name : payload.email.split('@')[0],
-        picture: typeof payload.picture === 'string' ? payload.picture : null,
-        nonce: typeof payload.nonce === 'string' ? payload.nonce : null,
-      }
+      return verify(body.id_token)
     },
+
+    verifyIdToken: verify,
   }
 }

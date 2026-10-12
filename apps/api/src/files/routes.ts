@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto'
 import { basename } from 'node:path'
-import { FilePatchSchema, IdSchema, type FileMeta, type FilesResponse } from '@rumo/shared'
+import { FilePatchSchema, IdSchema, type FileMeta, type FilesResponse } from '@coado/shared'
 import type { FastifyInstance } from 'fastify'
 import { pgCode, tx, type Db } from '../db'
 import type { Deps } from '../deps'

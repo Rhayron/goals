@@ -1,7 +1,9 @@
-import { useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
-import { Database, Download, Monitor, Moon, Plus, RotateCcw, Sun, Trash2, Upload } from 'lucide-react'
+import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
+import { Database, Download, Monitor, Moon, Plus, RotateCcw, Sun, Trash2, Upload, Watch } from 'lucide-react'
+import type { PairCode } from '@coado/shared'
 import { PageHeader } from '../components/Layout'
 import { Button, Card, confirmAction, IconButton } from '../components/ui'
+import { api } from '../lib/api'
 import { useStore } from '../lib/store'
 import type { AppState, TimerPrefs } from '../lib/types'
 import { clsx, today, uid } from '../lib/utils'
@@ -33,6 +35,7 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <CategoriesSection />
           <TimerSection />
+          <WatchSection />
         </div>
       </div>
     </>
@@ -83,7 +86,7 @@ function DataSection() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `rumo-backup-${today()}.json`
+    a.download = `coado-backup-${today()}.json`
     a.click()
     URL.revokeObjectURL(url)
     setMessage({ ok: true, text: 'Backup exportado.' })
@@ -102,7 +105,7 @@ function DataSection() {
       setMessage({ ok: true, text: `Backup importado: ${data.plans.length} plano(s), ${data.studies.length} estudo(s).` })
     } catch (err) {
       const invalid = err instanceof SyntaxError || (err as Error).message === 'invalid'
-      setMessage({ ok: false, text: invalid ? 'Arquivo inválido. Selecione um backup .json exportado pelo Rumo.' : (err as Error).message })
+      setMessage({ ok: false, text: invalid ? 'Arquivo inválido. Selecione um backup .json exportado pelo Coado.' : (err as Error).message })
     }
   }
 
@@ -298,6 +301,66 @@ function NumberField({
         {suffix && <span className="text-sm text-muted">{suffix}</span>}
       </div>
     </div>
+  )
+}
+
+/** Pareamento do app de relógio (apps/watch): código curto, de uso único, que vira um token de aparelho */
+function WatchSection() {
+  const [code, setCode] = useState<PairCode | null>(null)
+  const [left, setLeft] = useState(0)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!code) return
+    const tick = () => {
+      const s = Math.max(0, Math.round((Date.parse(code.expiresAt) - Date.now()) / 1000))
+      setLeft(s)
+      if (s === 0) setCode(null)
+    }
+    tick()
+    const t = setInterval(tick, 1000)
+    return () => clearInterval(t)
+  }, [code])
+
+  const generate = async () => {
+    setBusy(true)
+    setError('')
+    try {
+      setCode(await api.post<PairCode>('/watch/pair-code'))
+    } catch (e) {
+      setError((e as Error).message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Card title="Relógio">
+      <div className="flex gap-3">
+        <Watch size={18} className="mt-0.5 shrink-0 text-brand-500" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm text-muted">
+            O Coado para Wear OS roda o pomodoro no pulso, puxa a próxima sessão do ciclo e registra os estudos nesta conta.
+          </p>
+          {code ? (
+            <div className="mt-3 rounded-xl border border-dashed border-brand-400 bg-brand-50 p-4 text-center dark:bg-brand-600/10">
+              <p className="label">Código de pareamento</p>
+              <p className="font-display text-4xl font-bold tracking-[0.3em] tabular">{code.code}</p>
+              <p className="mt-1 text-xs text-muted">
+                vale por {Math.floor(left / 60)}:{String(left % 60).padStart(2, '0')} · no relógio: Ajustes → Conta → Parear
+              </p>
+            </div>
+          ) : (
+            <Button size="sm" className="mt-3" onClick={generate} disabled={busy}>
+              <Watch size={14} /> Gerar código de pareamento
+            </Button>
+          )}
+          {error && <p className="mt-2 text-sm text-bad">{error}</p>}
+          <p className="mt-3 text-xs text-muted">O relógio aparece em Perfil → “Onde você está conectado”. Encerrar a sessão dele por lá o despareia.</p>
+        </div>
+      </div>
+    </Card>
   )
 }
 

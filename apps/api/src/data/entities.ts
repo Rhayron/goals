@@ -1,4 +1,4 @@
-import type { Category, Exam, Plan, Planning, Reminder, Review, Study, Subject, Topic } from '@rumo/shared'
+import type { Category, Exam, Plan, Planning, Reminder, Review, Study, Subject, Topic } from '@coado/shared'
 
 /*
  * Mapeamento entre as tabelas (snake_case, colunas planas) e os tipos do domínio (camelCase).

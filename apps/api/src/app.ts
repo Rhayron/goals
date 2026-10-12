@@ -2,12 +2,14 @@ import cookie from '@fastify/cookie'
 import helmet from '@fastify/helmet'
 import multipart from '@fastify/multipart'
 import rateLimit from '@fastify/rate-limit'
-import { CSRF_HEADER, type Me } from '@rumo/shared'
+import { CSRF_HEADER, type Me } from '@coado/shared'
 import Fastify, { type FastifyError, type FastifyServerOptions } from 'fastify'
 import { ZodError } from 'zod'
 import { createGoogleClient, type OAuthClient } from './auth/google'
+import { deviceRoutes } from './auth/device'
 import { authRoutes } from './auth/routes'
 import { deleteExpiredSessions, requireUser } from './auth/sessions'
+import { deleteExpiredPairCodes } from './watch/pairing'
 import type { Config } from './config'
 import { dataRoutes } from './data/routes'
 import { pgCode, type Pool } from './db'
@@ -16,6 +18,7 @@ import { HttpError } from './errors'
 import { fileRoutes } from './files/routes'
 import { createDiskStorage, type Storage } from './files/storage'
 import { meRoutes } from './me/routes'
+import { watchPairRoutes, watchRoutes } from './watch/routes'
 
 export interface AppOptions {
   /** substitui o cliente do Google (testes) */
@@ -56,6 +59,7 @@ export async function buildApp(config: Config, pool: Pool, options: AppOptions =
   // preenchidos por requireUser; declarados aqui para o Fastify manter o formato do objeto estável
   app.decorateRequest('user', null as unknown as Me)
   app.decorateRequest('sessionId', '')
+  app.decorateRequest('sessionKind', 'web')
 
   await app.register(helmet, {
     // a api só devolve JSON e arquivos: nada de scripts, estilos ou frames
@@ -112,13 +116,17 @@ export async function buildApp(config: Config, pool: Pool, options: AppOptions =
       })
 
       await api.register(authRoutes, deps)
+      // o relógio troca o código de pareamento por um token antes de ter sessão
+      await api.register(watchPairRoutes, deps)
 
       // daqui para baixo, só com sessão válida
       await api.register(async (priv) => {
         priv.addHook('onRequest', requireUser(pool, config))
+        await priv.register(deviceRoutes, deps)
         await priv.register(meRoutes, deps)
         await priv.register(dataRoutes, deps)
         await priv.register(fileRoutes, deps)
+        await priv.register(watchRoutes, deps)
       })
     },
     { prefix: '/api' },
@@ -128,7 +136,9 @@ export async function buildApp(config: Config, pool: Pool, options: AppOptions =
   let timer: NodeJS.Timeout | undefined
   app.addHook('onReady', async () => {
     const clean = () =>
-      deleteExpiredSessions(pool).catch((err: unknown) => app.log.warn({ err }, 'falha ao limpar sessões vencidas'))
+      Promise.all([deleteExpiredSessions(pool), deleteExpiredPairCodes(pool)]).catch((err: unknown) =>
+        app.log.warn({ err }, 'falha ao limpar sessões e códigos vencidos'),
+      )
     await clean()
     timer = setInterval(clean, HOUR)
     timer.unref()

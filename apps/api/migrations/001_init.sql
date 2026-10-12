@@ -1,4 +1,4 @@
--- Esquema inicial do Rumo.
+-- Esquema inicial do Coado.
 --
 -- Multi-inquilino por chave composta: toda tabela de domínio tem PK (user_id, id) e as FKs entre
 -- elas incluem user_id. Assim o banco garante que um registro nunca aponta para dados de outra

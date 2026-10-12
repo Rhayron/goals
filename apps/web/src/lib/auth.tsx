@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { AuthConfig, Me, ProfilePatch } from '@rumo/shared'
+import type { AuthConfig, Me, ProfilePatch } from '@coado/shared'
 import { api, ApiError } from './api'
+import { native } from './native'
 
 type AuthState =
   | { status: 'loading' }
@@ -41,6 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     void load()
   }, [load])
+
+  // dentro do app Android: a sessão da WebView é renovada (ou o login nativo reaparece) por ele
+  useEffect(() => {
+    native()?.authChanged(state.status)
+  }, [state.status])
 
   const value = useMemo<Auth>(() => {
     const toAnonymous = async (reason?: 'expired') =>

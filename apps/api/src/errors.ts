@@ -1,4 +1,4 @@
-import type { ApiErrorBody } from '@rumo/shared'
+import type { ApiErrorBody } from '@coado/shared'
 
 /** Erro com status HTTP e código estável que o front pode tratar */
 export class HttpError extends Error {

@@ -1,10 +1,10 @@
-# Rumo: web (nginx + SPA) → api (Fastify) → db (Postgres).
+# Coado: web (nginx + SPA) → api (Fastify) → db (Postgres).
 # O banco fica numa rede interna, sem saída e sem porta publicada; só a web é exposta.
 #
 #   cp .env.example .env   # preencha POSTGRES_PASSWORD, SESSION_SECRET e o Google
 #   docker compose up -d --build
 
-name: rumo
+name: coado
 
 x-api-build: &api-build
   context: .
@@ -12,7 +12,7 @@ x-api-build: &api-build
 
 x-api-env: &api-env
   NODE_ENV: ${NODE_ENV:-production}
-  DATABASE_URL: postgres://${POSTGRES_USER:-rumo}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:-rumo}
+  DATABASE_URL: postgres://${POSTGRES_USER:-coado}:${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}@db:5432/${POSTGRES_DB:-coado}
   LOG_LEVEL: ${LOG_LEVEL:-info}
 
 services:
@@ -20,8 +20,8 @@ services:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-rumo}
-      POSTGRES_USER: ${POSTGRES_USER:-rumo}
+      POSTGRES_DB: ${POSTGRES_DB:-coado}
+      POSTGRES_USER: ${POSTGRES_USER:-coado}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -35,7 +35,7 @@ services:
   # aplica as migrações e encerra; a api só sobe depois que ele termina bem
   migrate:
     build: *api-build
-    image: rumo-api:latest
+    image: coado-api:latest
     command: ["node", "dist/migrate.js"]
     environment: *api-env
     depends_on:
@@ -46,7 +46,7 @@ services:
 
   api:
     build: *api-build
-    image: rumo-api:latest
+    image: coado-api:latest
     restart: unless-stopped
     environment:
       <<: *api-env
@@ -70,10 +70,10 @@ services:
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    image: rumo-web:latest
+    image: coado-web:latest
     restart: unless-stopped
     ports:
-      - "${RUMO_PORT:-8080}:80"
+      - "${COADO_PORT:-8080}:80"
     depends_on:
       api:
         condition: service_healthy
