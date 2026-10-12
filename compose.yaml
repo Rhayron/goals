@@ -1,0 +1,7 @@
+services:
+  rumo:
+    build: ./app
+    container_name: rumo
+    restart: unless-stopped
+    ports:
+      - "${RUMO_PORT:-8080}:80"
