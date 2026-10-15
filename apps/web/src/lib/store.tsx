@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, u
 import { diffState } from '@coado/shared'
 import type {
   AppState,
+  Assessment,
   Category,
   Exam,
   ID,
@@ -48,6 +49,8 @@ interface Store {
   reviews: Review[]
   planning: Planning | null
   exams: Exam[]
+  /** avaliações e entregas do plano ativo, da mais próxima para a mais distante */
+  assessments: Assessment[]
   topicsOf: (subjectId: ID) => Topic[]
 
   // UI global
@@ -78,6 +81,8 @@ interface Store {
   restartCycle: () => void
   saveExam: (e: Omit<Exam, 'id' | 'planId'> & { id?: ID }) => void
   deleteExam: (id: ID) => void
+  saveAssessment: (a: Partial<Assessment> & Pick<Assessment, 'name' | 'subjectId' | 'date'>) => ID
+  deleteAssessment: (id: ID) => void
   saveReminder: (r: Partial<Reminder> & { text: string }) => void
   deleteReminder: (id: ID) => void
   setNote: (note: string) => void
@@ -188,7 +193,10 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
     const reviews = state.reviews.filter((r) => r.planId === planId)
     const exams = state.exams.filter((e) => e.planId === planId).sort((a, b) => b.date.localeCompare(a.date))
     const planning = planId ? state.plannings[planId] ?? null : null
-    return { subjects, studies, reviews, exams, planning }
+    const assessments = state.assessments
+      .filter((a) => a.planId === planId)
+      .sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? '').localeCompare(b.time ?? ''))
+    return { subjects, studies, reviews, exams, planning, assessments }
   }, [state, planId])
 
   const topicsOf = useCallback(
@@ -226,6 +234,7 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
           studies: s.studies.filter((x) => x.planId !== id),
           reviews: s.reviews.filter((x) => x.planId !== id),
           exams: s.exams.filter((x) => x.planId !== id),
+          assessments: s.assessments.filter((x) => x.planId !== id),
           plannings,
         }
       })
@@ -263,6 +272,7 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
           studies: s.studies.filter((x) => x.subjectId !== id),
           reviews: s.reviews.filter((x) => x.subjectId !== id),
           exams: s.exams.map((e) => ({ ...e, rows: e.rows.filter((r) => r.subjectId !== id) })),
+          assessments: s.assessments.filter((x) => x.subjectId !== id),
           plannings,
         }
       })
@@ -389,6 +399,25 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
 
     const deleteExam = (id: ID) => update((s) => ({ ...s, exams: s.exams.filter((x) => x.id !== id) }))
 
+    const saveAssessment: Store['saveAssessment'] = (a) => {
+      const id = a.id ?? uid()
+      update((s) => {
+        const exists = s.assessments.some((x) => x.id === id)
+        if (exists) return { ...s, assessments: s.assessments.map((x) => (x.id === id ? { ...x, ...a } : x)) }
+        const novo: Assessment = { kind: 'prova', done: false, notes: '', createdAt: new Date().toISOString(), planId: s.activePlanId!, ...a, id }
+        return { ...s, assessments: [...s.assessments, novo] }
+      })
+      return id
+    }
+
+    // os estudos ficam; só perdem o vínculo
+    const deleteAssessment = (id: ID) =>
+      update((s) => ({
+        ...s,
+        assessments: s.assessments.filter((x) => x.id !== id),
+        studies: s.studies.map((x) => (x.assessmentId === id ? { ...x, assessmentId: undefined } : x)),
+      }))
+
     const saveReminder: Store['saveReminder'] = (r) =>
       update((s) => {
         const id = r.id ?? uid()
@@ -427,6 +456,8 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
       restartCycle,
       saveExam,
       deleteExam,
+      saveAssessment,
+      deleteAssessment,
       saveReminder,
       deleteReminder,
       setNote,

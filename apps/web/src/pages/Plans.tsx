@@ -4,8 +4,9 @@ import { PageHeader } from '../components/Layout'
 import { Button, IconButton, Modal, confirmAction } from '../components/ui'
 import { stripBullet } from '../components/subjects/stats'
 import { useStore } from '../lib/store'
-import type { Plan } from '../lib/types'
-import { clsx, fmtDate, SUBJECT_COLORS, toDateStr } from '../lib/utils'
+import type { Plan, PlanKind } from '../lib/types'
+import { kindOf, PLAN_KINDS, termosDe } from '../lib/modo'
+import { clsx, fmtDate, SUBJECT_COLORS, toDateStr, today } from '../lib/utils'
 
 interface ParsedSubject {
   name: string
@@ -52,7 +53,7 @@ export default function PlansPage() {
   const remove = (p: Plan) => {
     if (
       confirmAction(
-        `Excluir o plano "${p.name}"?\n\nTodas as disciplinas, tópicos, estudos, revisões, planejamento e simulados deste plano serão apagados permanentemente.`,
+        `Excluir o plano "${p.name}"?\n\nTodas as disciplinas, tópicos, estudos, revisões, planejamento, avaliações e simulados deste plano serão apagados permanentemente.`,
       )
     ) {
       deletePlan(p.id)
@@ -67,6 +68,8 @@ export default function PlansPage() {
         {state.plans.map((p) => {
           const isActive = p.id === active?.id
           const c = counts.get(p.id) ?? { subjects: 0, topics: 0 }
+          const uni = kindOf(p) === 'universidade'
+          const nextAssessment = uni ? state.assessments.filter((a) => a.planId === p.id && !a.done && a.date >= today()).sort((a, b) => a.date.localeCompare(b.date))[0] : undefined
           return (
             <article
               key={p.id}
@@ -83,6 +86,7 @@ export default function PlansPage() {
                     </span>
                   )}
                   <h2 className="text-lg font-semibold leading-snug">{p.name}</h2>
+                  {uni && <p className="text-xs font-medium text-muted">Universidade ou escola</p>}
                 </div>
                 <IconButton title="Editar plano" onClick={() => setEditing(p)}>
                   <Pencil size={15} />
@@ -95,7 +99,12 @@ export default function PlansPage() {
               <div className="mt-2 space-y-1 text-sm text-muted">
                 {p.org && <InfoLine icon={<Building2 size={14} />}>{p.org}</InfoLine>}
                 {p.role && <InfoLine icon={<Briefcase size={14} />}>{p.role}</InfoLine>}
-                {p.examDate && <InfoLine icon={<CalendarDays size={14} />}>Prova em {fmtDate(p.examDate)}</InfoLine>}
+                {!uni && p.examDate && <InfoLine icon={<CalendarDays size={14} />}>Prova em {fmtDate(p.examDate)}</InfoLine>}
+                {nextAssessment && (
+                  <InfoLine icon={<CalendarDays size={14} />}>
+                    {nextAssessment.name} em {fmtDate(nextAssessment.date)}
+                  </InfoLine>
+                )}
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-2">
@@ -127,7 +136,7 @@ export default function PlansPage() {
             <Plus size={24} />
           </span>
           <span className="font-medium">Criar novo plano</span>
-          {state.plans.length === 0 && <span className="max-w-xs text-center text-sm">Comece criando um plano para o seu concurso.</span>}
+          {state.plans.length === 0 && <span className="max-w-xs text-center text-sm">Comece criando um plano para o seu concurso ou semestre.</span>}
         </button>
       </div>
 
@@ -160,6 +169,7 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
   const { savePlan, setActivePlan, saveSubject, saveTopic } = useStore()
   const [form, setForm] = useState({
     name: plan?.name ?? '',
+    kind: kindOf(plan) as PlanKind,
     org: plan?.org ?? '',
     role: plan?.role ?? '',
     notes: plan?.notes ?? '',
@@ -174,6 +184,7 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
   const parsedTopics = parsed.reduce((a, s) => a + s.topics.length, 0)
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }))
+  const termos = termosDe(form.kind)
 
   const save = () => {
     const name = form.name.trim()
@@ -181,10 +192,12 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
     const id = savePlan({
       id: plan?.id,
       name,
+      // concurso fica sem campo, como nas contas antigas
+      kind: form.kind === 'universidade' ? 'universidade' : undefined,
       org: form.org.trim() || undefined,
       role: form.role.trim() || undefined,
       notes: form.notes.trim() || undefined,
-      examDate: form.examDate || undefined,
+      examDate: (!termos.universidade && form.examDate) || undefined,
       weeklyGoal: { minutes: Math.round(Math.max(0, form.hours) * 60), questions: Math.max(0, Math.round(form.questions)) },
     })
     if (!plan) {
@@ -216,6 +229,25 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
     >
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="sm:col-span-2">
+          <span className="label">Tipo</span>
+          <div className="grid gap-2 sm:grid-cols-2">
+            {PLAN_KINDS.map((k) => (
+              <button
+                key={k.value}
+                type="button"
+                onClick={() => set('kind', k.value)}
+                className={clsx(
+                  'rounded-xl border p-3 text-left transition',
+                  form.kind === k.value ? 'border-brand-500 bg-brand-50 dark:bg-brand-600/15' : 'border-line hover:bg-surface-2',
+                )}
+              >
+                <span className="block text-sm font-semibold">{k.label}</span>
+                <span className="block text-xs text-muted">{k.desc}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="sm:col-span-2">
           <label className="label" htmlFor="plan-name">
             Nome *
           </label>
@@ -225,27 +257,35 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
             className="field"
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
-            placeholder="Ex.: Petrobras 2026 – Técnico"
+            placeholder={termos.universidade ? 'Ex.: Engenharia, 2026/2' : 'Ex.: Petrobras 2026, Técnico'}
           />
         </div>
         <div>
           <label className="label" htmlFor="plan-org">
-            Órgão / Edital
+            {termos.org}
           </label>
-          <input id="plan-org" className="field" value={form.org} onChange={(e) => set('org', e.target.value)} placeholder="Ex.: Petrobras" />
+          <input id="plan-org" className="field" value={form.org} onChange={(e) => set('org', e.target.value)} placeholder={termos.universidade ? 'Ex.: UTFPR' : 'Ex.: Petrobras'} />
         </div>
         <div>
           <label className="label" htmlFor="plan-role">
-            Cargo
+            {termos.role}
           </label>
-          <input id="plan-role" className="field" value={form.role} onChange={(e) => set('role', e.target.value)} placeholder="Ex.: Técnico de Administração" />
+          <input
+            id="plan-role"
+            className="field"
+            value={form.role}
+            onChange={(e) => set('role', e.target.value)}
+            placeholder={termos.universidade ? 'Ex.: Engenharia Eletrônica' : 'Ex.: Técnico de Administração'}
+          />
         </div>
-        <div>
-          <label className="label" htmlFor="plan-exam">
-            Data da prova
-          </label>
-          <input id="plan-exam" type="date" className="field" value={form.examDate} onChange={(e) => set('examDate', e.target.value)} />
-        </div>
+        {!termos.universidade && (
+          <div>
+            <label className="label" htmlFor="plan-exam">
+              Data da prova
+            </label>
+            <input id="plan-exam" type="date" className="field" value={form.examDate} onChange={(e) => set('examDate', e.target.value)} />
+          </div>
+        )}
         <div>
           <span className="label">Meta semanal</span>
           <div className="grid grid-cols-2 gap-2">
@@ -291,7 +331,7 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
             {showImport && (
               <div className="mt-3 space-y-2">
                 <p className="text-xs text-muted">
-                  Cole o conteúdo do edital: cada linha sem recuo vira uma disciplina; linhas iniciadas por “-”, “•” ou com recuo
+                  Cole o conteúdo do {termos.edital.toLowerCase()}: cada linha sem recuo vira uma disciplina; linhas iniciadas por “-”, “•” ou com recuo
                   viram tópicos da disciplina acima.
                 </p>
                 <textarea

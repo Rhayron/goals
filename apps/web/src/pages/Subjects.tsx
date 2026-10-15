@@ -90,7 +90,7 @@ export default function SubjectsPage() {
               </Button>
             }
           >
-            Cadastre as disciplinas do seu edital para organizar tópicos e registrar estudos.
+            Cadastre as disciplinas do seu plano para organizar tópicos e registrar estudos.
           </Empty>
         </Card>
       ) : (

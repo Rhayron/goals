@@ -6,6 +6,7 @@ import { LinksModal } from '../components/subjects/LinksEditor'
 import { NoPlan } from '../components/subjects/NoPlan'
 import { emptyStat, statsBy, type StudyStat } from '../components/subjects/stats'
 import { useStore } from '../lib/store'
+import { useTermos } from '../lib/modo'
 import type { ID, Subject } from '../lib/types'
 import { clsx, fmtDate, pct } from '../lib/utils'
 
@@ -14,6 +15,7 @@ export default function EditalPage() {
   const [open, setOpen] = useState<Set<ID>>(() => new Set())
   const [hideDone, setHideDone] = useState(false)
   const [linksOf, setLinksOf] = useState<ID | null>(null)
+  const termos = useTermos()
 
   const byTopic = useMemo(() => statsBy(studies, (s) => s.topicId), [studies])
   const bySubject = useMemo(() => statsBy(studies, (s) => s.subjectId), [studies])
@@ -22,7 +24,7 @@ export default function EditalPage() {
   if (!plan) {
     return (
       <>
-        <PageHeader title="Edital verticalizado" />
+        <PageHeader title={termos.editalTitulo} />
         <NoPlan />
       </>
     )
@@ -42,9 +44,9 @@ export default function EditalPage() {
 
   return (
     <>
-      <PageHeader title="Edital verticalizado" />
+      <PageHeader title={termos.editalTitulo} />
 
-      <Card title="Progresso no edital" className="mb-6">
+      <Card title={termos.progresso} className="mb-6">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <p className="text-lg">
             <span className="font-semibold tabular">{doneCount}</span> de <span className="font-semibold tabular">{allTopics.length}</span>{' '}
@@ -58,7 +60,7 @@ export default function EditalPage() {
       {subjects.length === 0 ? (
         <Card>
           <Empty icon={<ListChecks size={36} />} title="Nenhuma disciplina neste plano">
-            Cadastre disciplinas e tópicos na página Disciplinas para acompanhar o edital.
+            Cadastre disciplinas e tópicos na página Disciplinas para acompanhar o {termos.edital.toLowerCase()}.
           </Empty>
         </Card>
       ) : (

@@ -17,6 +17,7 @@ import Reviews from './pages/Reviews'
 import HistoryPage from './pages/History'
 import Statistics from './pages/Statistics'
 import Exams from './pages/Exams'
+import Assessments from './pages/Assessments'
 import FilesPage from './pages/Files'
 import ProfilePage from './pages/Profile'
 import SettingsPage from './pages/Settings'
@@ -74,6 +75,7 @@ function AccountApp() {
             <Route path="historico" element={<HistoryPage />} />
             <Route path="estatisticas" element={<Statistics />} />
             <Route path="simulados" element={<Exams />} />
+            <Route path="avaliacoes" element={<Assessments />} />
             <Route path="arquivos" element={<FilesPage />} />
             <Route path="perfil" element={<ProfilePage />} />
             <Route path="configuracoes" element={<SettingsPage />} />

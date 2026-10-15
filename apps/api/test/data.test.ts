@@ -188,3 +188,57 @@ describe.skipIf(!DB_URL)('importação (PUT /state)', () => {
     expect(res.statusCode).toBe(400)
   })
 })
+
+describe.skipIf(!DB_URL)('modo universidade: avaliações', () => {
+  let ctx: TestCtx
+  let ana: ReturnType<typeof client>
+  const semestre: Plan = { ...plan, id: 'u1', name: 'UTFPR 2026/2', kind: 'universidade', examDate: undefined }
+  const disc: Subject = { ...subject, id: 'u1s1', planId: 'u1', name: 'ELT75A Análise de Sistemas Lineares' }
+  const prova = {
+    id: 'av1', planId: 'u1', subjectId: 'u1s1', name: 'Prova 1', kind: 'prova' as const, date: '2026-10-13', time: '11:10',
+    weight: '50%', grade: 7.5, maxGrade: 10, done: true, notes: '', createdAt: '2026-10-01T00:00:00.000Z',
+  }
+  const entrega = { ...prova, id: 'av2', name: 'Relatório 4', kind: 'trabalho' as const, date: '2026-10-14', time: undefined, weight: undefined, grade: undefined, maxGrade: undefined, done: false }
+  const estudo: Study = { ...study, id: 'ust1', planId: 'u1', subjectId: 'u1s1', topicId: undefined, assessmentId: 'av1' }
+
+  beforeAll(async () => {
+    ctx = await setup()
+    ana = client(ctx.app, await devLogin(ctx.app, 'ana-uni@coado.test', 'Ana'))
+  })
+  afterAll(() => ctx?.close())
+
+  it('plano guarda o tipo e as avaliações voltam com os opcionais intactos', async () => {
+    const res = await ana.post('/api/sync', { upserts: { plans: [semestre], subjects: [disc], assessments: [prova, entrega], studies: [estudo] } })
+    expect(res.statusCode).toBe(200)
+    const s = (await ana.get('/api/state')).json() as AppState
+    expect(s.plans.find((p) => p.id === 'u1')?.kind).toBe('universidade')
+    expect(s.assessments).toEqual([prova, { ...entrega, time: undefined, weight: undefined, grade: undefined, maxGrade: undefined }].map((a) => JSON.parse(JSON.stringify(a))))
+    expect(s.studies.find((x) => x.id === 'ust1')?.assessmentId).toBe('av1')
+  })
+
+  it('plano antigo, sem tipo, continua concurso', async () => {
+    await ana.post('/api/sync', { upserts: { plans: [{ ...plan, id: 'c9' }] } })
+    const s = (await ana.get('/api/state')).json() as AppState
+    expect(s.plans.find((p) => p.id === 'c9')?.kind).toBeUndefined()
+  })
+
+  it('apagar a avaliação solta o estudo sem apagá-lo', async () => {
+    await ana.post('/api/sync', { deletes: { assessments: ['av1'] } })
+    const s = (await ana.get('/api/state')).json() as AppState
+    expect(s.assessments.map((a) => a.id)).toEqual(['av2'])
+    const st = s.studies.find((x) => x.id === 'ust1')
+    expect(st).toBeDefined()
+    expect(st?.assessmentId).toBeUndefined()
+  })
+
+  it('apagar a disciplina leva as avaliações dela (cascata)', async () => {
+    await ana.post('/api/sync', { deletes: { subjects: ['u1s1'] } })
+    const s = (await ana.get('/api/state')).json() as AppState
+    expect(s.assessments).toEqual([])
+  })
+
+  it('recusa tipo de avaliação desconhecido', async () => {
+    const res = await ana.post('/api/sync', { upserts: { assessments: [{ ...entrega, id: 'av3', kind: 'simulado' }] } })
+    expect(res.statusCode).toBe(400)
+  })
+})

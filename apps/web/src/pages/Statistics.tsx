@@ -21,6 +21,7 @@ import { PerfBadge } from '../components/charts/PerfBadge'
 import { applyFilters, categoryName, filterRange, groupBy, initialFilters, plural, type Filters } from '../components/charts/filters'
 import { BAD, BRAND, OK, axisProps, gridProps, toHours, tooltipProps } from '../components/charts/theme'
 import { useStore } from '../lib/store'
+import { useTermos } from '../lib/modo'
 import type { DateStr, Study } from '../lib/types'
 import {
   addDays,
@@ -71,6 +72,7 @@ function MiniStat({ title, value, children }: { title: string; value: ReactNode;
 
 export default function StatisticsPage() {
   const { plan, studies, subjects, state, topicsOf } = useStore()
+  const termos = useTermos()
   const [filters, setFilters] = useState<Filters>(initialFilters)
 
   const data = useMemo(() => {
@@ -204,7 +206,7 @@ export default function StatisticsPage() {
             <span className="text-bad">{plural(failedDays, 'falha', 'falhas')}</span>
           </p>
         </MiniStat>
-        <MiniStat title="Progresso no edital" value={`${editalPct}%`}>
+        <MiniStat title={termos.progresso} value={`${editalPct}%`}>
           <ProgressBar value={editalPct} className="mb-1.5" />
           <p>
             {edital.finished} de {plural(edital.total, 'tópico concluído', 'tópicos concluídos')}

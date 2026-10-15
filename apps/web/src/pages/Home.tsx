@@ -13,11 +13,14 @@ import { WeeklyChartCard } from '../components/home/WeeklyChartCard'
 import { PlanningCard, RecentCard, StudyTimeCard, TodayReviewsCard } from '../components/home/ActivityCards'
 import { RemindersCard } from '../components/home/RemindersCard'
 import { CozyBanner } from '../components/home/CozyBanner'
+import { NextAssessmentsCard } from '../components/home/AssessmentsCard'
+import { useTermos } from '../lib/modo'
 
 const label = 'text-xs font-semibold uppercase tracking-wider text-muted'
 
 export default function HomePage() {
   const { plan, subjects, studies, topicsOf } = useStore()
+  const termos = useTermos()
 
   if (!plan)
     return (
@@ -33,7 +36,7 @@ export default function HomePage() {
               </Link>
             }
           >
-            Crie um plano de estudos para o seu concurso e comece a acompanhar seu progresso.
+            Crie um plano de estudos, para um concurso ou um semestre, e comece a acompanhar seu progresso.
           </Empty>
         </Card>
       </>
@@ -70,7 +73,7 @@ export default function HomePage() {
           </div>
         </Card>
         <Card>
-          <p className={label}>Progresso no edital</p>
+          <p className={label}>{termos.progresso}</p>
           <p className="mt-3 text-3xl font-semibold tabular">{progress}%</p>
           <ProgressBar value={progress} className="mt-3" />
           <p className="mt-2 text-sm text-muted">
@@ -79,7 +82,7 @@ export default function HomePage() {
         </Card>
 
         <ConstancyCard studies={studies} className="lg:col-span-2" />
-        <ExamDateCard key={plan.id} plan={plan} />
+        {termos.universidade ? <NextAssessmentsCard /> : <ExamDateCard key={plan.id} plan={plan} />}
 
         <PanelTable subjects={subjects} studies={studies} className="lg:col-span-2 lg:row-span-2" />
         <WeeklyGoalsCard key={`goal-${plan.id}`} plan={plan} studies={studies} />

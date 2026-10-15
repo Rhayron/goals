@@ -4,6 +4,7 @@ import { useStore, type StudyDraft } from '../lib/store'
 import type { PageRange, VideoRange } from '../lib/types'
 import { addDays, clsx, fmtClock, parseClock, today, SUBJECT_COLORS } from '../lib/utils'
 import { Button, Modal } from './ui'
+import { assessmentKindLabel, useTermos } from '../lib/modo'
 
 interface Form {
   dateMode: 'today' | 'yesterday' | 'other'
@@ -11,6 +12,7 @@ interface Form {
   categoryId: string
   subjectId: string
   topicId: string
+  assessmentId: string
   duration: string
   material: string
   finishTopic: boolean
@@ -34,7 +36,8 @@ export function StudyModal() {
 
 function StudyForm({ draft, onClose }: { draft: StudyDraft; onClose: () => void }) {
   const store = useStore()
-  const { state, subjects, topicsOf, saveStudy, saveSubject, saveTopic, addCategory, setReviewStatus } = store
+  const { state, subjects, topicsOf, assessments, saveStudy, saveSubject, saveTopic, addCategory, setReviewStatus } = store
+  const termos = useTermos()
   const editing = draft.editingId ? state.studies.find((s) => s.id === draft.editingId) : undefined
 
   const initial = (): Form => {
@@ -45,6 +48,7 @@ function StudyForm({ draft, onClose }: { draft: StudyDraft; onClose: () => void 
       categoryId: draft.categoryId ?? '',
       subjectId: draft.subjectId ?? '',
       topicId: draft.topicId ?? '',
+      assessmentId: draft.assessmentId ?? '',
       duration: fmtClock(draft.duration ?? 0),
       material: draft.material ?? '',
       finishTopic: draft.finishTopic ?? false,
@@ -70,6 +74,9 @@ function StudyForm({ draft, onClose }: { draft: StudyDraft; onClose: () => void 
   useEffect(() => setError(''), [f.subjectId, f.categoryId, f.duration])
 
   const topics = f.subjectId ? topicsOf(f.subjectId) : []
+  // pendentes da disciplina, mais a já ligada (que pode estar feita)
+  const subjectAssessments = assessments.filter((a) => a.subjectId === f.subjectId && (!a.done || a.id === f.assessmentId))
+  const showAssessment = termos.universidade && subjectAssessments.length > 0
 
   const pickDateMode = (mode: Form['dateMode']) => {
     if (mode === 'today') setF((p) => ({ ...p, dateMode: mode, date: today() }))
@@ -84,11 +91,11 @@ function StudyForm({ draft, onClose }: { draft: StudyDraft; onClose: () => void 
   }
 
   const onSubject = (v: string) => {
-    if (v !== NEW) return setF((p) => ({ ...p, subjectId: v, topicId: '' }))
+    if (v !== NEW) return setF((p) => ({ ...p, subjectId: v, topicId: '', assessmentId: '' }))
     const name = window.prompt('Nome da nova disciplina')?.trim()
     if (!name) return
     const id = saveSubject({ name, color: SUBJECT_COLORS[subjects.length % SUBJECT_COLORS.length] })
-    setF((p) => ({ ...p, subjectId: id, topicId: '' }))
+    setF((p) => ({ ...p, subjectId: id, topicId: '', assessmentId: '' }))
   }
 
   const onTopic = (v: string) => {
@@ -112,6 +119,7 @@ function StudyForm({ draft, onClose }: { draft: StudyDraft; onClose: () => void 
         categoryId: f.categoryId,
         subjectId: f.subjectId,
         topicId: f.topicId || undefined,
+        assessmentId: (showAssessment && f.assessmentId) || undefined,
         duration,
         material: f.material.trim(),
         hits: Math.max(0, f.hits),
@@ -216,7 +224,7 @@ function StudyForm({ draft, onClose }: { draft: StudyDraft; onClose: () => void 
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-[3fr_1fr]">
+        <div className={clsx('grid gap-4', showAssessment ? 'sm:grid-cols-[2fr_2fr_1fr]' : 'sm:grid-cols-[3fr_1fr]')}>
           <div>
             <label className="label">Tópico</label>
             <select className="field" value={f.topicId} disabled={!f.subjectId} onChange={(e) => onTopic(e.target.value)}>
@@ -230,6 +238,19 @@ function StudyForm({ draft, onClose }: { draft: StudyDraft; onClose: () => void 
               {f.subjectId && <option value={NEW}>+ Novo tópico</option>}
             </select>
           </div>
+          {showAssessment && (
+            <div>
+              <label className="label">Para a avaliação</label>
+              <select className="field" value={f.assessmentId} onChange={(e) => set('assessmentId', e.target.value)}>
+                <option value="">Nenhuma</option>
+                {subjectAssessments.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.name} ({assessmentKindLabel(a.kind).toLowerCase()}, {a.date.slice(8, 10)}/{a.date.slice(5, 7)})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
           <div>
             <label className="label">Material</label>
             <input className="field" value={f.material} onChange={(e) => set('material', e.target.value)} placeholder="Ex.: Aula 01" />

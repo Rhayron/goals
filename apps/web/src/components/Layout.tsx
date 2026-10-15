@@ -27,20 +27,25 @@ import { NoteWidget } from './NoteWidget'
 import { CatWindowArt } from './art'
 import { BRAND_SLUG, TAGLINE } from '../lib/brand'
 import { Avatar, SyncBadge } from './account'
+import { useTermos } from '../lib/modo'
 import { useAuth, useMe } from '../lib/auth'
 
-const NAV = [
-  { to: '/', label: 'Início', icon: Home, end: true },
-  { to: '/planos', label: 'Planos', icon: FolderOpen },
-  { to: '/disciplinas', label: 'Disciplinas', icon: BookOpen },
-  { to: '/edital', label: 'Edital', icon: ListChecks },
-  { to: '/planejamento', label: 'Planejamento', icon: CalendarRange },
-  { to: '/revisoes', label: 'Revisões', icon: RefreshCcw },
-  { to: '/historico', label: 'Histórico', icon: History },
-  { to: '/estatisticas', label: 'Estatísticas', icon: BarChart3 },
-  { to: '/simulados', label: 'Simulados', icon: ClipboardCheck },
-  { to: '/arquivos', label: 'Arquivos', icon: Paperclip },
-]
+/** O menu muda com o tipo do plano ativo: edital vira programa, simulados viram avaliações */
+const useNav = () => {
+  const t = useTermos()
+  return [
+    { to: '/', label: 'Início', icon: Home, end: true },
+    { to: '/planos', label: 'Planos', icon: FolderOpen },
+    { to: '/disciplinas', label: 'Disciplinas', icon: BookOpen },
+    { to: '/edital', label: t.edital, icon: ListChecks },
+    { to: '/planejamento', label: 'Planejamento', icon: CalendarRange },
+    { to: '/revisoes', label: 'Revisões', icon: RefreshCcw },
+    { to: '/historico', label: 'Histórico', icon: History },
+    { to: '/estatisticas', label: 'Estatísticas', icon: BarChart3 },
+    { to: t.rotaAvaliacoes, label: t.avaliacoes, icon: ClipboardCheck },
+    { to: '/arquivos', label: 'Arquivos', icon: Paperclip },
+  ]
+}
 
 export function Logo({ className }: { className?: string }) {
   return (
@@ -60,6 +65,7 @@ export function Logo({ className }: { className?: string }) {
 export function Layout() {
   const { state, setTheme, openTimer, timer } = useStore()
   const [open, setOpen] = useState(false)
+  const nav = useNav()
   const dark = state.theme === 'dark' || (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
   return (
@@ -78,7 +84,7 @@ export function Layout() {
           </button>
         </div>
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
-          {NAV.map(({ to, label, icon: Icon, end }) => (
+          {nav.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}

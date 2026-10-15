@@ -11,7 +11,7 @@ import type { AppState, ID } from './types'
  */
 
 /** Coleções em lista, na ordem pai → filho (é a ordem em que o servidor aplica os upserts) */
-export const LIST_COLLECTIONS = ['categories', 'plans', 'subjects', 'topics', 'studies', 'reviews', 'exams', 'reminders'] as const
+export const LIST_COLLECTIONS = ['categories', 'plans', 'subjects', 'topics', 'assessments', 'studies', 'reviews', 'exams', 'reminders'] as const
 export type ListCollection = (typeof LIST_COLLECTIONS)[number]
 
 export const SETTINGS_KEYS = ['activePlanId', 'theme', 'timerPrefs', 'reviewIntervals', 'note'] as const
@@ -86,9 +86,15 @@ export function sanitizeState(s: AppState): AppState {
   const fixTopic = <T extends { topicId?: ID }>(x: T): T =>
     x.topicId && !topicIds.has(x.topicId) ? { ...x, topicId: undefined } : x
 
+  const assessments = dedupe(s.assessments ?? []).filter((x) => planIds.has(x.planId) && subjectIds.has(x.subjectId))
+  const assessmentIds = new Set(assessments.map((x) => x.id))
+  const fixAssessment = (x: AppState['studies'][number]) =>
+    x.assessmentId && !assessmentIds.has(x.assessmentId) ? { ...x, assessmentId: undefined } : x
+
   const studies = dedupe(s.studies)
     .filter((x) => planIds.has(x.planId) && subjectIds.has(x.subjectId))
     .map(fixTopic)
+    .map(fixAssessment)
   const studyIds = new Set(studies.map((x) => x.id))
   const reviews = dedupe(s.reviews)
     .filter((x) => planIds.has(x.planId) && subjectIds.has(x.subjectId) && studyIds.has(x.studyId))
@@ -111,6 +117,7 @@ export function sanitizeState(s: AppState): AppState {
     reviews,
     plannings,
     exams: dedupe(s.exams).filter((x) => planIds.has(x.planId)),
+    assessments,
     reminders: dedupe(s.reminders),
   }
 }

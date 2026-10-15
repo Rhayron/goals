@@ -1,4 +1,4 @@
-import type { Category, Exam, Plan, Planning, Reminder, Review, Study, Subject, Topic } from '@coado/shared'
+import type { Assessment, Category, Exam, Plan, Planning, Reminder, Review, Study, Subject, Topic } from '@coado/shared'
 
 /*
  * Mapeamento entre as tabelas (snake_case, colunas planas) e os tipos do domínio (camelCase).
@@ -50,6 +50,7 @@ export const plans: Entity<Plan> = {
     ['role', 'text'],
     ['notes', 'text'],
     ['exam_date', 'date'],
+    ['kind', 'text'],
     ['weekly_goal_minutes', 'integer'],
     ['weekly_goal_questions', 'integer'],
     ['created_at', 'timestamptz'],
@@ -62,6 +63,7 @@ export const plans: Entity<Plan> = {
     role: p.role ?? null,
     notes: p.notes ?? null,
     exam_date: p.examDate ?? null,
+    kind: p.kind ?? 'concurso',
     weekly_goal_minutes: p.weeklyGoal.minutes,
     weekly_goal_questions: p.weeklyGoal.questions,
     created_at: p.createdAt,
@@ -74,6 +76,7 @@ export const plans: Entity<Plan> = {
       role: opt(r.role),
       notes: opt(r.notes),
       examDate: opt(r.exam_date),
+      kind: r.kind === 'universidade' ? 'universidade' : undefined,
       weeklyGoal: { minutes: r.weekly_goal_minutes, questions: r.weekly_goal_questions },
       createdAt: iso(r.created_at)!,
     }),
@@ -163,6 +166,7 @@ export const studies: Entity<Study> = {
     ['videos', 'jsonb'],
     ['comment', 'text'],
     ['count_in_planning', 'boolean'],
+    ['assessment_id', 'text'],
     ['created_at', 'timestamptz'],
   ],
   orderBy: 'date, time nulls first, created_at, id',
@@ -182,6 +186,7 @@ export const studies: Entity<Study> = {
     videos: s.videos,
     comment: s.comment,
     count_in_planning: s.countInPlanning,
+    assessment_id: s.assessmentId ?? null,
     created_at: s.createdAt,
   }),
   fromRow: (r) =>
@@ -201,6 +206,7 @@ export const studies: Entity<Study> = {
       videos: r.videos,
       comment: r.comment,
       countInPlanning: r.count_in_planning,
+      assessmentId: opt(r.assessment_id),
       createdAt: iso(r.created_at)!,
     }),
 }
@@ -314,6 +320,58 @@ export const exams: Entity<Exam> = {
   }),
 }
 
+export const assessments: Entity<Assessment> = {
+  table: 'assessments',
+  key: 'id',
+  columns: [
+    ['id', 'text'],
+    ['plan_id', 'text'],
+    ['subject_id', 'text'],
+    ['name', 'text'],
+    ['kind', 'text'],
+    ['date', 'date'],
+    ['time', 'text'],
+    ['weight', 'text'],
+    ['grade', 'double precision'],
+    ['max_grade', 'double precision'],
+    ['done', 'boolean'],
+    ['notes', 'text'],
+    ['created_at', 'timestamptz'],
+  ],
+  orderBy: 'date, time nulls first, id',
+  toRow: (a) => ({
+    id: a.id,
+    plan_id: a.planId,
+    subject_id: a.subjectId,
+    name: a.name,
+    kind: a.kind,
+    date: a.date,
+    time: a.time ?? null,
+    weight: a.weight ?? null,
+    grade: a.grade ?? null,
+    max_grade: a.maxGrade ?? null,
+    done: a.done,
+    notes: a.notes,
+    created_at: a.createdAt,
+  }),
+  fromRow: (r) =>
+    compact({
+      id: r.id,
+      planId: r.plan_id,
+      subjectId: r.subject_id,
+      name: r.name,
+      kind: r.kind,
+      date: r.date,
+      time: opt(r.time),
+      weight: opt(r.weight),
+      grade: opt(r.grade),
+      maxGrade: opt(r.max_grade),
+      done: r.done,
+      notes: r.notes,
+      createdAt: iso(r.created_at)!,
+    }),
+}
+
 export const reminders: Entity<Reminder> = {
   table: 'reminders',
   key: 'id',
@@ -331,7 +389,8 @@ export const reminders: Entity<Reminder> = {
 }
 
 /** Ordem pai → filho: upserts seguem esta ordem, deletes a inversa */
-export const ENTITIES = { categories, plans, subjects, topics, studies, reviews, plannings, exams, reminders }
+export const ENTITIES = { categories, plans, subjects, topics, assessments, studies, reviews, plannings, exams, reminders }
 export type EntityName = keyof typeof ENTITIES
-export const UPSERT_ORDER: EntityName[] = ['categories', 'plans', 'subjects', 'topics', 'studies', 'reviews', 'plannings', 'exams', 'reminders']
-export const DELETE_ORDER: EntityName[] = ['reviews', 'studies', 'exams', 'plannings', 'topics', 'subjects', 'plans', 'categories', 'reminders']
+// avaliações antes dos estudos, que podem apontar para elas
+export const UPSERT_ORDER: EntityName[] = ['categories', 'plans', 'subjects', 'topics', 'assessments', 'studies', 'reviews', 'plannings', 'exams', 'reminders']
+export const DELETE_ORDER: EntityName[] = ['reviews', 'studies', 'assessments', 'exams', 'plannings', 'topics', 'subjects', 'plans', 'categories', 'reminders']

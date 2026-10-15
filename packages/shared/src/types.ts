@@ -3,14 +3,22 @@ export type ID = string
 /** Data no formato YYYY-MM-DD (fuso local) */
 export type DateStr = string
 
+/**
+ * Tipo de plano. `concurso` (o original: edital, uma data de prova, simulados) serve também a certificações;
+ * `universidade` serve a universidade e escola: semestre, programa por disciplina, várias avaliações e entregas.
+ */
+export type PlanKind = 'concurso' | 'universidade'
+
 export interface Plan {
   id: ID
   name: string
   org?: string
   role?: string
   notes?: string
-  /** Data da prova (contagem regressiva na home) */
+  /** Data da prova (contagem regressiva na home). No modo universidade, as datas vêm das avaliações. */
   examDate?: DateStr
+  /** Sem valor = concurso */
+  kind?: PlanKind
   /** Metas semanais */
   weeklyGoal: { minutes: number; questions: number }
   createdAt: string
@@ -78,6 +86,8 @@ export interface Study {
   comment: string
   /** Conta no ciclo/planejamento */
   countInPlanning: boolean
+  /** Avaliação ou entrega a que o estudo serviu (modo universidade) */
+  assessmentId?: ID
   createdAt: string
 }
 
@@ -171,6 +181,28 @@ export interface TimerPrefs {
   sound: boolean
 }
 
+export type AssessmentKind = 'prova' | 'trabalho' | 'lista' | 'apresentacao' | 'outro'
+
+/** Avaliação ou entrega de uma disciplina: várias por disciplina, cada uma com data, peso e nota */
+export interface Assessment {
+  id: ID
+  planId: ID
+  subjectId: ID
+  name: string
+  kind: AssessmentKind
+  date: DateStr
+  /** HH:mm, quando a entrega tem hora */
+  time?: string
+  /** Peso como a disciplina escreve: "30%", "2", "metade da média" */
+  weight?: string
+  grade?: number
+  maxGrade?: number
+  /** Entregue (trabalho) ou feita (prova) */
+  done: boolean
+  notes: string
+  createdAt: string
+}
+
 export interface AppState {
   version: 1
   plans: Plan[]
@@ -182,6 +214,8 @@ export interface AppState {
   reviews: Review[]
   plannings: Record<ID, Planning>
   exams: Exam[]
+  /** Provas, trabalhos e entregas de cada disciplina (modo universidade) */
+  assessments: Assessment[]
   reminders: Reminder[]
   note: string
   theme: 'light' | 'dark' | 'system'

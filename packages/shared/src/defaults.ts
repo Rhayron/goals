@@ -28,6 +28,7 @@ export const emptyState = (): AppState => ({
   reviews: [],
   plannings: {},
   exams: [],
+  assessments: [],
   reminders: [],
   note: '',
   theme: 'system',

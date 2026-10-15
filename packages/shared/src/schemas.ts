@@ -3,6 +3,7 @@ import type {
   AppState,
   Category,
   Exam,
+  Assessment,
   Plan,
   Planning,
   Reminder,
@@ -36,6 +37,7 @@ export const PlanSchema = z.object({
   role: text(300).optional(),
   notes: text(10_000).optional(),
   examDate: DateStrSchema.optional(),
+  kind: z.enum(['concurso', 'universidade']).optional(),
   weeklyGoal: z.object({ minutes: int(0, 7 * 24 * 60), questions: int(0, 1_000_000) }),
   createdAt: Timestamp,
 }) satisfies z.ZodType<Plan>
@@ -81,6 +83,7 @@ export const StudySchema = z.object({
   videos: z.array(z.object({ title: text(300), start: int(0, 7 * DAY), end: int(0, 7 * DAY) })).max(200),
   comment: text(20_000),
   countInPlanning: z.boolean(),
+  assessmentId: IdSchema.optional(),
   createdAt: Timestamp,
 }) satisfies z.ZodType<Study>
 
@@ -143,6 +146,22 @@ export const ReminderSchema = z.object({
   createdAt: Timestamp,
 }) satisfies z.ZodType<Reminder>
 
+export const AssessmentSchema = z.object({
+  id: IdSchema,
+  planId: IdSchema,
+  subjectId: IdSchema,
+  name: text(300),
+  kind: z.enum(['prova', 'trabalho', 'lista', 'apresentacao', 'outro']),
+  date: DateStrSchema,
+  time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  weight: text(60).optional(),
+  grade: num(0, 1000).optional(),
+  maxGrade: num(0, 1000).optional(),
+  done: z.boolean(),
+  notes: text(10_000),
+  createdAt: Timestamp,
+}) satisfies z.ZodType<Assessment>
+
 export const ThemeSchema = z.enum(['light', 'dark', 'system'])
 
 export const TimerPrefsSchema = z.object({
@@ -176,6 +195,7 @@ export const AppStateSchema = z.object({
   reviews: z.array(ReviewSchema).max(MAX_ROWS * 10),
   plannings: z.record(IdSchema, PlanningSchema),
   exams: z.array(ExamSchema).max(MAX_ROWS),
+  assessments: z.array(AssessmentSchema).max(MAX_ROWS).default([]),
   reminders: z.array(ReminderSchema).max(MAX_ROWS),
   note: text(100_000),
   theme: ThemeSchema,
@@ -197,6 +217,7 @@ export const SyncRequestSchema = z.object({
       reviews: z.array(ReviewSchema).max(MAX_ROWS),
       plannings: z.array(PlanningSchema).max(1000),
       exams: z.array(ExamSchema).max(MAX_ROWS),
+      assessments: z.array(AssessmentSchema).max(MAX_ROWS),
       reminders: z.array(ReminderSchema).max(MAX_ROWS),
     })
     .partial()
@@ -212,6 +233,7 @@ export const SyncRequestSchema = z.object({
       /** ids de plano */
       plannings: ids,
       exams: ids,
+      assessments: ids,
       reminders: ids,
     })
     .partial()
