@@ -72,8 +72,8 @@ import br.app.coado.shared.model.fmtMinutes
 import br.app.coado.shared.timer.Phase
 import br.app.coado.shared.timer.TimerState
 import br.app.coado.shared.timer.label
-import br.app.coado.shared.ui.Coffee
-import br.app.coado.shared.ui.CupArt
+import br.app.coado.shared.ui.Cores
+import br.app.coado.shared.ui.StudyArt
 import br.app.coado.shared.ui.ProgressRing
 import br.app.coado.shared.ui.RoundDots
 import br.app.coado.shared.ui.parseColor
@@ -134,8 +134,8 @@ fun PomodoroFlow(
 @Composable
 private fun TopBar(title: String, onClose: () -> Unit, trailing: @Composable () -> Unit = {}) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onClose) { Icon(painterResource(R.drawable.ic_close), "Fechar", tint = Coffee.Muted) }
-        Text(title, style = MaterialTheme.typography.titleLarge, color = Coffee.Ink, modifier = Modifier.weight(1f))
+        IconButton(onClick = onClose) { Icon(painterResource(R.drawable.ic_close), "Fechar", tint = Cores.Muted) }
+        Text(title, style = MaterialTheme.typography.titleLarge, color = Cores.Ink, modifier = Modifier.weight(1f))
         trailing()
     }
 }
@@ -157,7 +157,7 @@ private fun PickPane(
         TopBar("Pomodoro", onClose)
         if (view.plan == null) {
             Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Text("Crie um plano de estudos no site para começar.", color = Coffee.Muted, textAlign = TextAlign.Center, modifier = Modifier.padding(32.dp))
+                Text("Crie um plano de estudos no site para começar.", color = Cores.Muted, textAlign = TextAlign.Center, modifier = Modifier.padding(32.dp))
             }
             return@Column
         }
@@ -189,7 +189,7 @@ private fun PickPane(
             onClick = { subject?.let { onStart(it, view.cycle.firstOrNull { c -> !c.done && c.subjectId == it.id }?.id, category) } },
             enabled = subject != null,
             shape = RoundedCornerShape(16.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = Coffee.Brand600, contentColor = Coffee.Brand50, disabledContainerColor = Coffee.Surface2, disabledContentColor = Coffee.Muted),
+            colors = ButtonDefaults.buttonColors(containerColor = Cores.Brand600, contentColor = Cores.Brand50, disabledContainerColor = Cores.Surface2, disabledContentColor = Cores.Muted),
             modifier = Modifier.fillMaxWidth().padding(16.dp).height(54.dp),
         ) {
             Icon(painterResource(R.drawable.ic_play), null, modifier = Modifier.size(18.dp))
@@ -205,13 +205,13 @@ private fun ModeChip(text: String, selected: Boolean, onClick: () -> Unit) {
         selected = selected,
         onClick = onClick,
         label = { Text(text) },
-        colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Coffee.Brand700, selectedLabelColor = Coffee.Brand50, labelColor = Coffee.Muted, containerColor = Coffee.Surface2),
+        colors = FilterChipDefaults.filterChipColors(selectedContainerColor = Cores.Brand700, selectedLabelColor = Cores.Brand50, labelColor = Cores.Muted, containerColor = Cores.Surface2),
     )
 }
 
 @Composable
 private fun SectionLabel(text: String) {
-    Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, color = Coffee.Muted, modifier = Modifier.padding(top = 8.dp, bottom = 2.dp))
+    Text(text.uppercase(), style = MaterialTheme.typography.labelSmall, color = Cores.Muted, modifier = Modifier.padding(top = 8.dp, bottom = 2.dp))
 }
 
 @Composable
@@ -221,19 +221,19 @@ private fun SubjectRow(subject: SubjectLite, detail: String?, progress: Float?, 
         Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
-            .background(if (selected) Coffee.Surface2 else Coffee.Surface)
-            .border(1.dp, if (selected) Coffee.Brand500 else Coffee.Line, RoundedCornerShape(16.dp))
+            .background(if (selected) Cores.Surface2 else Cores.Surface)
+            .border(1.dp, if (selected) Cores.Brand500 else Cores.Line, RoundedCornerShape(16.dp))
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Box(Modifier.size(12.dp).clip(CircleShape).background(color))
-            Text(subject.name, style = MaterialTheme.typography.titleSmall, color = Coffee.Ink, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-            if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, color = Coffee.Muted)
+            Text(subject.name, style = MaterialTheme.typography.titleSmall, color = Cores.Ink, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (detail != null) Text(detail, style = MaterialTheme.typography.bodySmall, color = Cores.Muted)
         }
         if (progress != null) {
-            Box(Modifier.fillMaxWidth().height(5.dp).clip(CircleShape).background(Coffee.Line)) {
+            Box(Modifier.fillMaxWidth().height(5.dp).clip(CircleShape).background(Cores.Line)) {
                 Box(Modifier.fillMaxWidth(progress).height(5.dp).clip(CircleShape).background(color))
             }
         }
@@ -253,7 +253,7 @@ private fun SessionPane(state: TimerState, animate: Boolean, onToggle: () -> Uni
     }
     val subjectColor = parseColor(state.subjectColor)
     val isBreak = state.isBreak
-    val ringColor = if (isBreak) Coffee.Ok else subjectColor
+    val ringColor = if (isBreak) Cores.Ok else subjectColor
     val progress = if (state.mode == Mode.FREE) 0f else state.progress(now)
     val display = if (state.mode == Mode.FREE) fmtClock(state.elapsedMs(now)) else fmtClock(state.remainingMs(now))
 
@@ -261,49 +261,49 @@ private fun SessionPane(state: TimerState, animate: Boolean, onToggle: () -> Uni
         TopBar(if (state.mode == Mode.FREE) "Cronômetro" else "Pomodoro", onClose)
         Spacer(Modifier.weight(1f))
         Box(Modifier.size(280.dp), contentAlignment = Alignment.Center) {
-            ProgressRing(Modifier.fillMaxSize(), progress = progress, color = ringColor, track = Coffee.Line, stroke = 10.dp)
+            ProgressRing(Modifier.fillMaxSize(), progress = progress, color = ringColor, track = Cores.Line, stroke = 10.dp)
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(30.dp)) {
-                CupArt(
+                StudyArt(
                     Modifier.size(84.dp),
                     level = if (isBreak || state.mode == Mode.FREE) 1f else progress,
-                    steaming = isBreak || state.mode == Mode.FREE,
-                    brewing = !isBreak && state.mode == Mode.POMODORO && state.running,
+                    resting = isBreak || state.mode == Mode.FREE,
+                    flowing = !isBreak && state.mode == Mode.POMODORO && state.running,
                     animate = animate && state.running,
-                    liquid = subjectColor,
+                    sand = subjectColor,
                 )
                 AnimatedContent(
                     targetState = if (state.mode == Mode.FREE) "Livre" else state.phase.label,
                     transitionSpec = { (fadeIn(tween(220)) + scaleIn(tween(220), initialScale = 0.7f)) togetherWith fadeOut(tween(120)) },
                     label = "etapa",
                 ) { label ->
-                    Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = if (isBreak) Coffee.Ok else Coffee.Brand300)
+                    Text(label.uppercase(), style = MaterialTheme.typography.labelSmall, color = if (isBreak) Cores.Ok else Cores.Brand300)
                 }
-                Text(display, style = MaterialTheme.typography.displayLarge.copy(fontSize = if (display.length > 5) 50.sp else 64.sp), color = if (state.running) Coffee.Ink else Coffee.Muted)
+                Text(display, style = MaterialTheme.typography.displayLarge.copy(fontSize = if (display.length > 5) 50.sp else 64.sp), color = if (state.running) Cores.Ink else Cores.Muted)
                 if (state.mode == Mode.POMODORO) RoundDots(state.round, state.rounds, subjectColor, dot = 8.dp)
             }
         }
         Spacer(Modifier.height(16.dp))
-        Text(state.subjectName, style = MaterialTheme.typography.titleMedium, color = Coffee.Ink, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
+        Text(state.subjectName, style = MaterialTheme.typography.titleMedium, color = Cores.Ink, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 32.dp))
         Text(
             if (state.mode == Mode.POMODORO) "Sessão ${state.round} de ${state.rounds} · estudado ${fmtDuration((state.studiedMs(now) / 1000).toInt())}" else "estudado ${fmtDuration((state.studiedMs(now) / 1000).toInt())}",
             style = MaterialTheme.typography.bodyMedium,
-            color = Coffee.Muted,
+            color = Cores.Muted,
         )
         if (state.mode == Mode.POMODORO) {
             Row(Modifier.padding(top = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 for (p in Phase.entries) {
                     val on = p == state.phase
                     Box(
-                        Modifier.clip(CircleShape).background(if (on) Coffee.Brand600 else Color.Transparent).border(1.dp, if (on) Coffee.Brand500 else Coffee.Line, CircleShape).padding(horizontal = 14.dp, vertical = 5.dp),
-                    ) { Text(p.label, style = MaterialTheme.typography.labelMedium, color = if (on) Coffee.Brand50 else Coffee.Muted) }
+                        Modifier.clip(CircleShape).background(if (on) Cores.Brand600 else Color.Transparent).border(1.dp, if (on) Cores.Brand500 else Cores.Line, CircleShape).padding(horizontal = 14.dp, vertical = 5.dp),
+                    ) { Text(p.label, style = MaterialTheme.typography.labelMedium, color = if (on) Cores.Brand50 else Cores.Muted) }
                 }
             }
         }
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(18.dp), verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 36.dp)) {
-            CircleButton(R.drawable.ic_stop, "Finalizar e registrar", onFinish, size = 56.dp, color = Coffee.Brand600, tint = Coffee.Brand50)
-            CircleButton(if (state.running) R.drawable.ic_pause else R.drawable.ic_play, if (state.running) "Pausar" else "Continuar", onToggle, size = 72.dp, color = Coffee.Brand100, tint = Coffee.Bg)
-            CircleButton(R.drawable.ic_skip, "Pular etapa", onSkip, size = 56.dp, color = Color.Transparent, tint = Coffee.Ink, border = true, enabled = state.mode == Mode.POMODORO)
+            CircleButton(R.drawable.ic_stop, "Finalizar e registrar", onFinish, size = 56.dp, color = Cores.Brand600, tint = Cores.Brand50)
+            CircleButton(if (state.running) R.drawable.ic_pause else R.drawable.ic_play, if (state.running) "Pausar" else "Continuar", onToggle, size = 72.dp, color = Cores.Brand100, tint = Cores.Bg)
+            CircleButton(R.drawable.ic_skip, "Pular etapa", onSkip, size = 56.dp, color = Color.Transparent, tint = Cores.Ink, border = true, enabled = state.mode == Mode.POMODORO)
         }
     }
 }
@@ -317,7 +317,7 @@ private fun CircleButton(icon: Int, label: String, onClick: () -> Unit, size: an
             .alpha(if (enabled) 1f else 0.4f)
             .clip(CircleShape)
             .background(color)
-            .then(if (border) Modifier.border(1.dp, Coffee.Line, CircleShape) else Modifier)
+            .then(if (border) Modifier.border(1.dp, Cores.Line, CircleShape) else Modifier)
             .clickable(enabled = enabled, onClickLabel = label, onClick = onClick),
     ) { Icon(painterResource(icon), label, tint = tint, modifier = Modifier.size(size * 0.42f)) }
 }
@@ -335,13 +335,13 @@ private fun RegisterPane(draft: Draft, view: Overview, onSave: (String, Int, Int
 
     Column(Modifier.fillMaxSize().systemBarsPadding().verticalScroll(rememberScrollState()).padding(bottom = 24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         TopBar("Registrar estudo", onClose = { confirmDiscard = true })
-        CupArt(Modifier.size(90.dp), level = 1f, steaming = true, liquid = color)
-        Text(fmtDuration(draft.seconds), style = MaterialTheme.typography.headlineMedium, color = Coffee.Ink)
+        StudyArt(Modifier.size(90.dp), level = 1f, resting = true, sand = color)
+        Text(fmtDuration(draft.seconds), style = MaterialTheme.typography.headlineMedium, color = Cores.Ink)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Box(Modifier.size(10.dp).clip(CircleShape).background(color))
-            Text(draft.subjectName, style = MaterialTheme.typography.titleMedium, color = Coffee.Ink)
+            Text(draft.subjectName, style = MaterialTheme.typography.titleMedium, color = Cores.Ink)
         }
-        Text("${Dates.fmtDate(Dates.dateOf(draft.startedAt))} · ${Dates.timeOf(draft.startedAt)}" + if (draft.rounds > 0) " · ${draft.rounds} ${if (draft.rounds == 1) "pomodoro" else "pomodoros"}" else "", style = MaterialTheme.typography.bodySmall, color = Coffee.Muted)
+        Text("${Dates.fmtDate(Dates.dateOf(draft.startedAt))} · ${Dates.timeOf(draft.startedAt)}" + if (draft.rounds > 0) " · ${draft.rounds} ${if (draft.rounds == 1) "pomodoro" else "pomodoros"}" else "", style = MaterialTheme.typography.bodySmall, color = Cores.Muted)
 
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SectionLabel("Categoria")
@@ -358,17 +358,17 @@ private fun RegisterPane(draft: Draft, view: Overview, onSave: (String, Int, Int
             Button(
                 onClick = { onSave(category, hits, misses, counts, reviews) },
                 shape = RoundedCornerShape(16.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Coffee.Brand600, contentColor = Coffee.Brand50),
+                colors = ButtonDefaults.buttonColors(containerColor = Cores.Brand600, contentColor = Cores.Brand50),
                 modifier = Modifier.fillMaxWidth().height(54.dp),
             ) { Text("Salvar estudo", style = MaterialTheme.typography.labelLarge) }
             if (confirmDiscard) {
-                Text("Descartar o tempo em andamento?", color = Coffee.Muted, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+                Text("Descartar o tempo em andamento?", color = Cores.Muted, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = { confirmDiscard = false }, modifier = Modifier.weight(1f)) { Text("Voltar") }
-                    Button(onClick = onDiscard, colors = ButtonDefaults.buttonColors(containerColor = Coffee.Bad, contentColor = Coffee.Bg), modifier = Modifier.weight(1f)) { Text("Descartar") }
+                    Button(onClick = onDiscard, colors = ButtonDefaults.buttonColors(containerColor = Cores.Bad, contentColor = Cores.Bg), modifier = Modifier.weight(1f)) { Text("Descartar") }
                 }
             } else {
-                TextButton(onClick = { confirmDiscard = true }, modifier = Modifier.fillMaxWidth()) { Text("Descartar", color = Coffee.Bad) }
+                TextButton(onClick = { confirmDiscard = true }, modifier = Modifier.fillMaxWidth()) { Text("Descartar", color = Cores.Bad) }
             }
         }
     }
@@ -376,20 +376,20 @@ private fun RegisterPane(draft: Draft, view: Overview, onSave: (String, Int, Int
 
 @Composable
 private fun Counter(label: String, value: Int, modifier: Modifier = Modifier, onChange: (Int) -> Unit) {
-    Column(modifier.clip(RoundedCornerShape(16.dp)).background(Coffee.Surface).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(label, style = MaterialTheme.typography.labelMedium, color = Coffee.Muted)
+    Column(modifier.clip(RoundedCornerShape(16.dp)).background(Cores.Surface).padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = Cores.Muted)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            CircleButton(R.drawable.ic_remove, "menos", { onChange((value - 1).coerceAtLeast(0)) }, size = 36.dp, color = Coffee.Surface2, tint = Coffee.Ink, enabled = value > 0)
-            Text(value.toString(), style = MaterialTheme.typography.headlineSmall, color = Coffee.Ink)
-            CircleButton(R.drawable.ic_add, "mais", { onChange(value + 1) }, size = 36.dp, color = Coffee.Surface2, tint = Coffee.Ink)
+            CircleButton(R.drawable.ic_remove, "menos", { onChange((value - 1).coerceAtLeast(0)) }, size = 36.dp, color = Cores.Surface2, tint = Cores.Ink, enabled = value > 0)
+            Text(value.toString(), style = MaterialTheme.typography.headlineSmall, color = Cores.Ink)
+            CircleButton(R.drawable.ic_add, "mais", { onChange(value + 1) }, size = 36.dp, color = Cores.Surface2, tint = Cores.Ink)
         }
     }
 }
 
 @Composable
 private fun SwitchRow(label: String, checked: Boolean, enabled: Boolean = true, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Coffee.Surface).padding(horizontal = 14.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(label, style = MaterialTheme.typography.bodyMedium, color = if (enabled) Coffee.Ink else Coffee.Muted, modifier = Modifier.weight(1f))
+    Row(Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Cores.Surface).padding(horizontal = 14.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = if (enabled) Cores.Ink else Cores.Muted, modifier = Modifier.weight(1f))
         Switch(checked = checked, onCheckedChange = onChange, enabled = enabled)
     }
 }
@@ -397,10 +397,10 @@ private fun SwitchRow(label: String, checked: Boolean, enabled: Boolean = true, 
 @Composable
 private fun SavedPane(view: Overview, onDone: () -> Unit) {
     Column(Modifier.fillMaxSize().systemBarsPadding().padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
-        CupArt(Modifier.size(140.dp), level = 1f, steaming = true)
-        Text("Mais um café coado ☕", style = MaterialTheme.typography.headlineSmall, color = Coffee.Ink, textAlign = TextAlign.Center)
-        Text("hoje: ${fmtDuration(view.todayTotals.seconds)}" + (view.constancy.current.takeIf { it > 1 }?.let { " · $it dias seguidos" } ?: ""), style = MaterialTheme.typography.bodyMedium, color = Coffee.Muted, modifier = Modifier.padding(top = 6.dp))
+        StudyArt(Modifier.size(140.dp), level = 1f, resting = true)
+        Text("Estudo registrado", style = MaterialTheme.typography.headlineSmall, color = Cores.Ink, textAlign = TextAlign.Center)
+        Text("hoje: ${fmtDuration(view.todayTotals.seconds)}" + (view.constancy.current.takeIf { it > 1 }?.let { " · $it dias seguidos" } ?: ""), style = MaterialTheme.typography.bodyMedium, color = Cores.Muted, modifier = Modifier.padding(top = 6.dp))
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onDone, shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = Coffee.Brand600, contentColor = Coffee.Brand50)) { Text("Voltar ao Coado") }
+        Button(onClick = onDone, shape = RoundedCornerShape(16.dp), colors = ButtonDefaults.buttonColors(containerColor = Cores.Brand600, contentColor = Cores.Brand50)) { Text("Voltar ao Coado") }
     }
 }

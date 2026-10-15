@@ -31,10 +31,10 @@ import kotlinx.coroutines.withContext
 class TimerEngine(private val app: CoadoCore) {
     val state: StateFlow<TimerState> get() = app.store.timer
 
-    suspend fun start(subject: SubjectLite, cycleItemId: String?, mode: Mode, categoryId: String = "teoria", topicId: String? = null) {
+    suspend fun start(subject: SubjectLite, cycleItemId: String?, mode: Mode, categoryId: String = "teoria", topicId: String? = null, assessmentId: String? = null) {
         app.store.awaitLoaded()
         val now = System.currentTimeMillis()
-        val next = TimerState.begin(now, app.store.effectivePrefs(), mode, subject.id, subject.name, subject.color, cycleItemId, categoryId, topicId)
+        val next = TimerState.begin(now, app.store.effectivePrefs(), mode, subject.id, subject.name, subject.color, cycleItemId, categoryId, topicId, assessmentId)
         apply(next)
         haptic(TICK)
     }
@@ -92,6 +92,7 @@ class TimerEngine(private val app: CoadoCore) {
                 topicId = s.topicId,
                 mode = s.mode,
                 rounds = if (s.phase == Phase.STUDY && s.mode == Mode.POMODORO) s.round - 1 else s.round,
+                assessmentId = s.assessmentId,
             )
         } else null
         app.store.setDraft(draft)
@@ -109,7 +110,15 @@ class TimerEngine(private val app: CoadoCore) {
      * Grava o estudo da sessão encerrada, como o formulário do site: revisões opcionais nos
      * intervalos da conta. Fica pendente até a sincronização.
      */
-    suspend fun register(draft: Draft, categoryId: String, hits: Int, misses: Int, countInPlanning: Boolean, scheduleReviews: Boolean) {
+    suspend fun register(
+        draft: Draft,
+        categoryId: String,
+        hits: Int,
+        misses: Int,
+        countInPlanning: Boolean,
+        scheduleReviews: Boolean,
+        assessmentId: String? = draft.assessmentId,
+    ) {
         val snapshot = app.store.snapshot.value
         val planId = snapshot?.plan?.id ?: throw IllegalStateException("Sem plano ativo.")
         val id = uid()
@@ -119,6 +128,7 @@ class TimerEngine(private val app: CoadoCore) {
             planId = planId,
             subjectId = draft.subjectId,
             topicId = draft.topicId,
+            assessmentId = assessmentId,
             categoryId = categoryId,
             date = date,
             time = Dates.timeOf(draft.startedAt),

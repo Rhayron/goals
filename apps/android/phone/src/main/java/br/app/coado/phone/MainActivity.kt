@@ -1,5 +1,6 @@
 package br.app.coado.phone
 
+import br.app.coado.shared.ui.Cores
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -141,6 +142,7 @@ class MainActivity : ComponentActivity() {
             }
         },
         onSignIn = { googleSignIn() },
+        onPalette = { id -> Cores.escolher(this, id) },
     )
 
     private fun chooseFile(callback: ValueCallback<Array<Uri>>, params: WebChromeClient.FileChooserParams): Boolean {
@@ -163,7 +165,7 @@ class MainActivity : ComponentActivity() {
                 app.store.awaitLoaded()
                 config.value = app.api.authConfig(app.server)
             } catch (e: ApiException) {
-                configError.value = if (e.offline) "O café esfriou no caminho: sem conexão com ${app.server}." else e.message
+                configError.value = if (e.offline) "Sem conexão com ${app.server}." else e.message
             } catch (e: Exception) {
                 configError.value = e.message
             }

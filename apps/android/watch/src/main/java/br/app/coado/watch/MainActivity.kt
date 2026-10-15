@@ -23,7 +23,7 @@ import br.app.coado.watch.ui.InputField
 import kotlinx.coroutines.launch
 
 /**
- * O Coado no pulso. Tudo que é texto (código de pareamento, servidor) entra pelo teclado do
+ * O app no pulso. Tudo que é texto (código de pareamento, servidor) entra pelo teclado do
  * sistema ou pelo adb, para não digitar no relógio:
  *   adb shell am start -n br.app.coado/br.app.coado.watch.MainActivity --es servidor http://10.0.2.2:5173 --es codigo 123456
  */

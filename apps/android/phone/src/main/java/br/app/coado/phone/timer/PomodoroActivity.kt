@@ -27,7 +27,7 @@ import kotlinx.serialization.Serializable
 data class TimerRequest(val subjectId: String? = null, val topicId: String? = null, val categoryId: String? = null)
 
 /**
- * O pomodoro nativo do celular, sempre na madrugada de lofi como a tela do site. Abre pelo site
+ * O pomodoro nativo do celular, sempre no modo noturno como a tela do site. Abre pelo site
  * (botão de iniciar estudo), pela notificação da sessão ou pelo atalho; ao registrar, o estudo
  * sobe para a conta e vai para o relógio.
  */

@@ -9,53 +9,53 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
-import br.app.coado.shared.ui.Coffee
+import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.Fraunces
 import br.app.coado.shared.ui.Nunito
 
-/** O tema do site no celular: a tarde na cafeteria de dia, a madrugada de lofi à noite */
-private val Dark = darkColorScheme(
-    primary = Coffee.Brand300,
-    onPrimary = Coffee.Bg,
-    primaryContainer = Coffee.Brand700,
-    onPrimaryContainer = Coffee.Brand100,
-    secondary = Coffee.Ok,
-    onSecondary = Coffee.Bg,
-    tertiary = Coffee.Warn,
-    background = Coffee.Bg,
-    onBackground = Coffee.Ink,
-    surface = Coffee.Surface,
-    onSurface = Coffee.Ink,
-    surfaceVariant = Coffee.Surface2,
-    onSurfaceVariant = Coffee.Muted,
-    surfaceContainer = Coffee.Surface2,
-    surfaceContainerHigh = Coffee.Line,
-    outline = Coffee.Line,
-    outlineVariant = Coffee.Kraft,
-    error = Coffee.Bad,
-    onError = Coffee.Bg,
+/** O tema do site no celular: a paleta escolhida, clara de dia e noturna à noite. Funções, não vals: acompanham a troca de paleta */
+private fun dark() = darkColorScheme(
+    primary = Cores.Brand300,
+    onPrimary = Cores.Bg,
+    primaryContainer = Cores.Brand700,
+    onPrimaryContainer = Cores.Brand100,
+    secondary = Cores.Ok,
+    onSecondary = Cores.Bg,
+    tertiary = Cores.Warn,
+    background = Cores.Bg,
+    onBackground = Cores.Ink,
+    surface = Cores.Surface,
+    onSurface = Cores.Ink,
+    surfaceVariant = Cores.Surface2,
+    onSurfaceVariant = Cores.Muted,
+    surfaceContainer = Cores.Surface2,
+    surfaceContainerHigh = Cores.Line,
+    outline = Cores.Line,
+    outlineVariant = Cores.Kraft,
+    error = Cores.Bad,
+    onError = Cores.Bg,
 )
 
-private val Light = lightColorScheme(
-    primary = Coffee.Brand600,
-    onPrimary = Coffee.Brand50,
-    primaryContainer = Coffee.Brand100,
-    onPrimaryContainer = Coffee.Brand800,
-    secondary = Coffee.Light.Ok,
-    onSecondary = Coffee.Brand50,
-    tertiary = Coffee.Light.Warn,
-    background = Coffee.Light.Bg,
-    onBackground = Coffee.Light.Ink,
-    surface = Coffee.Light.Surface,
-    onSurface = Coffee.Light.Ink,
-    surfaceVariant = Coffee.Light.Surface2,
-    onSurfaceVariant = Coffee.Light.Muted,
-    surfaceContainer = Coffee.Light.Surface2,
-    surfaceContainerHigh = Coffee.Light.Line,
-    outline = Coffee.Light.Line,
-    outlineVariant = Coffee.Light.Line,
-    error = Coffee.Light.Bad,
-    onError = Coffee.Brand50,
+private fun light() = lightColorScheme(
+    primary = Cores.Brand600,
+    onPrimary = Cores.Brand50,
+    primaryContainer = Cores.Brand100,
+    onPrimaryContainer = Cores.Brand800,
+    secondary = Cores.Light.Ok,
+    onSecondary = Cores.Brand50,
+    tertiary = Cores.Light.Warn,
+    background = Cores.Light.Bg,
+    onBackground = Cores.Light.Ink,
+    surface = Cores.Light.Surface,
+    onSurface = Cores.Light.Ink,
+    surfaceVariant = Cores.Light.Surface2,
+    onSurfaceVariant = Cores.Light.Muted,
+    surfaceContainer = Cores.Light.Surface2,
+    surfaceContainerHigh = Cores.Light.Line,
+    outline = Cores.Light.Line,
+    outlineVariant = Cores.Light.Line,
+    error = Cores.Light.Bad,
+    onError = Cores.Brand50,
 )
 
 private val PhoneTypography = Typography(
@@ -75,5 +75,5 @@ private val PhoneTypography = Typography(
 
 @Composable
 fun PhoneTheme(dark: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = if (dark) Dark else Light, typography = PhoneTypography, content = content)
+    MaterialTheme(colorScheme = if (dark) dark() else light(), typography = PhoneTypography, content = content)
 }

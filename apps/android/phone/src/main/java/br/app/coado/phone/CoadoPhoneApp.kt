@@ -19,7 +19,7 @@ import br.app.coado.shared.model.TimerPrefs
 import br.app.coado.shared.model.json
 import br.app.coado.shared.timer.TimerReceiver
 import br.app.coado.shared.timer.TimerState
-import br.app.coado.shared.ui.Coffee
+import br.app.coado.shared.ui.Cores
 import androidx.compose.ui.graphics.toArgb
 import kotlinx.serialization.encodeToString
 
@@ -39,7 +39,7 @@ class CoadoPhoneApp : CoadoCore() {
     override fun timerIntent(): Intent = Intent(this, PomodoroActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
     override fun decorateTimerNotification(builder: NotificationCompat.Builder, state: TimerState, now: Long) {
-        builder.setColor(Coffee.Brand600.toArgb())
+        builder.setColor(Cores.Brand600.toArgb())
         builder.addAction(
             if (state.running) R.drawable.ic_pause else R.drawable.ic_play,
             getString(if (state.running) R.string.timer_pause else R.string.timer_resume),

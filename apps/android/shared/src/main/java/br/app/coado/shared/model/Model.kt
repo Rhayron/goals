@@ -29,7 +29,27 @@ data class TimerPrefs(
 data class WeeklyGoal(val minutes: Int = 0, val questions: Int = 0)
 
 @Serializable
-data class PlanLite(val id: String, val name: String, val examDate: String? = null, val weeklyGoal: WeeklyGoal = WeeklyGoal())
+data class PlanLite(
+    val id: String,
+    val name: String,
+    val examDate: String? = null,
+    /** "universidade" ou ausente (concurso) */
+    val kind: String? = null,
+    val weeklyGoal: WeeklyGoal = WeeklyGoal(),
+)
+
+/** Avaliação pendente (modo universidade): prova, trabalho, lista */
+@Serializable
+data class WatchAssessment(
+    val id: String,
+    val subjectId: String,
+    val name: String,
+    val kind: String = "prova",
+    /** YYYY-MM-DD */
+    val date: String,
+    /** HH:mm */
+    val time: String? = null,
+)
 
 @Serializable
 data class SubjectLite(val id: String, val name: String, val color: String)
@@ -65,6 +85,7 @@ data class WatchStudy(
     val hits: Int = 0,
     val misses: Int = 0,
     val countInPlanning: Boolean = true,
+    val assessmentId: String? = null,
 )
 
 /** GET /api/watch/snapshot */
@@ -81,6 +102,8 @@ data class Snapshot(
     val studies: List<WatchStudy> = emptyList(),
     val studiedDates: List<String> = emptyList(),
     val reviewsDue: Int = 0,
+    /** avaliações ainda não feitas, atrasadas primeiro */
+    val assessments: List<WatchAssessment> = emptyList(),
     /** quando este recorte foi baixado (ms; só nos aparelhos) */
     val fetchedAt: Long = 0,
 )
@@ -98,6 +121,8 @@ data class Study(
     val planId: String,
     val subjectId: String,
     val topicId: String? = null,
+    /** a avaliação a que o estudo serviu (modo universidade) */
+    val assessmentId: String? = null,
     val categoryId: String,
     val date: String,
     val time: String? = null,
@@ -111,7 +136,7 @@ data class Study(
     val countInPlanning: Boolean = true,
     val createdAt: String,
 ) {
-    fun lite() = WatchStudy(id, subjectId, topicId, categoryId, date, time, duration, hits, misses, countInPlanning)
+    fun lite() = WatchStudy(id, subjectId, topicId, categoryId, date, time, duration, hits, misses, countInPlanning, assessmentId)
 }
 
 @Serializable
@@ -178,6 +203,8 @@ data class Draft(
     val topicId: String? = null,
     val mode: Mode = Mode.POMODORO,
     val rounds: Int = 0,
+    /** a avaliação escolhida ao começar (modo universidade) */
+    val assessmentId: String? = null,
 )
 
 /** Ajustes que ficam só no aparelho */
@@ -194,7 +221,7 @@ data class LocalPrefs(
     /** ao fim de uma etapa, a seguinte começa sozinha */
     val autoContinue: Boolean = true,
     val vibrate: Boolean = true,
-    /** vapor, gotejar e transições; desligado, só o essencial */
+    /** ampulheta animada e transições; desligado, só o essencial */
     val animations: Boolean = true,
     val mode: Mode = Mode.POMODORO,
     /** durações editadas aqui e ainda não confirmadas pelo servidor */

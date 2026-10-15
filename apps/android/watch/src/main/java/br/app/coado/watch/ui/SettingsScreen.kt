@@ -1,5 +1,9 @@
 package br.app.coado.watch.ui
 
+import br.app.coado.shared.ui.PALETAS
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import br.app.coado.shared.Marca
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -22,14 +26,15 @@ import br.app.coado.shared.model.LocalPrefs
 import br.app.coado.shared.model.Overview
 import br.app.coado.shared.model.TimerPrefs
 import br.app.coado.shared.model.Transport
-import br.app.coado.shared.ui.Coffee
+import br.app.coado.shared.ui.Cores
 import br.app.coado.watch.BuildConfig
 import br.app.coado.watch.CoadoWatchApp
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Date
 
-/** Durações do pomodoro (sincronizadas com a conta), avisos, animações e a conexão */
+/** Durações do pomodoro (sincronizadas com a conta), avisos, animações, tema e a conexão */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SettingsScreen(
     app: CoadoWatchApp,
@@ -57,11 +62,22 @@ fun SettingsScreen(
         item { StepperRow("Pausa curta (min)", "${timer.pomodoroShort}", { setTimer { it.copy(pomodoroShort = (it.pomodoroShort - 1).coerceAtLeast(1)) } }, { setTimer { it.copy(pomodoroShort = (it.pomodoroShort + 1).coerceAtMost(60)) } }, timer.pomodoroShort > 1, timer.pomodoroShort < 60) }
         item { StepperRow("Pausa longa (min)", "${timer.pomodoroLong}", { setTimer { it.copy(pomodoroLong = (it.pomodoroLong - 5).coerceAtLeast(5)) } }, { setTimer { it.copy(pomodoroLong = (it.pomodoroLong + 5).coerceAtMost(120)) } }, timer.pomodoroLong > 5, timer.pomodoroLong < 120) }
         item { StepperRow("Rodadas até a longa", "${timer.pomodoroRounds}", { setTimer { it.copy(pomodoroRounds = (it.pomodoroRounds - 1).coerceAtLeast(1)) } }, { setTimer { it.copy(pomodoroRounds = (it.pomodoroRounds + 1).coerceAtMost(12)) } }, timer.pomodoroRounds > 1, timer.pomodoroRounds < 12) }
-        if (prefs.prefsDirty) note("durações ainda não enviadas à conta", color = Coffee.Warn)
+        if (prefs.prefsDirty) note("durações ainda não enviadas à conta", color = Cores.Warn)
         item { ToggleRow("Continuar sozinho", prefs.autoContinue, { v -> setPrefs { it.copy(autoContinue = v) } }, subtitle = "a etapa seguinte começa ao fim da anterior") }
         item { ToggleRow("Vibrar", prefs.vibrate, { v -> setPrefs { it.copy(vibrate = v) } }) }
         item { ToggleRow("Som ao terminar", timer.sound, { v -> setTimer { it.copy(sound = v) } }) }
-        item { ToggleRow("Animações", prefs.animations, { v -> setPrefs { it.copy(animations = v) } }, subtitle = "vapor e café pingando; desligue para poupar bateria") }
+        item { ToggleRow("Animações", prefs.animations, { v -> setPrefs { it.copy(animations = v) } }, subtitle = "a ampulheta e as transições; desligue para poupar bateria") }
+
+        section("Tema")
+        item {
+            FlowRow(
+                Modifier.fillMaxWidth().padding(horizontal = 6.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                PALETAS.forEach { p -> Chip(p.nome, Cores.paleta.id == p.id, { Cores.escolher(app, p.id) }, color = p.marca[5]) }
+            }
+        }
 
         section("Conta")
         item {
@@ -75,7 +91,7 @@ fun SettingsScreen(
                 Pill(
                     "Conta pelo celular",
                     subtitle = if (view.snapshot != null) "recorte recebido: ${view.subjects.size} disciplinas" else "abra o Coado no celular pareado",
-                    leading = { Icon(painterResource(R.drawable.ic_phone), null, tint = Coffee.Brand300, modifier = Modifier.size(18.dp)) },
+                    leading = { Icon(painterResource(R.drawable.ic_phone), null, tint = Cores.Brand300, modifier = Modifier.size(18.dp)) },
                 )
             }
         } else {
@@ -83,19 +99,19 @@ fun SettingsScreen(
                 Pill(
                     if (prefs.signedIn) prefs.accountName.ifBlank { "Pareado" } else "Não pareado",
                     subtitle = if (prefs.signedIn) prefs.accountEmail else "gere o código em Configurações → Relógio no site",
-                    leading = { Icon(painterResource(R.drawable.ic_link), null, tint = if (prefs.signedIn) Coffee.Ok else Coffee.Muted, modifier = Modifier.size(18.dp)) },
+                    leading = { Icon(painterResource(R.drawable.ic_link), null, tint = if (prefs.signedIn) Cores.Ok else Cores.Muted, modifier = Modifier.size(18.dp)) },
                 )
             }
             item { PillButton(if (prefs.signedIn) "Parear outra conta" else "Parear com código", { edit(InputField.CODE) }, icon = R.drawable.ic_link, primary = !prefs.signedIn) }
             item { Pill("Servidor", subtitle = prefs.server.ifBlank { app.server }, onClick = { edit(InputField.SERVER) }) }
             if (prefs.signedIn) {
                 item {
-                    if (confirmSignOut) PillButton("Sair mesmo?", { scope.launch { runCatching { app.api.logout(app.server, prefs.token) }; app.store.signOut(); confirmSignOut = false } }, icon = R.drawable.ic_logout, color = Coffee.Bad, textColor = Coffee.Bg)
-                    else PillButton("Sair da conta", { confirmSignOut = true }, icon = R.drawable.ic_logout, primary = false, textColor = Coffee.Bad)
+                    if (confirmSignOut) PillButton("Sair mesmo?", { scope.launch { runCatching { app.api.logout(app.server, prefs.token) }; app.store.signOut(); confirmSignOut = false } }, icon = R.drawable.ic_logout, color = Cores.Bad, textColor = Cores.Bg)
+                    else PillButton("Sair da conta", { confirmSignOut = true }, icon = R.drawable.ic_logout, primary = false, textColor = Cores.Bad)
                 }
             }
         }
-        if (notice.isNotBlank()) note(notice, color = Coffee.Brand300)
+        if (notice.isNotBlank()) note(notice, color = Cores.Brand300)
         item {
             PillButton(
                 when (syncStatus) {
@@ -114,9 +130,9 @@ fun SettingsScreen(
                 prefs.lastSyncAt > 0 -> "última: ${DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(prefs.lastSyncAt))}"
                 else -> "ainda sem dados da conta"
             },
-            color = if (syncStatus is SyncStatus.Error) Coffee.Bad else Coffee.Muted,
+            color = if (syncStatus is SyncStatus.Error) Cores.Bad else Cores.Muted,
         )
-        note("Coado ${BuildConfig.VERSION_NAME} · relógio")
+        note("${Marca.NOME} ${BuildConfig.VERSION_NAME} · relógio")
         gap(12.dp)
     }
 }

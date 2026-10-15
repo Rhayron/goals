@@ -1,5 +1,6 @@
 package br.app.coado.shared
 
+import br.app.coado.shared.ui.Cores
 import android.app.Application
 import android.content.Context
 import android.content.Intent
@@ -64,6 +65,7 @@ abstract class CoadoCore : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        Cores.carregar(this)                                  // a paleta escolhida neste aparelho
         store = Store(this)
         api = Api(userAgent)
         engine = TimerEngine(this)

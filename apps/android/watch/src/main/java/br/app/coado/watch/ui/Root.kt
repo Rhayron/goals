@@ -25,7 +25,7 @@ import androidx.wear.compose.material3.Typography
 import androidx.wear.compose.navigation3.rememberSwipeDismissableSceneStrategy
 import br.app.coado.shared.model.Dates
 import br.app.coado.shared.model.Overview
-import br.app.coado.shared.ui.Coffee
+import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.Nunito
 import br.app.coado.watch.CoadoWatchApp
 import kotlinx.coroutines.launch
@@ -51,35 +51,36 @@ val LocalAnimations = compositionLocalOf { true }
 @Serializable data object ProgressRoute : NavKey
 @Serializable data object SettingsRoute : NavKey
 
-private val CoffeeScheme = ColorScheme(
-    primary = Coffee.Brand300,
-    primaryDim = Coffee.Brand400,
-    primaryContainer = Coffee.Brand700,
-    onPrimary = Coffee.Bg,
-    onPrimaryContainer = Coffee.Brand100,
-    secondary = Coffee.Ok,
+// função, não val: lida na composição, acompanha a troca de paleta
+private fun esquemaCores() = ColorScheme(
+    primary = Cores.Brand300,
+    primaryDim = Cores.Brand400,
+    primaryContainer = Cores.Brand700,
+    onPrimary = Cores.Bg,
+    onPrimaryContainer = Cores.Brand100,
+    secondary = Cores.Ok,
     secondaryDim = Color(0xFF6F9A73),
     secondaryContainer = Color(0xFF2F3E31),
-    onSecondary = Coffee.Bg,
+    onSecondary = Cores.Bg,
     onSecondaryContainer = Color(0xFFCFE6D0),
-    tertiary = Coffee.Warn,
+    tertiary = Cores.Warn,
     tertiaryDim = Color(0xFFC99A3E),
     tertiaryContainer = Color(0xFF4A3A1A),
-    onTertiary = Coffee.Bg,
+    onTertiary = Cores.Bg,
     onTertiaryContainer = Color(0xFFF3DFB0),
-    surfaceContainerLow = Coffee.Surface,
-    surfaceContainer = Coffee.Surface2,
-    surfaceContainerHigh = Coffee.Line,
-    onSurface = Coffee.Ink,
-    onSurfaceVariant = Coffee.Muted,
-    outline = Coffee.Line,
-    outlineVariant = Coffee.Kraft,
-    background = Coffee.Bg,
-    onBackground = Coffee.Ink,
-    error = Coffee.Bad,
+    surfaceContainerLow = Cores.Surface,
+    surfaceContainer = Cores.Surface2,
+    surfaceContainerHigh = Cores.Line,
+    onSurface = Cores.Ink,
+    onSurfaceVariant = Cores.Muted,
+    outline = Cores.Line,
+    outlineVariant = Cores.Kraft,
+    background = Cores.Bg,
+    onBackground = Cores.Ink,
+    error = Cores.Bad,
     errorDim = Color(0xFFB86E6A),
     errorContainer = Color(0xFF4A2A28),
-    onError = Coffee.Bg,
+    onError = Cores.Bg,
     onErrorContainer = Color(0xFFF3C9C6),
 )
 
@@ -122,9 +123,9 @@ fun CoadoWatchRoot(
         }
     }
 
-    MaterialTheme(colorScheme = CoffeeScheme, typography = Typography(defaultFontFamily = Nunito)) {
+    MaterialTheme(colorScheme = esquemaCores(), typography = Typography(defaultFontFamily = Nunito)) {
         CompositionLocalProvider(LocalAmbient provides ambient, LocalAnimations provides (prefs.animations && !ambient.on)) {
-            Box(Modifier.fillMaxSize().background(Coffee.Bg)) {
+            Box(Modifier.fillMaxSize().background(Cores.Bg)) {
                 AppScaffold(timeText = { if (!ambient.on) TimeText() }) {
                     if (!loaded) {
                         LoadingScreen()
@@ -144,6 +145,11 @@ fun CoadoWatchRoot(
                                             val subject = view.subject(item.subjectId) ?: return@HomeScreen
                                             ensureNotifications()
                                             scope.launch { app.engine.start(subject, item.id, prefs.mode) }
+                                        },
+                                        onStartAssessment = { a ->
+                                            val subject = view.subject(a.subjectId) ?: return@HomeScreen
+                                            ensureNotifications()
+                                            scope.launch { app.engine.start(subject, null, prefs.mode, assessmentId = a.id) }
                                         },
                                         onSubjects = { backStack.add(SubjectsRoute) },
                                         onProgress = { backStack.add(ProgressRoute) },
@@ -179,9 +185,9 @@ fun CoadoWatchRoot(
                                         FinishScreen(
                                             draft = d,
                                             view = view,
-                                            onSave = { category, hits, misses, counts, reviews ->
+                                            onSave = { category, hits, misses, counts, reviews, assessmentId ->
                                                 scope.launch {
-                                                    runCatching { app.engine.register(d, category, hits, misses, counts, reviews) }
+                                                    runCatching { app.engine.register(d, category, hits, misses, counts, reviews, assessmentId) }
                                                     backStack.add(SavedRoute)
                                                 }
                                             },

@@ -27,8 +27,8 @@ import br.app.coado.shared.model.Overview
 import br.app.coado.shared.model.fmtDuration
 import br.app.coado.shared.model.fmtMinutes
 import br.app.coado.shared.model.pct
-import br.app.coado.shared.ui.Coffee
-import br.app.coado.shared.ui.CoffeeType
+import br.app.coado.shared.ui.Cores
+import br.app.coado.shared.ui.Tipo
 import br.app.coado.shared.ui.Donut
 import br.app.coado.shared.ui.parseColor
 
@@ -51,7 +51,7 @@ fun ProgressScreen(view: Overview) {
                     )
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Label("ciclo")
-                        Text("${pct(studied, planned)}%", style = CoffeeType.numeral, color = Coffee.Ink)
+                        Text("${pct(studied, planned)}%", style = Tipo.numeral, color = Cores.Ink)
                     }
                 }
             }
@@ -70,7 +70,7 @@ fun ProgressScreen(view: Overview) {
                     val future = d > today
                     val isToday = d == today
                     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.alpha(if (future) 0.4f else 1f)) {
-                        Text(Dates.WEEKDAYS[i].take(1), style = CoffeeType.label.copy(fontSize = 9.sp), color = if (isToday) Coffee.Brand300 else Coffee.Muted)
+                        Text(Dates.WEEKDAYS[i].take(1), style = Tipo.label.copy(fontSize = 9.sp), color = if (isToday) Cores.Brand300 else Cores.Muted)
                         Box(
                             Modifier
                                 .padding(top = 2.dp)
@@ -78,16 +78,16 @@ fun ProgressScreen(view: Overview) {
                                 .clip(RoundedCornerShape(6.dp))
                                 .background(
                                     when {
-                                        studied -> Coffee.Ok.copy(alpha = 0.22f)
-                                        future || isToday -> Coffee.Surface2
-                                        else -> Coffee.Bad.copy(alpha = 0.15f)
+                                        studied -> Cores.Ok.copy(alpha = 0.22f)
+                                        future || isToday -> Cores.Surface2
+                                        else -> Cores.Bad.copy(alpha = 0.15f)
                                     },
                                 )
-                                .then(if (isToday && !studied) Modifier.border(1.dp, Coffee.Brand400, RoundedCornerShape(6.dp)) else Modifier),
+                                .then(if (isToday && !studied) Modifier.border(1.dp, Cores.Brand400, RoundedCornerShape(6.dp)) else Modifier),
                             contentAlignment = Alignment.Center,
                         ) {
-                            if (studied) Icon(painterResource(R.drawable.ic_check), null, tint = Coffee.Ok, modifier = Modifier.size(12.dp))
-                            else if (!future && !isToday) Icon(painterResource(R.drawable.ic_close), null, tint = Coffee.Bad, modifier = Modifier.size(10.dp))
+                            if (studied) Icon(painterResource(R.drawable.ic_check), null, tint = Cores.Ok, modifier = Modifier.size(12.dp))
+                            else if (!future && !isToday) Icon(painterResource(R.drawable.ic_close), null, tint = Cores.Bad, modifier = Modifier.size(10.dp))
                         }
                     }
                 }
@@ -115,16 +115,30 @@ fun ProgressScreen(view: Overview) {
             }
         }
 
-        val exam = view.daysToExam
-        if (exam != null || (view.snapshot?.reviewsDue ?: 0) > 0) {
+        // modo universidade: as próximas avaliações; concurso: a contagem até a prova
+        val exam = if (view.universidade) null else view.daysToExam
+        val proximas = if (view.universidade) view.assessments.filter { it.date >= view.today }.take(3) else emptyList()
+        if (exam != null || proximas.isNotEmpty() || view.lateAssessments > 0 || (view.snapshot?.reviewsDue ?: 0) > 0) {
             section("Agenda")
+            proximas.forEach { a ->
+                item {
+                    Pill(
+                        title = a.name,
+                        subtitle = "${view.subjectName(a.subjectId)} · ${view.quando(a.date)}",
+                        leading = { ColorDot(parseColor(view.subjectColor(a.subjectId)), 10.dp) },
+                    )
+                }
+            }
+            if (view.universidade && view.lateAssessments > 0) {
+                note("${view.lateAssessments} ${if (view.lateAssessments == 1) "avaliação atrasada" else "avaliações atrasadas"}", color = Cores.Warn)
+            }
             if (exam != null) {
                 item {
                     Pill(
                         title = when {
                             exam > 1 -> "Faltam $exam dias"
                             exam == 1 -> "A prova é amanhã"
-                            exam == 0 -> "A prova é hoje! 🍀"
+                            exam == 0 -> "A prova é hoje"
                             else -> "A prova foi há ${-exam} dias"
                         },
                         subtitle = "${view.plan?.name} · ${Dates.fmtDate(view.plan?.examDate ?: view.today)}",
@@ -142,9 +156,9 @@ fun ProgressScreen(view: Overview) {
 private fun GoalRow(label: String, current: String, target: String, value: Float) {
     Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Bottom) {
-            Text(current, style = CoffeeType.subtitle, color = Coffee.Ink)
-            Text("/ $target $label", style = CoffeeType.bodySmall, color = Coffee.Muted, textAlign = TextAlign.End)
+            Text(current, style = Tipo.subtitle, color = Cores.Ink)
+            Text("/ $target $label", style = Tipo.bodySmall, color = Cores.Muted, textAlign = TextAlign.End)
         }
-        Bar(value, color = if (value >= 1f) Coffee.Ok else Coffee.Brand500)
+        Bar(value, color = if (value >= 1f) Cores.Ok else Cores.Brand500)
     }
 }

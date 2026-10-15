@@ -33,6 +33,8 @@ data class TimerState(
     val cycleItemId: String? = null,
     val categoryId: String = "teoria",
     val topicId: String? = null,
+    /** a avaliação para a qual se estuda (modo universidade) */
+    val assessmentId: String? = null,
     /** início da sessão (epoch ms): vira a data e a hora do estudo */
     val startedAt: Long = 0,
     /** durações da sessão (minutos), congeladas no início */
@@ -95,6 +97,7 @@ data class TimerState(
             cycleItemId: String?,
             categoryId: String,
             topicId: String?,
+            assessmentId: String? = null,
         ) = TimerState(
             active = true,
             mode = mode,
@@ -107,6 +110,7 @@ data class TimerState(
             cycleItemId = cycleItemId,
             categoryId = categoryId,
             topicId = topicId,
+            assessmentId = assessmentId,
             study = prefs.pomodoroStudy.coerceAtLeast(1),
             short = prefs.pomodoroShort.coerceAtLeast(1),
             long = prefs.pomodoroLong.coerceAtLeast(1),

@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -30,66 +31,44 @@ import kotlin.math.PI
 import kotlin.math.sin
 
 /*
- * As ilustrações do site (apps/web/src/components/art.tsx e cafe-art.tsx) em Canvas: a xícara
- * de traço "feito à mão" que enche enquanto o café é coado, o vapor e o anel de progresso.
+ * As ilustrações em Canvas: a ampulheta que enche enquanto se estuda e o anel de progresso.
  * As animações só rodam quando pedidas (tela acesa, animações ligadas): fora disso é um quadro parado.
  */
 
-/** O contorno da xícara, no sistema de 120×110 do SVG original */
-private fun cupBody() = Path().apply {
-    moveTo(26f, 46f)
-    lineTo(86f, 46f)
-    lineTo(86f, 70f)
-    arcTo(Rect(42f, 48f, 86f, 92f), 0f, 90f, false)
-    lineTo(48f, 92f)
-    arcTo(Rect(26f, 48f, 70f, 92f), 90f, 90f, false)
-    close()
-}
-
-private fun handle() = Path().apply {
-    moveTo(86f, 52f)
-    lineTo(94f, 52f)
-    arcTo(Rect(85f, 52f, 103f, 70f), -90f, 180f, false)
-    lineTo(86f, 70f)
-}
-
-private fun wisp(x: Float) = Path().apply {
-    moveTo(x, 34f)
-    cubicTo(x - 5f, 28f, x + 5f, 26f, x, 20f)
-}
-
-/** o coador (dripper) em cima da xícara, enquanto o café é passado */
-private fun dripper() = Path().apply {
-    moveTo(38f, 4f)
-    lineTo(74f, 4f)
-    lineTo(62f, 20f)
-    lineTo(50f, 20f)
+/** O vidro da ampulheta, no sistema de 120×110: dois bulbos e o gargalo no meio (y = 55) */
+private fun glass() = Path().apply {
+    moveTo(38f, 14f)
+    cubicTo(38f, 36f, 55f, 44f, 57.5f, 55f)
+    cubicTo(55f, 66f, 38f, 74f, 38f, 96f)
+    lineTo(82f, 96f)
+    cubicTo(82f, 74f, 65f, 66f, 62.5f, 55f)
+    cubicTo(65f, 44f, 82f, 36f, 82f, 14f)
     close()
 }
 
 /**
- * A xícara. [level] é o quanto está cheia (0..1); com [brewing] o café pinga do coador;
- * com [steaming] ela solta vapor. [animate] desligado congela tudo (modo ambiente, economia).
+ * A ampulheta. [level] é quanto da areia já desceu (0..1); com [flowing] a areia escorre pelo gargalo;
+ * com [resting] ela pulsa de leve (a pausa). [animate] desligado congela tudo (modo ambiente, economia).
  */
 @Composable
-fun CupArt(
+fun StudyArt(
     modifier: Modifier = Modifier,
     level: Float = 1f,
-    steaming: Boolean = false,
-    brewing: Boolean = false,
+    resting: Boolean = false,
+    flowing: Boolean = false,
     animate: Boolean = true,
-    liquid: Color = Coffee.Brand600,
-    ink: Color = Coffee.Ink,
-    body: Color = Coffee.Surface2,
+    sand: Color = Cores.Brand400,
+    ink: Color = Cores.Ink,
+    body: Color = Cores.Surface2,
     strokeWidth: Float = 2f,
 ) {
-    val steamT = if (animate && steaming) {
-        rememberInfiniteTransition(label = "vapor")
-            .animateFloat(0f, 1f, infiniteRepeatable(tween(3200, easing = LinearEasing), RepeatMode.Restart), label = "vapor").value
+    val pulseT = if (animate && resting) {
+        rememberInfiniteTransition(label = "pausa")
+            .animateFloat(0f, 1f, infiniteRepeatable(tween(3200, easing = LinearEasing), RepeatMode.Restart), label = "pausa").value
     } else -1f
-    val dripT = if (animate && brewing) {
-        rememberInfiniteTransition(label = "gota")
-            .animateFloat(0f, 1f, infiniteRepeatable(tween(1700, easing = LinearEasing), RepeatMode.Restart), label = "gota").value
+    val flowT = if (animate && flowing) {
+        rememberInfiniteTransition(label = "areia")
+            .animateFloat(0f, 1f, infiniteRepeatable(tween(900, easing = LinearEasing), RepeatMode.Restart), label = "areia").value
     } else -1f
     val lvl = level.coerceIn(0f, 1f)
 
@@ -100,64 +79,49 @@ fun CupArt(
         translate(dx, dy) {
             scale(s, s, pivot = Offset.Zero) {
                 val stroke = Stroke(width = strokeWidth, cap = StrokeCap.Round)
-                // sombra e pires
-                drawOval(ink.copy(alpha = 0.08f), topLeft = Offset(16f, 99f), size = Size(84f, 10f))
-                drawOval(Coffee.Brand200.copy(alpha = 0.9f), topLeft = Offset(16f, 91f), size = Size(80f, 10f))
-                drawOval(ink, topLeft = Offset(16f, 91f), size = Size(80f, 10f), style = stroke)
-                // corpo
-                val cup = cupBody()
-                drawPath(cup, body)
-                if (lvl > 0f) {
-                    clipPath(cup) {
-                        val top = 92f - 46f * lvl
-                        val wave = Path().apply {
-                            moveTo(20f, top + 1.5f)
-                            var x = 20f
-                            while (x < 92f) {
-                                quadraticTo(x + 6f, top - 1.5f, x + 12f, top + 1.5f)
-                                x += 12f
-                            }
-                            lineTo(92f, 96f)
-                            lineTo(20f, 96f)
-                            close()
-                        }
-                        drawPath(wave, liquid)
-                        // reflexo na superfície
+                // a pausa: um halo que respira atrás do vidro
+                if (resting) {
+                    val a = if (pulseT >= 0f) 0.06f + 0.08f * sin(pulseT * PI).toFloat() else 0.1f
+                    drawCircle(sand.copy(alpha = a), radius = 46f, center = Offset(60f, 55f))
+                }
+                val vidro = glass()
+                drawPath(vidro, body)
+                clipPath(vidro) {
+                    // o que falta: areia no bulbo de cima, assentada sobre o gargalo
+                    if (lvl < 1f) {
+                        val topo = 55f - 37f * (1f - lvl)
+                        drawRect(sand, topLeft = Offset(30f, topo), size = Size(60f, 55f - topo))
+                    }
+                    // o que já foi: um monte no bulbo de baixo
+                    if (lvl > 0f) {
+                        val cume = 96f - 36f * lvl
                         drawPath(
                             Path().apply {
-                                moveTo(40f, top + 7f)
-                                cubicTo(46f, top + 11f, 58f, top + 11f, 64f, top + 7f)
+                                moveTo(30f, 97f)
+                                lineTo(30f, cume + 7f)
+                                quadraticTo(60f, cume - 5f, 90f, cume + 7f)
+                                lineTo(90f, 97f)
+                                close()
                             },
-                            Coffee.Brand200.copy(alpha = 0.45f),
-                            style = stroke,
+                            sand,
                         )
                     }
-                }
-                drawPath(cup, ink, style = stroke)
-                drawPath(handle(), ink, style = stroke)
-
-                if (brewing) {
-                    drawPath(dripper(), Coffee.Brand100.copy(alpha = 0.9f))
-                    drawPath(dripper(), ink, style = stroke)
-                    if (dripT >= 0f) {
-                        val top = 92f - 46f * lvl
-                        val p = dripT
-                        val y = 22f + (top - 24f) * p * p
-                        val alpha = if (p < 0.85f) 1f else (1f - (p - 0.85f) / 0.15f)
-                        drawCircle(liquid.copy(alpha = alpha), radius = 2.6f, center = Offset(56f, y))
-                        if (p > 0.85f) drawOval(liquid.copy(alpha = alpha * 0.6f), topLeft = Offset(50f, top - 1.5f), size = Size(12f, 3f), style = Stroke(1f))
-                    }
-                }
-
-                if (steaming) {
-                    listOf(42f, 56f, 70f).forEachIndexed { i, x ->
-                        val p = if (steamT >= 0f) ((steamT + i * 0.3f) % 1f) else 0.35f + i * 0.15f
-                        val alpha = sin(p * PI).toFloat() * 0.7f
-                        translate(0f, -18f * p) {
-                            drawPath(wisp(x), ink.copy(alpha = alpha), style = stroke)
+                    // o fio de areia caindo
+                    if (flowT >= 0f && lvl < 1f) {
+                        val cume = 96f - 36f * lvl
+                        var y = 55f + 6f * flowT
+                        while (y < cume) {
+                            drawCircle(sand, radius = 1.3f, center = Offset(60f, y))
+                            y += 6f
                         }
                     }
                 }
+                drawPath(vidro, ink, style = stroke)
+                // as tampas de madeira
+                drawRoundRect(Cores.Brand700, topLeft = Offset(32f, 7f), size = Size(56f, 7f), cornerRadius = CornerRadius(3f))
+                drawRoundRect(Cores.Brand700, topLeft = Offset(32f, 96f), size = Size(56f, 7f), cornerRadius = CornerRadius(3f))
+                drawRoundRect(ink, topLeft = Offset(32f, 7f), size = Size(56f, 7f), cornerRadius = CornerRadius(3f), style = stroke)
+                drawRoundRect(ink, topLeft = Offset(32f, 96f), size = Size(56f, 7f), cornerRadius = CornerRadius(3f), style = stroke)
             }
         }
     }
@@ -169,7 +133,7 @@ fun ProgressRing(
     modifier: Modifier = Modifier,
     progress: Float,
     color: Color,
-    track: Color = Coffee.Line,
+    track: Color = Cores.Line,
     stroke: Dp = 6.dp,
     startAngle: Float = -90f,
     endDot: Boolean = true,
@@ -188,7 +152,7 @@ fun DrawScope.drawRing(progress: Float, color: Color, track: Color, strokeWidth:
         if (endDot) {
             val a = Math.toRadians((startAngle + 360f * progress).toDouble())
             val c = Offset(rect.center.x + rect.width / 2f * Math.cos(a).toFloat(), rect.center.y + rect.height / 2f * Math.sin(a).toFloat())
-            drawCircle(Coffee.Ink, radius = strokeWidth * 0.35f, center = c)
+            drawCircle(Cores.Ink, radius = strokeWidth * 0.35f, center = c)
         }
     }
 }
@@ -200,7 +164,7 @@ fun Donut(
     slices: List<Pair<Color, Float>>,
     thickness: Dp = 10.dp,
     gap: Float = 1.5f,
-    track: Color = Coffee.Line,
+    track: Color = Cores.Line,
 ) {
     Canvas(modifier) {
         val w = thickness.toPx()

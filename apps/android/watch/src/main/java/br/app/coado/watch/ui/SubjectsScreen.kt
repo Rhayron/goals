@@ -16,7 +16,7 @@ import br.app.coado.shared.model.Overview
 import br.app.coado.shared.model.SubjectLite
 import br.app.coado.shared.model.fmtDuration
 import br.app.coado.shared.model.fmtMinutes
-import br.app.coado.shared.ui.Coffee
+import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.parseColor
 
 /** A sequência do ciclo (pendentes primeiro) e todas as disciplinas; tocar começa a sessão */
@@ -47,14 +47,14 @@ fun SubjectsScreen(
                     title = view.subjectName(item.subjectId),
                     subtitle = "${fmtDuration(item.studied)} de ${fmtMinutes(item.duration)}",
                     leading = { ColorDot(color, 12.dp) },
-                    trailing = { Icon(painterResource(R.drawable.ic_play), "Iniciar", tint = Coffee.Brand300, modifier = Modifier.size(18.dp)) },
+                    trailing = { Icon(painterResource(R.drawable.ic_play), "Iniciar", tint = Cores.Brand300, modifier = Modifier.size(18.dp)) },
                     enabled = subject != null,
                     onClick = { subject?.let { onStart(it, item.id) } },
                 )
             }
             if (doneCount > 0) note("$doneCount ${if (doneCount == 1) "sessão concluída" else "sessões concluídas"} nesta volta")
         } else if (view.cycle.isNotEmpty()) {
-            note("Ciclo concluído 🎉 Recomece no site para a próxima volta.")
+            note("Ciclo concluído. Recomece no site para a próxima volta.")
         }
 
         section("Disciplinas")
@@ -63,7 +63,7 @@ fun SubjectsScreen(
             Pill(
                 title = subject.name,
                 leading = { ColorDot(parseColor(subject.color), 12.dp) },
-                trailing = { Icon(painterResource(R.drawable.ic_play), "Iniciar", tint = Coffee.Muted, modifier = Modifier.size(18.dp)) },
+                trailing = { Icon(painterResource(R.drawable.ic_play), "Iniciar", tint = Cores.Muted, modifier = Modifier.size(18.dp)) },
                 onClick = { onStart(subject, view.cycle.firstOrNull { !it.done && it.subjectId == subject.id }?.id) },
             )
         }

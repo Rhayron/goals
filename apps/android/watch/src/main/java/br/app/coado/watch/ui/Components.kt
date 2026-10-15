@@ -1,5 +1,6 @@
 package br.app.coado.watch.ui
 
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,12 +48,12 @@ import androidx.wear.compose.material3.Text
 import androidx.wear.compose.material3.lazy.TransformationSpec
 import androidx.wear.compose.material3.lazy.rememberTransformationSpec
 import androidx.wear.compose.material3.lazy.transformedHeight
-import br.app.coado.shared.ui.Coffee
-import br.app.coado.shared.ui.CoffeeType
+import br.app.coado.shared.ui.Cores
+import br.app.coado.shared.ui.Tipo
 
 /*
  * As peças das telas do relógio: linhas em pílula (como os botões do Wear, que acompanham a
- * tela redonda), nas cores do papel e do mocha do site.
+ * tela redonda), nas cores da paleta escolhida.
  */
 
 val PillShape = RoundedCornerShape(24.dp)
@@ -72,14 +73,15 @@ class WheelScope internal constructor(private val list: TransformingLazyColumnSc
     fun section(text: String) = item {
         Text(
             text.uppercase(),
-            style = CoffeeType.label,
-            color = Coffee.Muted,
-            modifier = Modifier.fillMaxWidth().padding(start = 14.dp, top = 8.dp, bottom = 2.dp),
+            style = Tipo.label,
+            color = Cores.Muted,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 2.dp),
         )
     }
 
-    fun note(text: String, color: Color = Coffee.Muted) = item {
-        Text(text, style = CoffeeType.bodySmall, color = color, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 4.dp))
+    fun note(text: String, color: Color = Cores.Muted) = item {
+        Text(text, style = Tipo.bodySmall, color = color, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = 18.dp, vertical = 4.dp))
     }
 
     fun gap(height: Dp = 6.dp) = item { Spacer(Modifier.height(height)) }
@@ -99,10 +101,13 @@ private fun Wheel(scope: TransformingLazyColumnItemScope, spec: TransformationSp
 @Composable
 fun WheelScreen(
     state: TransformingLazyColumnState = rememberTransformingLazyColumnState(),
-    horizontal: Dp = 8.dp,
+    horizontal: Dp = Dp.Unspecified,
     content: WheelScope.() -> Unit,
 ) {
     val spec = rememberTransformationSpec()
+    val config = LocalConfiguration.current
+    // tela redonda: a margem cresce com a tela, para o que encosta na borda não cair fora do círculo
+    val horizontal = if (horizontal != Dp.Unspecified) horizontal else if (config.isScreenRound) (config.screenWidthDp * 0.06f).dp else 8.dp
     ScreenScaffold(scrollState = state) { padding ->
         TransformingLazyColumn(
             state = state,
@@ -113,7 +118,7 @@ fun WheelScreen(
                 bottom = padding.calculateBottomPadding(),
             ),
             verticalArrangement = Arrangement.spacedBy(6.dp),
-            modifier = Modifier.fillMaxSize().background(Coffee.Bg),
+            modifier = Modifier.fillMaxSize().background(Cores.Bg),
         ) { WheelScope(this, spec).content() }
     }
 }
@@ -126,8 +131,8 @@ fun Pill(
     subtitle: String? = null,
     leading: (@Composable () -> Unit)? = null,
     trailing: (@Composable RowScope.() -> Unit)? = null,
-    tint: Color = Coffee.Surface,
-    titleColor: Color = Coffee.Ink,
+    tint: Color = Cores.Surface,
+    titleColor: Color = Cores.Ink,
     enabled: Boolean = true,
     onClick: (() -> Unit)? = null,
 ) {
@@ -145,14 +150,14 @@ fun Pill(
     ) {
         leading?.invoke()
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-            Text(title, style = CoffeeType.subtitle, color = titleColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            if (subtitle != null) Text(subtitle, style = CoffeeType.bodySmall, color = Coffee.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(title, style = Tipo.subtitle, color = titleColor, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (subtitle != null) Text(subtitle, style = Tipo.bodySmall, color = Cores.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         trailing?.invoke(this)
     }
 }
 
-/** Botão cheio, em pílula; o primário é o mocha da marca */
+/** Botão cheio, em pílula; o primário é a cor da marca */
 @Composable
 fun PillButton(
     text: String,
@@ -160,8 +165,8 @@ fun PillButton(
     modifier: Modifier = Modifier,
     icon: Int? = null,
     primary: Boolean = true,
-    color: Color = if (primary) Coffee.Brand600 else Coffee.Surface2,
-    textColor: Color = if (primary) Coffee.Brand50 else Coffee.Ink,
+    color: Color = if (primary) Cores.Brand600 else Cores.Surface2,
+    textColor: Color = if (primary) Cores.Brand50 else Cores.Ink,
     enabled: Boolean = true,
 ) {
     Row(
@@ -177,7 +182,7 @@ fun PillButton(
             .padding(horizontal = 16.dp, vertical = 8.dp),
     ) {
         if (icon != null) Icon(painterResource(icon), contentDescription = null, tint = textColor, modifier = Modifier.size(16.dp))
-        Text(text, style = CoffeeType.button, color = textColor, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(text, style = Tipo.button, color = textColor, textAlign = TextAlign.Center, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 
@@ -189,8 +194,8 @@ fun RoundButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     size: Dp = 40.dp,
-    color: Color = Coffee.Surface2,
-    tint: Color = Coffee.Ink,
+    color: Color = Cores.Surface2,
+    tint: Color = Cores.Ink,
     enabled: Boolean = true,
 ) {
     Box(
@@ -206,17 +211,17 @@ fun RoundButton(
     }
 }
 
-/** A chave do site: trilho mocha quando ligada */
+/** A chave do site: trilho na cor da marca quando ligada */
 @Composable
 fun Toggle(checked: Boolean, enabled: Boolean = true) {
     Box(
         Modifier
             .size(width = 34.dp, height = 18.dp)
             .clip(CircleShape)
-            .background(if (checked && enabled) Coffee.Brand500 else Coffee.Line),
+            .background(if (checked && enabled) Cores.Brand500 else Cores.Line),
         contentAlignment = if (checked) Alignment.CenterEnd else Alignment.CenterStart,
     ) {
-        Box(Modifier.padding(horizontal = 2.dp).size(14.dp).clip(CircleShape).background(if (checked) Coffee.Brand50 else Coffee.Muted))
+        Box(Modifier.padding(horizontal = 2.dp).size(14.dp).clip(CircleShape).background(if (checked) Cores.Brand50 else Cores.Muted))
     }
 }
 
@@ -229,14 +234,14 @@ fun ToggleRow(title: String, checked: Boolean, onToggle: (Boolean) -> Unit, subt
             .fillMaxWidth()
             .alpha(if (enabled) 1f else 0.45f)
             .clip(PillShape)
-            .background(Coffee.Surface)
+            .background(Cores.Surface)
             .toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onToggle)
             .heightIn(min = 50.dp)
             .padding(horizontal = 14.dp, vertical = 8.dp),
     ) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
-            Text(title, style = CoffeeType.subtitle, color = Coffee.Ink, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            if (subtitle != null) Text(subtitle, style = CoffeeType.bodySmall, color = Coffee.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(title, style = Tipo.subtitle, color = Cores.Ink, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            if (subtitle != null) Text(subtitle, style = Tipo.bodySmall, color = Cores.Muted, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
         Toggle(checked, enabled)
     }
@@ -246,13 +251,13 @@ fun ToggleRow(title: String, checked: Boolean, onToggle: (Boolean) -> Unit, subt
 @Composable
 fun StepperRow(title: String, value: String, onMinus: () -> Unit, onPlus: () -> Unit, canMinus: Boolean = true, canPlus: Boolean = true) {
     Column(
-        Modifier.fillMaxWidth().clip(PillShape).background(Coffee.Surface).padding(horizontal = 14.dp, vertical = 8.dp),
+        Modifier.fillMaxWidth().clip(PillShape).background(Cores.Surface).padding(horizontal = 14.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        Text(title, style = CoffeeType.bodySmall, color = Coffee.Muted, maxLines = 1)
+        Text(title, style = Tipo.bodySmall, color = Cores.Muted, maxLines = 1, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
             RoundButton(br.app.coado.shared.R.drawable.ic_remove, "menos", onMinus, size = 30.dp, enabled = canMinus)
-            Text(value, style = CoffeeType.numeral.copy(fontSize = 20.sp), color = Coffee.Ink)
+            Text(value, style = Tipo.numeral.copy(fontSize = 20.sp), color = Cores.Ink)
             RoundButton(br.app.coado.shared.R.drawable.ic_add, "mais", onPlus, size = 30.dp, enabled = canPlus)
         }
     }
@@ -260,18 +265,18 @@ fun StepperRow(title: String, value: String, onMinus: () -> Unit, onPlus: () -> 
 
 /** Chip de escolha (categoria, modo) */
 @Composable
-fun Chip(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color = Coffee.Brand600) {
+fun Chip(text: String, selected: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, color: Color = Cores.Brand600, maxLines: Int = 1) {
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .clip(CircleShape)
-            .background(if (selected) color else Coffee.Surface2)
-            .border(1.dp, if (selected) color else Coffee.Line, CircleShape)
+            .background(if (selected) color else Cores.Surface2)
+            .border(1.dp, if (selected) color else Cores.Line, CircleShape)
             .clickable(role = Role.RadioButton, onClick = onClick)
             .heightIn(min = 28.dp)
             .padding(horizontal = 10.dp, vertical = 4.dp),
     ) {
-        Text(text, style = CoffeeType.bodySmall.copy(fontSize = 11.sp), color = if (selected) Coffee.Brand50 else Coffee.Ink, maxLines = 1)
+        Text(text, style = Tipo.bodySmall.copy(fontSize = 11.sp), color = if (selected) Cores.Brand50 else Cores.Ink, maxLines = maxLines, textAlign = TextAlign.Center)
     }
 }
 
@@ -282,7 +287,7 @@ fun ColorDot(color: Color, size: Dp = 10.dp, modifier: Modifier = Modifier) {
 
 /** A barra de progresso do site: trilho e preenchimento arredondados */
 @Composable
-fun Bar(value: Float, color: Color = Coffee.Brand500, modifier: Modifier = Modifier, height: Dp = 5.dp, track: Color = Coffee.Line) {
+fun Bar(value: Float, color: Color = Cores.Brand500, modifier: Modifier = Modifier, height: Dp = 5.dp, track: Color = Cores.Line) {
     Canvas(modifier.fillMaxWidth().height(height)) {
         val r = size.height / 2f
         drawRoundRect(track, cornerRadius = androidx.compose.ui.geometry.CornerRadius(r, r))
@@ -292,7 +297,7 @@ fun Bar(value: Float, color: Color = Coffee.Brand500, modifier: Modifier = Modif
 }
 
 @Composable
-fun Label(text: String, modifier: Modifier = Modifier, style: TextStyle = CoffeeType.label, color: Color = Coffee.Muted) {
+fun Label(text: String, modifier: Modifier = Modifier, style: TextStyle = Tipo.label, color: Color = Cores.Muted) {
     Text(text.uppercase(), style = style, color = color, modifier = modifier, maxLines = 1)
 }
 

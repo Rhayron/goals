@@ -192,6 +192,25 @@ class Overview(val snapshot: Snapshot?, val pending: Pending, val today: String 
     /** dias até a prova; null sem data */
     val daysToExam: Int? = plan?.examDate?.let { Dates.diffDays(it, today) }
 
+    /** modo universidade: várias avaliações por disciplina no lugar de uma prova só */
+    val universidade get() = plan?.kind == "universidade"
+    val assessments: List<WatchAssessment> = snapshot?.assessments.orEmpty()
+    val nextAssessment: WatchAssessment? = assessments.firstOrNull { it.date >= today }
+    val lateAssessments: Int = assessments.count { it.date < today }
+    fun assessmentsOf(subjectId: String) = assessments.filter { it.subjectId == subjectId }
+
+    /** "hoje", "amanhã", "em 5 dias", "atrasada há 2 dias" */
+    fun quando(date: String): String {
+        val d = Dates.diffDays(date, today)
+        return when {
+            d == 0 -> "hoje"
+            d == 1 -> "amanhã"
+            d > 1 -> "em $d dias"
+            d == -1 -> "atrasada desde ontem"
+            else -> "atrasada há ${-d} dias"
+        }
+    }
+
     fun subject(id: String) = subjectById[id]
     fun subjectName(id: String) = subjectById[id]?.name ?: "Disciplina removida"
     fun subjectColor(id: String) = subjectById[id]?.color ?: "#cccccc"
