@@ -1,5 +1,6 @@
 import { emptyState, type AppState } from '@coado/shared'
 import { SUBJECT_COLORS } from './utils'
+import { native } from './native'
 
 /*
  * Antes da conta (quando o app ainda se chamava Rumo), tudo ficava no localStorage. Na primeira entrada oferecemos trazer
@@ -107,4 +108,5 @@ export function applyPalette(palette: Palette) {
   const root = document.documentElement
   if (!palette || palette === 'cafe') delete root.dataset.palette
   else root.dataset.palette = palette
+  native()?.setPalette?.(palette || 'cafe')
 }

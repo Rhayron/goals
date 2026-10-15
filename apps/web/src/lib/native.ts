@@ -10,6 +10,8 @@ export interface CoadoNative {
   authChanged(status: string): void
   /** Pede ao app o login nativo com o Google */
   signIn(): void
+  /** A paleta em uso, para o pomodoro nativo combinar (apps antigos não têm) */
+  setPalette?(id: string): void
 }
 
 export const native = (): CoadoNative | null => (window as unknown as { CoadoNative?: CoadoNative }).CoadoNative ?? null

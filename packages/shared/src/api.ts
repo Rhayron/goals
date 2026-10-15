@@ -1,4 +1,4 @@
-import type { CycleItem, DateStr, ID, Planning, TimerPrefs } from './types'
+import type { AssessmentKind, CycleItem, DateStr, ID, PlanKind, Planning, TimerPrefs } from './types'
 
 /*
  * Contrato HTTP entre web e api (prefixo /api).
@@ -130,6 +130,17 @@ export interface WatchStudy {
   hits: number
   misses: number
   countInPlanning: boolean
+  assessmentId?: ID
+}
+
+/** Avaliação pendente no recorte do relógio (modo universidade) */
+export interface WatchAssessment {
+  id: ID
+  subjectId: ID
+  name: string
+  kind: AssessmentKind
+  date: DateStr
+  time?: string
 }
 
 /**
@@ -141,7 +152,7 @@ export interface WatchSnapshot {
   serverTime: string
   /** a data que o relógio informou (ou a do servidor) */
   today: DateStr
-  plan: { id: ID; name: string; examDate?: DateStr; weeklyGoal: { minutes: number; questions: number } } | null
+  plan: { id: ID; name: string; examDate?: DateStr; kind?: PlanKind; weeklyGoal: { minutes: number; questions: number } } | null
   subjects: { id: ID; name: string; color: string }[]
   categories: { id: ID; name: string }[]
   timerPrefs: TimerPrefs
@@ -151,4 +162,6 @@ export interface WatchSnapshot {
   studiedDates: DateStr[]
   /** revisões pendentes até hoje */
   reviewsDue: number
+  /** avaliações ainda não feitas, da mais próxima (atrasadas primeiro) para a mais distante */
+  assessments: WatchAssessment[]
 }

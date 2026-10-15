@@ -131,6 +131,28 @@ describe.skipIf(!DB_URL)('relógio', () => {
     expect(state.studies.map((s: Study) => s.id).sort()).toEqual(['old', 'st1', 'watch1'])
   })
 
+  it('modo universidade: o recorte traz o tipo do plano, as avaliações pendentes e o vínculo do estudo', async () => {
+    const now = new Date().toISOString()
+    const aval = (id: string, date: string, done = false) => ({ id, planId: 'p1', subjectId: 's1', name: id.toUpperCase(), kind: 'prova', date, done, notes: '', createdAt: now })
+    const up = await ana.post('/api/sync', {
+      upserts: { plans: [{ ...plan, kind: 'universidade' }], assessments: [aval('p2', '2026-06-10'), aval('feita', '2026-04-30', true), aval('lista', '2026-05-01')] },
+    })
+    expect(up.statusCode).toBe(200)
+    const res = await ctx.app.inject({
+      method: 'POST',
+      url: '/api/sync',
+      headers: { 'x-coado-request': '1', ...bearer().headers },
+      payload: { upserts: { studies: [{ ...study('watch2', '2026-05-03', 900), assessmentId: 'p2' }] } },
+    })
+    expect(res.statusCode).toBe(200)
+    const snap: WatchSnapshot = (await ctx.app.inject({ method: 'GET', url: '/api/watch/snapshot?today=2026-05-03', ...bearer() })).json()
+    expect(snap.plan?.kind).toBe('universidade')
+    // a feita fica de fora; a atrasada vem antes
+    expect(snap.assessments.map((a) => a.id)).toEqual(['lista', 'p2'])
+    expect(snap.assessments[0]).toEqual({ id: 'lista', subjectId: 's1', name: 'LISTA', kind: 'prova', date: '2026-05-01' })
+    expect(snap.studies.find((s) => s.id === 'watch2')?.assessmentId).toBe('p2')
+  })
+
   it('sem plano ativo o recorte vem vazio', async () => {
     const bia = client(ctx.app, await devLogin(ctx.app, 'bia@coado.test', 'Bia'))
     const { code } = (await bia.post('/api/watch/pair-code')).json()

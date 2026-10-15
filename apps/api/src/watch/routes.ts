@@ -1,6 +1,7 @@
 import {
   DEFAULT_REVIEW_INTERVALS,
   DEFAULT_TIMER_PREFS,
+  type AssessmentKind,
   type CycleItem,
   type DateStr,
   type PairResponse,
@@ -100,13 +101,13 @@ export async function watchRoutes(app: FastifyInstance, { pool }: Deps) {
     const planId = settings?.active_plan_id
     const plan = planId
       ? (
-          await pool.query<{ id: string; name: string; exam_date: string | null; weekly_goal_minutes: number; weekly_goal_questions: number }>(
-            'select id, name, exam_date, weekly_goal_minutes, weekly_goal_questions from plans where user_id = $1 and id = $2',
+          await pool.query<{ id: string; name: string; exam_date: string | null; kind: string | null; weekly_goal_minutes: number; weekly_goal_questions: number }>(
+            'select id, name, exam_date, kind, weekly_goal_minutes, weekly_goal_questions from plans where user_id = $1 and id = $2',
             [userId, planId],
           )
         ).rows[0]
       : undefined
-    if (!plan) return { ...base, plan: null, subjects: [], planning: null, studies: [], studiedDates: [], reviewsDue: 0 }
+    if (!plan) return { ...base, plan: null, subjects: [], planning: null, studies: [], studiedDates: [], reviewsDue: 0, assessments: [] }
 
     const subjects = (
       await pool.query<{ id: string; name: string; color: string }>(
@@ -133,6 +134,7 @@ export async function watchRoutes(app: FastifyInstance, { pool }: Deps) {
         id: string
         subject_id: string
         topic_id: string | null
+        assessment_id: string | null
         category_id: string
         date: string
         time: string | null
@@ -141,7 +143,7 @@ export async function watchRoutes(app: FastifyInstance, { pool }: Deps) {
         misses: number
         count_in_planning: boolean
       }>(
-        `select id, subject_id, topic_id, category_id, date, time, duration, hits, misses, count_in_planning
+        `select id, subject_id, topic_id, assessment_id, category_id, date, time, duration, hits, misses, count_in_planning
            from studies where user_id = $1 and plan_id = $2 and date >= $3
           order by date, time nulls first, created_at, id`,
         [userId, plan.id, since],
@@ -150,6 +152,7 @@ export async function watchRoutes(app: FastifyInstance, { pool }: Deps) {
       id: r.id,
       subjectId: r.subject_id,
       ...(r.topic_id ? { topicId: r.topic_id } : {}),
+      ...(r.assessment_id ? { assessmentId: r.assessment_id } : {}),
       categoryId: r.category_id,
       date: r.date,
       ...(r.time ? { time: r.time } : {}),
@@ -173,12 +176,23 @@ export async function watchRoutes(app: FastifyInstance, { pool }: Deps) {
       )
     ).rows[0].n
 
+    // pendentes: as atrasadas primeiro, depois as próximas; o relógio mostra poucas
+    const assessments = (
+      await pool.query<{ id: string; subject_id: string; name: string; kind: AssessmentKind; date: string; time: string | null }>(
+        `select id, subject_id, name, kind, date, time from assessments
+          where user_id = $1 and plan_id = $2 and not done
+          order by date, time nulls last, id limit 60`,
+        [userId, plan.id],
+      )
+    ).rows.map((r) => ({ id: r.id, subjectId: r.subject_id, name: r.name, kind: r.kind, date: r.date, ...(r.time ? { time: r.time } : {}) }))
+
     return {
       ...base,
       plan: {
         id: plan.id,
         name: plan.name,
         ...(plan.exam_date ? { examDate: plan.exam_date } : {}),
+        ...(plan.kind === 'universidade' ? { kind: 'universidade' as const } : {}),
         weeklyGoal: { minutes: plan.weekly_goal_minutes, questions: plan.weekly_goal_questions },
       },
       subjects,
@@ -186,6 +200,7 @@ export async function watchRoutes(app: FastifyInstance, { pool }: Deps) {
       studies,
       studiedDates,
       reviewsDue,
+      assessments,
     }
   })
 }
