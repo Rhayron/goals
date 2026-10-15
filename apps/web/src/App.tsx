@@ -5,7 +5,7 @@ import { AuthProvider, useAuth } from './lib/auth'
 import { api, ApiError } from './lib/api'
 import { StoreProvider } from './lib/store'
 import { Layout } from './components/Layout'
-import { BrewingScreen } from './components/BrewingScreen'
+import { LoadingScreen } from './components/LoadingScreen'
 import { WelcomeProvider } from './components/welcome/Welcome'
 import LoginPage from './pages/Login'
 import Home from './pages/Home'
@@ -34,7 +34,7 @@ export default function App() {
 /** Decide entre carregamento, tela de entrada e o app */
 function Gate() {
   const { state } = useAuth()
-  if (state.status === 'loading') return <BrewingScreen />
+  if (state.status === 'loading') return <LoadingScreen />
   if (state.status === 'anonymous') return <LoginPage config={state.config} reason={state.reason} />
   return <AccountApp key={state.me.id} />
 }
@@ -58,7 +58,7 @@ function AccountApp() {
 
   useEffect(load, [load])
 
-  if (!data) return <BrewingScreen error={error} onRetry={load} />
+  if (!data) return <LoadingScreen error={error} onRetry={load} />
 
   return (
     <StoreProvider initial={data} onUnauthorized={expire}>

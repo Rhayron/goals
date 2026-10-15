@@ -7,6 +7,7 @@ import { api } from '../lib/api'
 import { useStore } from '../lib/store'
 import type { AppState, TimerPrefs } from '../lib/types'
 import { cachedPalette, choosePalette, type Palette } from '../lib/legacy'
+import { BRAND, BRAND_SLUG } from '../lib/brand'
 import { clsx, today, uid } from '../lib/utils'
 
 const THEMES: { value: AppState['theme']; label: string; icon: ReactNode }[] = [
@@ -18,7 +19,7 @@ const THEMES: { value: AppState['theme']; label: string; icon: ReactNode }[] = [
 /** Prévia de cada paleta: cada amostra mostra as próprias cores, não as da paleta ativa (ver index.css).
  *  A escolha vale só para esta instância (navegador ou aparelho): não vai para a conta. */
 const PALETTES: { value: Palette; label: string; accent: string; light: string; dark: string }[] = [
-  { value: 'cafe', label: 'Café', accent: '#ad7a4a', light: '#f4ece1', dark: '#1b1410' },
+  { value: 'cafe', label: 'Âmbar', accent: '#ad7a4a', light: '#f4ece1', dark: '#1b1410' },
   { value: 'grafite', label: 'Grafite', accent: '#5b6d83', light: '#f3f4f6', dark: '#121418' },
   { value: 'oceano', label: 'Oceano', accent: '#2a84ad', light: '#eef4f7', dark: '#0d171d' },
   { value: 'floresta', label: 'Floresta', accent: '#47844d', light: '#f1f4ee', dark: '#10150f' },
@@ -129,7 +130,7 @@ function DataSection() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `coado-backup-${today()}.json`
+    a.download = `${BRAND_SLUG}-backup-${today()}.json`
     a.click()
     URL.revokeObjectURL(url)
     setMessage({ ok: true, text: 'Backup exportado.' })
@@ -148,7 +149,7 @@ function DataSection() {
       setMessage({ ok: true, text: `Backup importado: ${data.plans.length} plano(s), ${data.studies.length} estudo(s).` })
     } catch (err) {
       const invalid = err instanceof SyntaxError || (err as Error).message === 'invalid'
-      setMessage({ ok: false, text: invalid ? 'Arquivo inválido. Selecione um backup .json exportado pelo Coado.' : (err as Error).message })
+      setMessage({ ok: false, text: invalid ? `Arquivo inválido. Selecione um backup .json exportado pelo ${BRAND}.` : (err as Error).message })
     }
   }
 
@@ -384,7 +385,7 @@ function WatchSection() {
         <Watch size={18} className="mt-0.5 shrink-0 text-brand-500" />
         <div className="min-w-0 flex-1">
           <p className="text-sm text-muted">
-            O Coado para Wear OS roda o pomodoro no pulso, puxa a próxima sessão do ciclo e registra os estudos nesta conta.
+            O {BRAND} para Wear OS roda o pomodoro no pulso, puxa a próxima sessão do ciclo e registra os estudos nesta conta.
           </p>
           {code ? (
             <div className="mt-3 rounded-xl border border-dashed border-brand-400 bg-brand-50 p-4 text-center dark:bg-brand-600/10">

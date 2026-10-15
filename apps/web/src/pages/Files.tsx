@@ -3,7 +3,7 @@ import { Download, ExternalLink, FileArchive, FileImage, FileSpreadsheet, FileTe
 import type { FileMeta, FilesResponse, StorageUsage } from '@coado/shared'
 import { PageHeader } from '../components/Layout'
 import { Card, ColorDot, Empty, IconButton, confirmAction } from '../components/ui'
-import { EnvelopeArt } from '../components/cafe-art'
+import { FilesArt } from '../components/study-art'
 import { api, ApiError, uploadWithProgress } from '../lib/api'
 import { useStore } from '../lib/store'
 import { clsx, fmtBytes } from '../lib/utils'
@@ -141,7 +141,7 @@ export default function FilesPage() {
             dragging ? 'scale-[1.01] border-brand-500 bg-brand-50 dark:bg-brand-600/10' : 'border-line bg-kraft/50 hover:border-brand-300',
           )}
         >
-          <EnvelopeArt className={clsx('h-28 w-auto shrink-0 transition', dragging && '-rotate-3 scale-105')} />
+          <FilesArt className={clsx('h-28 w-auto shrink-0 transition', dragging && '-rotate-3 scale-105')} />
           <div className="min-w-0 flex-1">
             <p className="font-display text-xl font-bold">{dragging ? 'Pode soltar aqui ✉️' : 'Guarde seus materiais'}</p>
             <p className="mt-1 text-sm text-muted">
@@ -183,7 +183,7 @@ export default function FilesPage() {
           />
         </label>
 
-        <StorageJar usage={usage} count={files?.length ?? 0} />
+        <StorageMeter usage={usage} count={files?.length ?? 0} />
       </div>
 
       {uploads.length > 0 && (
@@ -369,27 +369,19 @@ function FileCard({
   )
 }
 
-/** Medidor de espaço em forma de pote de grãos */
-function StorageJar({ usage, count }: { usage: StorageUsage | null; count: number }) {
+/** Medidor de espaço: um anel com a fração usada */
+function StorageMeter({ usage, count }: { usage: StorageUsage | null; count: number }) {
   const ratio = usage ? Math.min(1, usage.used / usage.quota) : 0
-  const beans = Math.round(ratio * 24)
   return (
     <Card className="flex items-center gap-4">
-      <svg viewBox="0 0 70 90" className="h-24 w-auto shrink-0" role="img" aria-label={`${Math.round(ratio * 100)}% do espaço usado`}>
-        <rect x="10" y="18" width="50" height="66" rx="10" fill="var(--color-brand-50)" stroke="var(--app-ink)" strokeWidth="2" />
-        <clipPath id="jar-inside">
-          <rect x="11" y="19" width="48" height="64" rx="9" />
-        </clipPath>
-        <g clipPath="url(#jar-inside)">
-          <rect x="10" y={84 - ratio * 64} width="50" height={ratio * 64} fill="var(--color-brand-600)" style={{ transition: 'all 600ms' }} />
-          {Array.from({ length: beans }, (_, i) => (
-            <ellipse key={i} cx={16 + (i % 6) * 8} cy={80 - Math.floor(i / 6) * 9} rx="3.4" ry="2.4" fill="var(--color-brand-800)" transform={`rotate(${i * 47} ${16 + (i % 6) * 8} ${80 - Math.floor(i / 6) * 9})`} />
-          ))}
-        </g>
-        <rect x="14" y="8" width="42" height="12" rx="3" fill="var(--color-brand-600)" stroke="var(--app-ink)" strokeWidth="2" />
+      <svg viewBox="0 0 90 90" className="h-24 w-auto shrink-0" role="img" aria-label={`${Math.round(ratio * 100)}% do espaço usado`}>
+        <circle cx="45" cy="45" r="34" fill="var(--color-brand-50)" stroke="var(--color-brand-100)" strokeWidth="12" />
+        <circle cx="45" cy="45" r="34" fill="none" stroke="var(--color-brand-600)" strokeWidth="12" strokeLinecap="round"
+          strokeDasharray={2 * Math.PI * 34} strokeDashoffset={2 * Math.PI * 34 * (1 - ratio)} transform="rotate(-90 45 45)" style={{ transition: 'stroke-dashoffset 600ms' }} />
+        <text x="45" y="50" textAnchor="middle" fontSize="15" fontWeight="700" fill="var(--app-ink)">{Math.round(ratio * 100)}%</text>
       </svg>
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Seu pote</p>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted">Seu espaço</p>
         {usage ? (
           <>
             <p className="mt-1 text-xl font-semibold tabular">{fmtBytes(usage.used)}</p>

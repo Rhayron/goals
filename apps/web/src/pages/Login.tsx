@@ -4,7 +4,8 @@ import type { AuthConfig, AuthErrorCode } from '@coado/shared'
 import { useAuth } from '../lib/auth'
 import { native } from '../lib/native'
 import { Logo } from '../components/Layout'
-import { CafeSceneArt, Equalizer, GoogleG, VinylArt } from '../components/cafe-art'
+import { DeskSceneArt, GoogleG } from '../components/study-art'
+import { TAGLINE } from '../lib/brand'
 import { clsx } from '../lib/utils'
 
 const AUTH_ERRORS: Record<AuthErrorCode, string> = {
@@ -16,21 +17,19 @@ const AUTH_ERRORS: Record<AuthErrorCode, string> = {
 }
 
 const MOMENTS = [
-  { until: 5, hello: 'Ainda acordado?', line: 'A gente também. Café fresco e silêncio de madrugada.' },
-  { until: 12, hello: 'Bom dia!', line: 'O primeiro café já tá passando. Mesa perto da janela livre.' },
-  { until: 18, hello: 'Boa tarde.', line: 'Hora do cafezinho e de mais um bloco de estudos.' },
-  { until: 24, hello: 'Boa noite.', line: 'Chuva lá fora, café aqui dentro. Bora estudar?' },
+  { until: 5, hello: 'Ainda acordado?', line: 'Madrugada rende revisão, mas o sono também conta.' },
+  { until: 12, hello: 'Bom dia!', line: 'De manhã cabe o conteúdo mais pesado.' },
+  { until: 18, hello: 'Boa tarde.', line: 'Ainda dá tempo de mais um bloco de estudos.' },
+  { until: 24, hello: 'Boa noite.', line: 'Uma sessão curta hoje já conta.' },
 ]
 
 const MENU = [
-  ['Ciclo de estudos', 'coado na hora'],
-  ['Pomodoro duplo', 'com pausa pro biscoito'],
-  ['Revisões espaçadas', 'servidas no ponto · 1 · 7 · 30'],
-  ['Edital verticalizado', 'na prensa francesa'],
-  ['Estatísticas', 'com chantilly'],
+  ['Ciclo de estudos', 'pelo peso de cada matéria'],
+  ['Pomodoro', 'com pausas curtas e longas'],
+  ['Revisões espaçadas', '1 · 7 · 30 dias'],
+  ['Edital ou programa', 'tópico a tópico'],
+  ['Estatísticas', 'tempo, acertos e constância'],
 ]
-
-const TRACKS = ['chuva na janela', 'vinil arranhado das 2h', 'cafeteria vazia', 'gato ronronando', 'páginas virando']
 
 /** Lê e limpa ?authError= da URL (vem do callback do Google) */
 function useAuthError() {
@@ -49,13 +48,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
   const authError = useAuthError()
   const [busy, setBusy] = useState<'google' | 'dev' | null>(null)
   const [devError, setDevError] = useState('')
-  const [track, setTrack] = useState(0)
   const moment = MOMENTS.find((m) => new Date().getHours() < m.until) ?? MOMENTS[3]
-
-  useEffect(() => {
-    const t = setInterval(() => setTrack((i) => (i + 1) % TRACKS.length), 6000)
-    return () => clearInterval(t)
-  }, [])
 
   const google = () => {
     // na WebView do app o Google recusa o fluxo web: o app faz o login nativo e renova a sessão daqui
@@ -82,20 +75,10 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[1.1fr_1fr]">
       {/* cena */}
-      <section className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-b from-brand-100 via-kraft to-brand-200 px-6 pb-6 pt-10 dark:from-[#241a14] dark:via-[#2b2019] dark:to-[#1b1410] lg:min-h-screen lg:px-12 lg:pb-10">
+      <section className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-b from-brand-100 via-kraft to-brand-200 px-6 pb-6 pt-10 dark:from-brand-900 dark:via-surface dark:to-bg lg:min-h-screen lg:px-12 lg:pb-10">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-700/20" />
-        <CafeSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
-        <div className="mx-auto mt-6 flex w-full max-w-[600px] items-center gap-3 rounded-2xl border border-line/70 bg-surface/80 p-3 shadow-sm backdrop-blur animate-rise" style={{ animationDelay: '150ms' }}>
-          <VinylArt className="h-11 w-11 shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">tocando agora</p>
-            <p key={track} className="truncate font-display text-sm font-semibold animate-rise">
-              lofi pra estudar — {TRACKS[track]}
-            </p>
-          </div>
-          <Equalizer className="mr-1 text-brand-500" />
-        </div>
-      </section>
+        <DeskSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
+</section>
 
       {/* entrada */}
       <main className="flex items-center justify-center px-6 py-10 lg:px-12">
@@ -105,10 +88,10 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             {moment.hello}
           </p>
           <h1 className="mt-1 text-4xl font-bold leading-tight tracking-tight animate-rise" style={{ animationDelay: '120ms' }}>
-            Seu cantinho de estudos te espera.
+            Seus estudos, organizados.
           </h1>
           <p className="mt-3 text-muted animate-rise" style={{ animationDelay: '160ms' }}>
-            {moment.line} Planeje o edital, cronometre as sessões, revise no tempo certo e veja o progresso aparecer, um gole por vez.
+            {moment.line} Planeje o edital, cronometre as sessões, revise no tempo certo e veja o progresso aparecer, {TAGLINE}
           </p>
 
           {notice && (
@@ -120,7 +103,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
           <div className="mt-8 space-y-3 animate-rise" style={{ animationDelay: '220ms' }}>
             {unreachable ? (
               <div className="rounded-2xl border border-line bg-surface p-4 text-sm">
-                <p className="font-semibold">A cafeteria não atendeu.</p>
+                <p className="font-semibold">O servidor não respondeu.</p>
                 <p className="mt-1 text-muted">Não consegui falar com o servidor. Confere a conexão e tenta de novo.</p>
                 <button onClick={reload} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-line px-3 py-1.5 text-sm font-medium hover:bg-surface-2">
                   <RefreshCcw size={14} /> Tentar de novo
@@ -161,9 +144,9 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             )}
           </div>
 
-          {/* cardápio */}
-          <section aria-label="Cardápio da casa" className="chalkboard mt-10 rounded-2xl border-[6px] border-brand-700 p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] animate-rise" style={{ animationDelay: '300ms' }}>
-            <p className="text-center font-display text-lg italic tracking-wide">~ cardápio da casa ~</p>
+          {/* o que tem aqui */}
+          <section aria-label="O que tem aqui" className="chalkboard mt-10 rounded-2xl border-[6px] border-brand-700 p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] animate-rise" style={{ animationDelay: '300ms' }}>
+            <p className="text-center font-display text-lg italic tracking-wide">o que tem aqui</p>
             <ul className="mt-3 space-y-1.5 text-sm">
               {MENU.map(([item, note]) => (
                 <li key={item} className="flex items-baseline gap-2">
@@ -173,7 +156,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-center text-xs text-white/60">tudo à vontade · refil grátis</p>
+            <p className="mt-4 text-center text-xs text-white/60">tudo na sua conta, em todos os seus aparelhos</p>
           </section>
 
           <p className="mt-6 text-center text-xs text-muted">

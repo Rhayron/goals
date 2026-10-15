@@ -3,7 +3,7 @@ import { Play } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { firstName, useMe } from '../../lib/auth'
 import { constancy, cycleProgress, fmtMinutes, today } from '../../lib/utils'
-import { CupArt } from '../art'
+import { LampArt } from '../art'
 
 const greeting = () => {
   const h = new Date().getHours()
@@ -24,10 +24,10 @@ export function CozyBanner() {
 
   const line =
     c.current > 0
-      ? `Você está há ${c.current} ${c.current === 1 ? 'dia' : 'dias'} seguidos estudando. Mantém o ritmo ☕`
+      ? `Você está há ${c.current} ${c.current === 1 ? 'dia' : 'dias'} seguidos estudando. Mantém o ritmo.`
       : c.daysSinceLast === null
-        ? 'Coloca um lofi, pega um café e registra o primeiro estudo.'
-        : `Faz ${c.daysSinceLast} ${c.daysSinceLast === 1 ? 'dia' : 'dias'} desde o último estudo. Um café e 30 minutos já contam.`
+        ? 'Registra o primeiro estudo: 30 minutos já contam.'
+        : `Faz ${c.daysSinceLast} ${c.daysSinceLast === 1 ? 'dia' : 'dias'} desde o último estudo. 30 minutos hoje já contam.`
 
   return (
     <section className="mb-6 flex items-center gap-4 overflow-hidden rounded-2xl border border-line bg-gradient-to-r from-brand-100 via-surface to-surface p-5 dark:from-brand-900/60">
@@ -50,7 +50,7 @@ export function CozyBanner() {
           )}
         </div>
       </div>
-      <CupArt className="hidden h-28 w-auto shrink-0 sm:block" />
+      <LampArt className="hidden h-28 w-auto shrink-0 sm:block" />
     </section>
   )
 }

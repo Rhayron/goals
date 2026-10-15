@@ -3,7 +3,7 @@ import { CloudRain, Maximize2, Minimize2, Pause, Play, Settings, SkipForward, Sq
 import { useStore } from '../lib/store'
 import { clsx, fmtClock } from '../lib/utils'
 import { Logo } from './Layout'
-import { CupArt, RainWindowArt } from './art'
+import { LampArt, RainWindowArt } from './art'
 
 type Mode = 'stopwatch' | 'countdown' | 'pomodoro'
 type Phase = 'study' | 'short' | 'long'
@@ -216,7 +216,7 @@ export function TimerOverlay() {
   return (
     <div className="dark fixed inset-0 z-50 flex flex-col overflow-hidden bg-[#1b1410]/[0.97] text-white backdrop-blur">
       <RainWindowArt className="pointer-events-none absolute left-8 top-20 hidden w-72 opacity-90 lg:block" />
-      <CupArt className="pointer-events-none absolute bottom-10 right-12 hidden w-44 lg:block" />
+      <LampArt className="pointer-events-none absolute bottom-10 right-12 hidden w-44 lg:block" />
       <div className="relative flex items-center justify-end gap-1 p-4">
         <button
           onClick={rain.toggle}

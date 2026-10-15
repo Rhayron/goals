@@ -6,6 +6,7 @@ import { Button, Card, Empty, Tabs } from '../components/ui'
 import { useStore } from '../lib/store'
 import type { DateStr, Review } from '../lib/types'
 import { addDays, clsx, diffDays, fmtDate, parseDate, today, WEEKDAYS_LONG } from '../lib/utils'
+import { BRAND } from '../lib/brand'
 
 type Tab = 'scheduled' | 'late' | 'ignored' | 'done'
 
@@ -249,7 +250,7 @@ function IntervalsCard() {
         <Info size={18} className="mt-0.5 shrink-0 text-brand-500" />
         <p>
           Revisar o conteúdo em intervalos crescentes combate a curva do esquecimento e fixa a matéria na memória de longo prazo. Ao
-          registrar um estudo, o Coado agenda revisões automaticamente nos intervalos abaixo.
+          registrar um estudo, o {BRAND} agenda revisões automaticamente nos intervalos abaixo.
         </p>
       </div>
 

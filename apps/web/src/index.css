@@ -6,7 +6,7 @@
   --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
 
-  /* mocha / caramelo */
+  /* âmbar (paleta original) */
   --color-brand-50: #f9f1e7;
   --color-brand-100: #f1e1cf;
   --color-brand-200: #e4c7a8;
@@ -82,7 +82,7 @@
   }
 }
 
-/* ☀️ tarde na cafeteria */
+/* ☀️ modo claro */
 :root {
   --app-bg: #f4ece1;
   --app-surface: #fffaf2;
@@ -97,7 +97,7 @@
   color-scheme: light;
 }
 
-/* 🌙 madrugada de lofi */
+/* 🌙 modo noturno */
 .dark {
   --app-bg: #1b1410;
   --app-surface: #251c16;
@@ -113,7 +113,7 @@
 }
 
 /* ───── paletas ─────
- * A original (café) é a de cima. Cada paleta troca a escala de destaque (brand-*) e as superfícies
+ * A original (âmbar) é a de cima. Cada paleta troca a escala de destaque (brand-*) e as superfícies
  * (--app-*) nos dois modos, com mais especificidade que :root e .dark. Ver lib/legacy.ts → applyPalette.
  */
 
@@ -362,7 +362,7 @@ svg .animate-pop {
   transform-origin: center bottom;
 }
 
-/* quadro-negro do cardápio */
+/* quadro-negro do login */
 .chalkboard {
   background-color: #2f3a33;
   background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);

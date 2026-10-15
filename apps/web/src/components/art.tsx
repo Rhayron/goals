@@ -1,7 +1,7 @@
 import { clsx } from '../lib/utils'
 
 /*
- * Ilustrações em SVG com traço "feito à mão", nos tons do tema (brand = mocha).
+ * Ilustrações em SVG com traço "feito à mão", nos tons do tema (brand = cor de destaque da paleta).
  * Todas aceitam className para dimensionar (ex.: "h-24") e seguem o modo claro/noturno via tokens.
  */
 
@@ -10,27 +10,24 @@ type ArtProps = { className?: string; title?: string }
 const ink = 'var(--app-ink)'
 const stroke = { stroke: ink, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' } as const
 
-/** Xícara de café com vapor animado */
-export function CupArt({ className, title = 'Xícara de café' }: ArtProps) {
+/** Luminária de mesa acesa: o "estou estudando" da tela do cronômetro e do banner da home */
+export function LampArt({ className, title = 'Luminária de mesa' }: ArtProps) {
   return (
     <svg viewBox="0 0 120 110" className={clsx('block', className)} role="img" aria-label={title}>
-      <ellipse cx="60" cy="100" rx="40" ry="5" fill={ink} opacity="0.08" />
-      <path d="M26 46h60v24a22 22 0 0 1-22 22H48a22 22 0 0 1-22-22z" fill="var(--color-brand-100)" />
-      <path d="M26 46h60v24a22 22 0 0 1-22 22H48a22 22 0 0 1-22-22z" {...stroke} />
-      <path d="M86 52h8a9 9 0 0 1 0 18h-8" {...stroke} />
-      <ellipse cx="56" cy="46" rx="30" ry="5" fill="var(--color-brand-600)" />
-      <ellipse cx="56" cy="46" rx="30" ry="5" {...stroke} />
-      <path d="M44 58c6 4 18 4 24 0" {...stroke} strokeOpacity="0.35" />
-      {[42, 56, 70].map((x, i) => (
-        <path
-          key={x}
-          d={`M${x} 34c-5-6 5-8 0-14`}
-          {...stroke}
-          strokeOpacity="0.55"
-          className="animate-steam"
-          style={{ animationDelay: `${i * 0.9}s`, transformOrigin: `${x}px 34px` }}
-        />
-      ))}
+      <ellipse cx="60" cy="102" rx="42" ry="5" fill={ink} opacity="0.08" />
+      {/* facho de luz */}
+      <path d="M58 44L30 92h52z" fill="var(--color-brand-200)" opacity="0.45" className="animate-pulse" />
+      {/* base e braço */}
+      <rect x="34" y="92" width="44" height="8" rx="4" fill="var(--color-brand-600)" />
+      <rect x="34" y="92" width="44" height="8" rx="4" {...stroke} />
+      <path d="M56 92L72 58L52 34" {...stroke} strokeWidth={3} />
+      <circle cx="72" cy="58" r="3.5" {...stroke} fill="var(--app-surface)" />
+      {/* cúpula */}
+      <path d="M36 30l22-14l14 20z" fill="var(--color-brand-500)" />
+      <path d="M36 30l22-14l14 20z" {...stroke} />
+      <circle cx="54" cy="36" r="4" fill="var(--app-warn)" />
+      {/* livro aberto sob a luz */}
+      <path d="M40 88q10-6 20 0q10-6 20 0v4q-10-6-20 0q-10-6-20 0z" {...stroke} fill="var(--app-surface)" strokeWidth={1.6} />
     </svg>
   )
 }
@@ -74,8 +71,8 @@ export function CatWindowArt({ className, title = 'Gato na janela' }: ArtProps) 
   )
 }
 
-/** Pilha de livros com caneca — estados vazios */
-export function BooksMugArt({ className, title = 'Livros e caneca' }: ArtProps) {
+/** Pilha de livros com uma planta: estados vazios */
+export function BooksArt({ className, title = 'Livros e planta' }: ArtProps) {
   return (
     <svg viewBox="0 0 160 110" className={clsx('block', className)} role="img" aria-label={title}>
       <ellipse cx="80" cy="102" rx="60" ry="5" fill={ink} opacity="0.08" />
@@ -86,13 +83,11 @@ export function BooksMugArt({ className, title = 'Livros e caneca' }: ArtProps) 
       <rect x="30" y="42" width="62" height="18" rx="3" fill="var(--color-brand-100)" />
       <rect x="30" y="42" width="62" height="18" rx="3" {...stroke} />
       <path d="M40 51h30M44 69h40M38 87h50" {...stroke} strokeOpacity="0.4" />
-      {/* caneca */}
-      <path d="M110 62h28v26a8 8 0 0 1-8 8h-12a8 8 0 0 1-8-8z" fill="var(--color-brand-600)" />
-      <path d="M110 62h28v26a8 8 0 0 1-8 8h-12a8 8 0 0 1-8-8z" {...stroke} />
-      <path d="M138 68h4a6 6 0 0 1 0 12h-4" {...stroke} />
-      {[118, 130].map((x, i) => (
-        <path key={x} d={`M${x} 52c-4-5 4-7 0-12`} {...stroke} strokeOpacity="0.5" className="animate-steam" style={{ animationDelay: `${i * 1.1}s`, transformOrigin: `${x}px 52px` }} />
-      ))}
+      {/* vaso com planta */}
+      <path d="M114 72h22l-3 22a4 4 0 0 1-4 3h-8a4 4 0 0 1-4-3z" fill="var(--color-brand-600)" />
+      <path d="M114 72h22l-3 22a4 4 0 0 1-4 3h-8a4 4 0 0 1-4-3z" {...stroke} />
+      <path d="M125 72c0-10-2-18-10-24c8 0 12 6 10 24zM125 72c0-12 4-22 12-26c0 10-4 18-12 26z" fill="var(--app-ok)" opacity="0.8" />
+      <path d="M125 72c0-10-2-18-10-24M125 72c0-12 4-22 12-26" {...stroke} />
       {/* óculos pousados */}
       <circle cx="52" cy="32" r="7" {...stroke} />
       <circle cx="70" cy="32" r="7" {...stroke} />
@@ -190,16 +185,16 @@ export function RainWindowArt({ className, title = 'Janela com chuva' }: ArtProp
   )
 }
 
-export type ArtName = 'cup' | 'cat' | 'books' | 'cassette' | 'headphones' | 'none'
+export type ArtName = 'lamp' | 'cat' | 'books' | 'cassette' | 'headphones' | 'none'
 
 export function Art({ name, className }: { name: ArtName; className?: string }) {
   switch (name) {
-    case 'cup':
-      return <CupArt className={className} />
+    case 'lamp':
+      return <LampArt className={className} />
     case 'cat':
       return <CatWindowArt className={className} />
     case 'books':
-      return <BooksMugArt className={className} />
+      return <BooksArt className={className} />
     case 'cassette':
       return <CassetteArt className={className} />
     case 'headphones':

@@ -25,6 +25,7 @@ import { StudyModal } from './StudyModal'
 import { TimerOverlay } from './TimerOverlay'
 import { NoteWidget } from './NoteWidget'
 import { CatWindowArt } from './art'
+import { BRAND_SLUG, TAGLINE } from '../lib/brand'
 import { Avatar, SyncBadge } from './account'
 import { useAuth, useMe } from '../lib/auth'
 
@@ -46,12 +47,12 @@ export function Logo({ className }: { className?: string }) {
     <div className={clsx('flex items-center gap-2', className)}>
       <svg viewBox="0 0 32 32" className="h-9 w-9" aria-hidden>
         <rect width="32" height="32" rx="9" className="fill-brand-100 dark:fill-brand-900" />
-        <path d="M8 13h13v7a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5z" className="fill-brand-600" />
-        <path d="M21 15h2.5a2.5 2.5 0 0 1 0 5H21" fill="none" strokeWidth="2" className="stroke-brand-600" />
-        <path d="M12 10c0-2 2-2 2-4" fill="none" strokeWidth="1.6" strokeLinecap="round" className="animate-steam stroke-brand-400" style={{ transformOrigin: '13px 10px' }} />
-        <path d="M17 10c0-2 2-2 2-4" fill="none" strokeWidth="1.6" strokeLinecap="round" className="animate-steam stroke-brand-400" style={{ transformOrigin: '18px 10px', animationDelay: '1.4s' }} />
+        {/* trilha: um caminho entre dois marcos */}
+        <path d="M9 23c5 0 4-6 7-6s3-6 7-6" fill="none" strokeWidth="2.4" strokeLinecap="round" className="stroke-brand-600" />
+        <circle cx="9" cy="23" r="2.8" className="fill-brand-600" />
+        <circle cx="23" cy="11" r="2.8" className="fill-brand-400" />
       </svg>
-      <span className="font-display text-2xl font-bold tracking-tight">coado</span>
+      <span className="font-display text-2xl font-bold tracking-tight">{BRAND_SLUG}</span>
     </div>
   )
 }
@@ -97,7 +98,7 @@ export function Layout() {
         </nav>
         <div className="px-4 pb-1 pt-3 [@media(max-height:820px)]:hidden">
           <CatWindowArt className="w-full" />
-          <p className="mt-1 text-center font-display text-xs italic text-muted">☕ um gole por vez.</p>
+          <p className="mt-1 text-center font-display text-xs italic text-muted">{TAGLINE}</p>
         </div>
         <div className="space-y-0.5 border-t border-line px-3 py-3">
           <NavLink

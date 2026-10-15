@@ -11,7 +11,7 @@ const MIGRATED_KEY = 'rumo:v1:migrado'
 const THEME_KEY = 'coado:tema'
 const PALETTE_KEY = 'coado:paleta'
 
-/** Paleta usada antes do tema café; cores nela são trocadas pelas pastéis equivalentes */
+/** Paleta usada antes da paleta âmbar; cores nela são trocadas pelas pastéis equivalentes */
 const LEGACY_COLORS = [
   '#FEAEA5', '#FFB6C1', '#FFEDBB', '#B0EAEB', '#FF9999', '#FFDE87', '#B9ACBD', '#ABE0AC',
   '#E8BDFF', '#AFCAF9', '#9ED8C4', '#F7C59F', '#C3B1E1', '#A0C4FF', '#FDCB82', '#B5EAD7',
@@ -72,7 +72,7 @@ export function applyTheme(theme: AppState['theme']) {
 
 /**
  * Paleta de cores. É escolha de cada instância (este navegador, este aparelho) e não sincroniza pela
- * conta: fica só no localStorage. `cafe` é a original; as outras não têm relação com café.
+ * conta: fica só no localStorage. `cafe` é o id interno da original (âmbar); fica assim para não invalidar a escolha já salva.
  */
 export type Palette = 'cafe' | 'grafite' | 'oceano' | 'floresta' | 'ameixa' | 'magenta'
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Coffee, Laptop, Loader2, LogOut, Pencil, Smartphone, Sparkles, Trash2, Watch } from 'lucide-react'
+import { CalendarDays, Check, Laptop, Loader2, LogOut, Pencil, Smartphone, Sparkles, Trash2, Watch } from 'lucide-react'
+import { BRAND } from '../lib/brand'
 import type { SessionInfo, StorageUsage, FilesResponse } from '@coado/shared'
 import { PageHeader } from '../components/Layout'
 import { Button, Card, Modal } from '../components/ui'
@@ -54,11 +55,6 @@ function IdentityCard() {
 
   return (
     <section className="relative overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-brand-100 via-surface to-surface p-6 dark:from-brand-900/60">
-      {/* marca de xícara no papel */}
-      <svg viewBox="0 0 100 100" className="pointer-events-none absolute -right-6 -top-6 h-40 w-40 opacity-[0.12]" aria-hidden>
-        <circle cx="50" cy="50" r="38" fill="none" stroke="var(--color-brand-700)" strokeWidth="6" strokeDasharray="160 12 40 8" />
-        <circle cx="50" cy="50" r="31" fill="none" stroke="var(--color-brand-700)" strokeWidth="1.5" />
-      </svg>
       <div className="relative flex flex-wrap items-center gap-5">
         <Avatar name={me.name} src={me.avatarUrl} className="h-20 w-20 text-2xl shadow-md" />
         <div className="min-w-0 flex-1">
@@ -85,7 +81,7 @@ function IdentityCard() {
           )}
           <p className="text-sm text-muted">{me.email}</p>
           <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface/80 px-3 py-1 text-xs font-semibold">
-            <Coffee size={13} className="text-brand-600" /> na cafeteria desde {since}
+            <CalendarDays size={13} className="text-brand-600" /> estudando desde {since}
           </p>
         </div>
         <Button variant="secondary" size="sm" onClick={openWelcome}>
@@ -96,7 +92,7 @@ function IdentityCard() {
   )
 }
 
-/** Cartão fidelidade: um carimbo por dia com estudo nos últimos 10 dias */
+/** Cartão de constância: um carimbo por dia com estudo nos últimos 10 dias */
 function LoyaltyCard() {
   const me = useMe()
   const { state } = useStore()
@@ -113,8 +109,8 @@ function LoyaltyCard() {
     <section className="relative overflow-hidden rounded-3xl border-2 border-dashed border-brand-300 bg-kraft/60 p-5">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">cartão fidelidade</p>
-          <p className="font-display text-xl font-bold">Café de {firstName(me.name)}</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted">cartão de constância</p>
+          <p className="font-display text-xl font-bold">Dez dias de {firstName(me.name)}</p>
         </div>
         <p className="font-display text-3xl font-bold tabular text-brand-700 dark:text-brand-300">
           {stamps}
@@ -131,7 +127,7 @@ function LoyaltyCard() {
               )}
               style={d.stamped ? { animationDelay: `${i * 60}ms` } : undefined}
             >
-              <Coffee size={16} />
+              <Check size={16} />
             </span>
             <span className="text-[10px] text-muted tabular">{d.date.slice(8)}</span>
           </li>
@@ -139,7 +135,7 @@ function LoyaltyCard() {
       </ol>
       <p className="mt-4 text-xs text-muted">
         {stamps === LOYALTY_DAYS
-          ? 'Cartão completo! Dez dias seguidos de estudo. O próximo café é por conta da casa ☕'
+          ? 'Cartão completo! Dez dias seguidos de estudo.'
           : 'Cada dia com estudo registrado ganha um carimbo. Complete o cartão estudando dez dias seguidos.'}
       </p>
     </section>
@@ -193,7 +189,10 @@ function describeAgent(ua: string | null) {
   if (!ua) return { label: 'Navegador desconhecido', mobile: false, watch: false }
   // sessão de aparelho pareado (apps/watch): "Coado Watch (modelo)"
   const watch = /^Coado Watch(?: \((.+)\))?/.exec(ua)
-  if (watch) return { label: `Relógio Coado${watch[1] ? ` · ${watch[1]}` : ''}`, mobile: false, watch: true }
+  if (watch) return { label: `Relógio ${BRAND}${watch[1] ? ` · ${watch[1]}` : ''}`, mobile: false, watch: true }
+  // app do celular (apps/android/phone): "Coado Android (marca modelo)"
+  const phone = /^Coado Android(?: \((.+)\))?/.exec(ua)
+  if (phone) return { label: `Celular ${BRAND}${phone[1] ? ` · ${phone[1]}` : ''}`, mobile: true, watch: false }
   const browser = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'Navegador'
   const os = /Android/.test(ua) ? 'Android' : /iPhone|iPad/.test(ua) ? 'iOS' : /Windows/.test(ua) ? 'Windows' : /Mac OS/.test(ua) ? 'macOS' : /Linux/.test(ua) ? 'Linux' : ''
   return { label: os ? `${browser} · ${os}` : browser, mobile: /Mobi|Android|iPhone/.test(ua), watch: false }
