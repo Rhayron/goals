@@ -9,6 +9,7 @@ import { SUBJECT_COLORS } from './utils'
 const LEGACY_KEY = 'rumo:v1'
 const MIGRATED_KEY = 'rumo:v1:migrado'
 const THEME_KEY = 'coado:tema'
+const PALETTE_KEY = 'coado:paleta'
 
 /** Paleta usada antes do tema café; cores nela são trocadas pelas pastéis equivalentes */
 const LEGACY_COLORS = [
@@ -67,4 +68,43 @@ export function cacheTheme(theme: AppState['theme']) {
 export function applyTheme(theme: AppState['theme']) {
   const dark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   document.documentElement.classList.toggle('dark', dark)
+}
+
+/**
+ * Paleta de cores. É escolha de cada instância (este navegador, este aparelho) e não sincroniza pela
+ * conta: fica só no localStorage. `cafe` é a original; as outras não têm relação com café.
+ */
+export type Palette = 'cafe' | 'grafite' | 'oceano' | 'floresta' | 'ameixa' | 'magenta'
+
+const PALETTES: Palette[] = ['cafe', 'grafite', 'oceano', 'floresta', 'ameixa', 'magenta']
+
+/** Paleta salva nesta instância (a original, se não houver) */
+export function cachedPalette(): Palette {
+  try {
+    const p = localStorage.getItem(PALETTE_KEY) as Palette | null
+    return p && PALETTES.includes(p) ? p : 'cafe'
+  } catch {
+    return 'cafe'
+  }
+}
+
+export function cachePalette(palette: Palette) {
+  try {
+    localStorage.setItem(PALETTE_KEY, palette)
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Troca e guarda a paleta desta instância */
+export function choosePalette(palette: Palette) {
+  cachePalette(palette)
+  applyPalette(palette)
+}
+
+/** A paleta troca só as variáveis de cor (index.css, `:root[data-palette=…]`); a original não marca nada */
+export function applyPalette(palette: Palette) {
+  const root = document.documentElement
+  if (!palette || palette === 'cafe') delete root.dataset.palette
+  else root.dataset.palette = palette
 }

@@ -6,12 +6,24 @@ import { Button, Card, confirmAction, IconButton } from '../components/ui'
 import { api } from '../lib/api'
 import { useStore } from '../lib/store'
 import type { AppState, TimerPrefs } from '../lib/types'
+import { cachedPalette, choosePalette, type Palette } from '../lib/legacy'
 import { clsx, today, uid } from '../lib/utils'
 
 const THEMES: { value: AppState['theme']; label: string; icon: ReactNode }[] = [
   { value: 'light', label: 'Claro', icon: <Sun size={18} /> },
   { value: 'dark', label: 'Escuro', icon: <Moon size={18} /> },
   { value: 'system', label: 'Automático', icon: <Monitor size={18} /> },
+]
+
+/** Prévia de cada paleta: cada amostra mostra as próprias cores, não as da paleta ativa (ver index.css).
+ *  A escolha vale só para esta instância (navegador ou aparelho): não vai para a conta. */
+const PALETTES: { value: Palette; label: string; accent: string; light: string; dark: string }[] = [
+  { value: 'cafe', label: 'Café', accent: '#ad7a4a', light: '#f4ece1', dark: '#1b1410' },
+  { value: 'grafite', label: 'Grafite', accent: '#5b6d83', light: '#f3f4f6', dark: '#121418' },
+  { value: 'oceano', label: 'Oceano', accent: '#2a84ad', light: '#eef4f7', dark: '#0d171d' },
+  { value: 'floresta', label: 'Floresta', accent: '#47844d', light: '#f1f4ee', dark: '#10150f' },
+  { value: 'ameixa', label: 'Ameixa', accent: '#7f58b8', light: '#f4f1f7', dark: '#141019' },
+  { value: 'magenta', label: 'Magenta', accent: '#cf2f7c', light: '#f8f1f4', dark: '#170f13' },
 ]
 
 const TIMER_FIELDS: { key: Exclude<keyof TimerPrefs, 'sound'>; label: string; suffix: string; max: number }[] = [
@@ -44,6 +56,11 @@ export default function SettingsPage() {
 
 function AppearanceSection() {
   const { state, setTheme } = useStore()
+  const [palette, setPaletteState] = useState<Palette>(cachedPalette)
+  const setPalette = (p: Palette) => {
+    choosePalette(p)
+    setPaletteState(p)
+  }
   return (
     <Card title="Aparência">
       <div role="radiogroup" aria-label="Tema" className="grid grid-cols-3 gap-2">
@@ -62,6 +79,32 @@ function AppearanceSection() {
             >
               {t.icon}
               {t.label}
+            </button>
+          )
+        })}
+      </div>
+      <p className="mt-5 mb-1 text-sm font-medium text-ink">Paleta</p>
+      <p className="mb-2 text-xs text-muted">Vale só para este aparelho.</p>
+      <div role="radiogroup" aria-label="Paleta" className="grid grid-cols-3 gap-2">
+        {PALETTES.map((p) => {
+          const active = palette === p.value
+          return (
+            <button
+              key={p.value}
+              role="radio"
+              aria-checked={active}
+              onClick={() => setPalette(p.value)}
+              className={clsx(
+                'flex items-center gap-2.5 rounded-xl border-2 px-3 py-2.5 text-sm font-medium transition',
+                active ? 'border-brand-600 bg-brand-50 text-brand-700 dark:bg-brand-600/10 dark:text-brand-300' : 'border-line text-muted hover:text-ink',
+              )}
+            >
+              <span aria-hidden className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full border border-line">
+                <span className="absolute inset-y-0 left-0 w-1/2" style={{ background: p.light }} />
+                <span className="absolute inset-y-0 right-0 w-1/2" style={{ background: p.dark }} />
+                <span className="absolute inset-2 rounded-full" style={{ background: p.accent }} />
+              </span>
+              {p.label}
             </button>
           )
         })}
