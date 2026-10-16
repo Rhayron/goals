@@ -120,6 +120,8 @@ Monorepo com npm workspaces:
 
 ## Rodar com Docker
 
+Para publicar com Vercel e Railway, veja [DEPLOY.md](DEPLOY.md).
+
 ```bash
 cp .env.example .env
 # preencha POSTGRES_PASSWORD, SESSION_SECRET (openssl rand -hex 32) e as credenciais do Google
