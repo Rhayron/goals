@@ -37,7 +37,6 @@ COPY apps/api/start.sh apps/api/start.sh
 
 WORKDIR /app/apps/api
 USER node
-VOLUME /data/uploads
 EXPOSE 3000
 HEALTHCHECK --interval=15s --timeout=3s --start-period=10s --retries=3 \
   CMD wget -qO- "http://127.0.0.1:${PORT:-3000}/api/health" >/dev/null || exit 1
