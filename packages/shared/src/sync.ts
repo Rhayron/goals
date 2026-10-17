@@ -83,8 +83,7 @@ export function sanitizeState(s: AppState): AppState {
   const subjectIds = new Set(subjects.map((x) => x.id))
   const topics = dedupe(s.topics).filter((x) => subjectIds.has(x.subjectId))
   const topicIds = new Set(topics.map((x) => x.id))
-  const fixTopic = <T extends { topicId?: ID }>(x: T): T =>
-    x.topicId && !topicIds.has(x.topicId) ? { ...x, topicId: undefined } : x
+  const fixTopic = <T extends { topicId?: ID }>(x: T): T => (x.topicId && !topicIds.has(x.topicId) ? { ...x, topicId: undefined } : x)
 
   const studies = dedupe(s.studies)
     .filter((x) => planIds.has(x.planId) && subjectIds.has(x.subjectId))
@@ -97,7 +96,17 @@ export function sanitizeState(s: AppState): AppState {
   const plannings = Object.fromEntries(
     Object.values(s.plannings)
       .filter((p) => planIds.has(p.planId))
-      .map((p) => [p.planId, p]),
+      .map((p) => [
+        p.planId,
+        {
+          ...p,
+          cycle: p.cycle
+            .filter((c) => subjects.some((s) => s.id === c.subjectId && s.planId === p.planId))
+            .map((c) =>
+              c.topicId && !topics.some((t) => t.id === c.topicId && t.subjectId === c.subjectId) ? { ...c, topicId: undefined } : c,
+            ),
+        },
+      ]),
   )
 
   return {

@@ -9,6 +9,8 @@ export interface Plan {
   org?: string
   role?: string
   notes?: string
+  /** Proveniência da importação, preservada nos backups sem poluir as notas do plano. */
+  importedFrom?: { source: string; sha256?: string; catalogId?: string; catalogVersion?: number; provider?: string; reviewedAt: string }
   /** Data da prova (contagem regressiva na home) */
   examDate?: DateStr
   /** Metas semanais */
@@ -118,6 +120,7 @@ export interface PlanningConfig {
 export interface CycleItem {
   id: ID
   subjectId: ID
+  topicId?: ID
   /** minutos planejados */
   duration: number
 }

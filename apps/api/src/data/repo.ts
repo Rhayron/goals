@@ -1,5 +1,6 @@
 import type { AppState, Planning, Settings, SyncRequest, TimerPrefs } from '@coado/shared'
 import { DEFAULT_REVIEW_INTERVALS, DEFAULT_TIMER_PREFS } from '@coado/shared'
+import { badRequest } from '../errors'
 import type { Db } from '../db'
 import { DELETE_ORDER, ENTITIES, UPSERT_ORDER, type Entity } from './entities'
 
@@ -15,9 +16,7 @@ async function bulkUpsert<T>(db: Db, userId: string, entity: Entity<T>, items: T
   if (!items.length) return
   const cols = entity.columns.map(([name]) => q(name))
   const recordDef = entity.columns.map(([name, type]) => `${q(name)} ${type}`).join(', ')
-  const updates = entity.columns
-    .filter(([name]) => name !== entity.key)
-    .map(([name]) => `${q(name)} = excluded.${q(name)}`)
+  const updates = entity.columns.filter(([name]) => name !== entity.key).map(([name]) => `${q(name)} = excluded.${q(name)}`)
   const sql = `insert into ${q(entity.table)} (user_id, ${cols.join(', ')})
     select $1, ${cols.map((c) => `x.${c}`).join(', ')} from jsonb_to_recordset($2::jsonb) as x(${recordDef})
     on conflict (user_id, ${q(entity.key)}) do update set ${updates.join(', ')}, updated_at = now()`
@@ -102,10 +101,30 @@ export async function applySync(db: Db, userId: string, req: SyncRequest) {
   if (req.settings) await updateSettings(db, userId, req.settings)
   for (const name of UPSERT_ORDER) {
     const items = req.upserts?.[name]
+    if (name === 'plannings') {
+      for (const p of req.upserts?.plannings ?? []) {
+        const subjects = (await db.query('select id from subjects where user_id=$1 and plan_id=$2', [userId, p.planId])).rows
+        const topics = (await db.query('select id,subject_id from topics where user_id=$1', [userId])).rows
+        if (
+          p.cycle.some(
+            (c) =>
+              !subjects.some((s) => s.id === c.subjectId) ||
+              (c.topicId && !topics.some((t) => t.id === c.topicId && t.subject_id === c.subjectId)),
+          )
+        )
+          throw badRequest('A sessão do ciclo deve usar disciplina e tópico do mesmo plano.')
+      }
+    }
     if (items?.length) await bulkUpsert(db, userId, ENTITIES[name] as Entity<unknown>, items)
   }
   for (const name of DELETE_ORDER) {
     const ids = req.deletes?.[name]
+    if (name === 'topics' && ids?.length) {
+      await db.query(
+        `update plannings p set cycle = coalesce((select jsonb_agg(case when item->>'topicId'=any($2::text[]) then item-'topicId' else item end order by ord) from jsonb_array_elements(p.cycle) with ordinality a(item,ord)), '[]'::jsonb) where user_id=$1`,
+        [userId, ids],
+      )
+    }
     if (ids?.length) await bulkDelete(db, userId, ENTITIES[name] as Entity<unknown>, ids)
   }
 }

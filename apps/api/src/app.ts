@@ -1,3 +1,5 @@
+import { communityRoutes } from './community/routes'
+import { noticeRoutes } from './notices/routes'
 import cookie from '@fastify/cookie'
 import helmet from '@fastify/helmet'
 import multipart from '@fastify/multipart'
@@ -125,6 +127,8 @@ export async function buildApp(config: Config, pool: Pool, options: AppOptions =
         await priv.register(deviceRoutes, deps)
         await priv.register(meRoutes, deps)
         await priv.register(dataRoutes, deps)
+        await priv.register(communityRoutes, deps)
+        await priv.register(noticeRoutes, deps)
         await priv.register(fileRoutes, deps)
         await priv.register(watchRoutes, deps)
       })

@@ -39,7 +39,7 @@ export interface TestCtx {
 
 export async function setup(env: Record<string, string> = {}, oauth: OAuthClient | null = fakeOAuth()): Promise<TestCtx> {
   const pool = createPool(DB_URL!)
-  await pool.query('drop schema public cascade; create schema public')
+  await pool.query('drop schema if exists catalog cascade; drop schema public cascade; create schema public')
   await migrate(pool)
   const uploadDir = await mkdtemp(join(tmpdir(), 'coado-uploads-'))
   const config = loadConfig({
