@@ -23,7 +23,10 @@ const MAX_ROWS = 20_000
 
 export const IdSchema = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/, 'id inválido')
 export const DateStrSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'data deve ser YYYY-MM-DD')
-const Timestamp = z.string().max(40).refine((v) => !Number.isNaN(Date.parse(v)), 'data/hora inválida')
+const Timestamp = z
+  .string()
+  .max(40)
+  .refine((v) => !Number.isNaN(Date.parse(v)), 'data/hora inválida')
 const text = (max: number) => z.string().max(max)
 const int = (min: number, max: number) => z.number().int().min(min).max(max)
 const num = (min: number, max: number) => z.number().min(min).max(max)
@@ -36,6 +39,8 @@ export const PlanSchema = z.object({
   org: text(300).optional(),
   role: text(300).optional(),
   notes: text(10_000).optional(),
+  importedFrom: z.object({ source: text(2048), sha256: z.string().regex(/^[a-f0-9]{64}$/).optional(),
+    catalogId: z.uuid().optional(), catalogVersion: int(1,1_000_000).optional(), provider: text(100).optional(), reviewedAt: Timestamp }).optional(),
   examDate: DateStrSchema.optional(),
   kind: z.enum(['concurso', 'universidade']).optional(),
   weeklyGoal: z.object({ minutes: int(0, 7 * 24 * 60), questions: int(0, 1_000_000) }),
@@ -74,7 +79,10 @@ export const StudySchema = z.object({
   topicId: IdSchema.optional(),
   categoryId: IdSchema,
   date: DateStrSchema,
-  time: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  time: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/)
+    .optional(),
   duration: int(0, 7 * DAY),
   material: text(1000),
   hits: int(0, 1_000_000),
@@ -107,11 +115,9 @@ export const PlanningSchema = z.object({
     days: z.array(z.boolean()).length(7),
     minSession: int(0, 24 * 60),
     maxSession: int(0, 24 * 60),
-    subjects: z
-      .array(z.object({ subjectId: IdSchema, importance: num(0, 100), knowledge: num(0, 100) }))
-      .max(500),
+    subjects: z.array(z.object({ subjectId: IdSchema, importance: num(0, 100), knowledge: num(0, 100) })).max(500),
   }),
-  cycle: z.array(z.object({ id: IdSchema, subjectId: IdSchema, duration: int(0, 24 * 60) })).max(2000),
+  cycle: z.array(z.object({ id: IdSchema, subjectId: IdSchema, topicId: IdSchema.optional(), duration: int(0, 24 * 60) })).max(2000),
   completedCycles: int(0, 1_000_000),
   cycleStartedAt: DateStrSchema,
 }) satisfies z.ZodType<Planning>

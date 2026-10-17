@@ -9,7 +9,7 @@ const external = Object.keys(pkg.dependencies).filter((name) => name !== '@coado
 await rm(new URL('./dist', import.meta.url), { recursive: true, force: true })
 
 await build({
-  entryPoints: ['src/server.ts', 'src/migrate.ts'],
+  entryPoints: ['src/server.ts', 'src/migrate.ts', 'src/notices/cli.ts'],
   outdir: 'dist',
   bundle: true,
   platform: 'node',

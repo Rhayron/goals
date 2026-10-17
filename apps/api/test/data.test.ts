@@ -6,12 +6,20 @@ const plan: Plan = {
   id: 'p1',
   name: 'Petrobras',
   org: 'Petrobras S.A.',
+  importedFrom: { source: 'https://example.org/edital.pdf', sha256: 'a'.repeat(64), catalogId: '11111111-1111-4111-8111-111111111111', catalogVersion: 2, provider: 'qapi', reviewedAt: '2026-04-30T00:00:00.000Z' },
   examDate: '2026-12-06',
   weeklyGoal: { minutes: 600, questions: 100 },
   createdAt: '2026-04-30T00:00:00.000Z',
 }
 const subject: Subject = { id: 's1', planId: 'p1', name: 'Cálculo', color: '#c08f5d', order: 0 }
-const topic: Topic = { id: 't1', subjectId: 's1', name: 'Limites', order: 1, finished: false, links: [{ title: 'aula', url: 'https://x.test' }] }
+const topic: Topic = {
+  id: 't1',
+  subjectId: 's1',
+  name: 'Limites',
+  order: 1,
+  finished: false,
+  links: [{ title: 'aula', url: 'https://x.test' }],
+}
 const study: Study = {
   id: 'st1',
   planId: 'p1',
@@ -50,21 +58,47 @@ describe.skipIf(!DB_URL)('sincronização', () => {
         subjects: [subject],
         topics: [topic],
         studies: [study],
-        reviews: [{ id: 'r1', planId: 'p1', studyId: 'st1', subjectId: 's1', topicId: 't1', dueDate: '2026-05-02', interval: 1, status: 'pending' }],
+        reviews: [
+          { id: 'r1', planId: 'p1', studyId: 'st1', subjectId: 's1', topicId: 't1', dueDate: '2026-05-02', interval: 1, status: 'pending' },
+        ],
         plannings: [
           {
             planId: 'p1',
             type: 'cycle',
-            config: { weeklyMinutes: 600, days: [true, true, true, true, true, false, false], minSession: 30, maxSession: 90, subjects: [{ subjectId: 's1', importance: 1, knowledge: 3 }] },
-            cycle: [{ id: 'c1', subjectId: 's1', duration: 60 }],
+            config: {
+              weeklyMinutes: 600,
+              days: [true, true, true, true, true, false, false],
+              minSession: 30,
+              maxSession: 90,
+              subjects: [{ subjectId: 's1', importance: 1, knowledge: 3 }],
+            },
+            cycle: [{ id: 'c1', subjectId: 's1', topicId: 't1', duration: 60 }],
             completedCycles: 0,
             cycleStartedAt: '2026-05-01',
           },
         ],
-        exams: [{ id: 'e1', planId: 'p1', date: '2026-05-10', name: 'Simulado 1', style: 'multiple', board: 'Cesgranrio', timeSpent: 7200, rows: [{ subjectId: 's1', weight: 1, total: 10, hits: 7, misses: 3 }], comment: '' }],
+        exams: [
+          {
+            id: 'e1',
+            planId: 'p1',
+            date: '2026-05-10',
+            name: 'Simulado 1',
+            style: 'multiple',
+            board: 'Cesgranrio',
+            timeSpent: 7200,
+            rows: [{ subjectId: 's1', weight: 1, total: 10, hits: 7, misses: 3 }],
+            comment: '',
+          },
+        ],
         reminders: [{ id: 'm1', text: 'Comprar café', done: false, createdAt: '2026-05-01T10:00:00.000Z' }],
       },
-      settings: { activePlanId: 'p1', theme: 'dark', note: 'oi', reviewIntervals: [1, 3, 7], timerPrefs: { pomodoroStudy: 50, pomodoroShort: 10, pomodoroLong: 20, pomodoroRounds: 3, countdown: 90, sound: false } },
+      settings: {
+        activePlanId: 'p1',
+        theme: 'dark',
+        note: 'oi',
+        reviewIntervals: [1, 3, 7],
+        timerPrefs: { pomodoroStudy: 50, pomodoroShort: 10, pomodoroLong: 20, pomodoroRounds: 3, countdown: 90, sound: false },
+      },
     })
     expect(res.statusCode).toBe(200)
     expect(res.json()).toMatchObject({ ok: true, syncedAt: expect.any(String) })
@@ -75,9 +109,19 @@ describe.skipIf(!DB_URL)('sincronização', () => {
     expect('archived' in state.subjects[0]).toBe(false)
     expect(state.topics).toEqual([topic])
     expect(state.studies).toEqual([study])
-    expect(state.reviews[0]).toEqual({ id: 'r1', planId: 'p1', studyId: 'st1', subjectId: 's1', topicId: 't1', dueDate: '2026-05-02', interval: 1, status: 'pending' })
+    expect(state.reviews[0]).toEqual({
+      id: 'r1',
+      planId: 'p1',
+      studyId: 'st1',
+      subjectId: 's1',
+      topicId: 't1',
+      dueDate: '2026-05-02',
+      interval: 1,
+      status: 'pending',
+    })
     expect(state.plannings.p1.cycleStartedAt).toBe('2026-05-01')
     expect(state.plannings.p1.config.days).toHaveLength(7)
+    expect(state.plannings.p1.cycle[0].topicId).toBe('t1')
     expect(state.exams[0].rows[0].hits).toBe(7)
     expect(state.reminders).toEqual([{ id: 'm1', text: 'Comprar café', done: false, createdAt: '2026-05-01T10:00:00.000Z' }])
     expect(state).toMatchObject({ activePlanId: 'p1', theme: 'dark', note: 'oi', reviewIntervals: [1, 3, 7] })
@@ -94,12 +138,27 @@ describe.skipIf(!DB_URL)('sincronização', () => {
     expect(state.subjects[0].archived).toBe(true)
   })
 
-  it('apagar tópico limpa o topicId de estudos e revisões', async () => {
+  it('recusa tópico de outra disciplina no ciclo e reverte o lote', async () => {
+    const current: AppState = (await ana.get('/api/state')).json()
+    const res = await ana.post('/api/sync', {
+      upserts: {
+        subjects: [{ ...subject, id: 's2' }],
+        plannings: [{ ...current.plannings.p1, cycle: [{ id: 'c1', subjectId: 's2', topicId: 't1', duration: 60 }] }],
+      },
+    })
+    expect(res.statusCode).toBe(400)
+    const after: AppState = (await ana.get('/api/state')).json()
+    expect(after.subjects).toHaveLength(1)
+    expect(after.plannings.p1.cycle[0].subjectId).toBe('s1')
+  })
+
+  it('apagar tópico limpa o topicId de estudos, revisões e ciclo', async () => {
     await ana.post('/api/sync', { upserts: { studies: [{ ...study, topicId: undefined }] }, deletes: { topics: ['t1'] } })
     const state: AppState = (await ana.get('/api/state')).json()
     expect(state.topics).toEqual([])
     expect(state.studies[0].topicId).toBeUndefined()
     expect(state.reviews[0].topicId).toBeUndefined()
+    expect(state.plannings.p1.cycle[0].topicId).toBeUndefined()
   })
 
   it('outra conta com os mesmos ids tem dados próprios', async () => {
@@ -164,7 +223,10 @@ describe.skipIf(!DB_URL)('importação (PUT /state)', () => {
       activePlanId: 'nao-existe',
       subjects: [subject, { ...subject, id: 'orfa', planId: 'sumiu' }],
       topics: [topic, { ...topic, id: 't-orfao', subjectId: 'orfa' }],
-      studies: [{ ...study, topicId: 't-orfao' }, { ...study, id: 'st-orfao', subjectId: 'orfa' }],
+      studies: [
+        { ...study, topicId: 't-orfao' },
+        { ...study, id: 'st-orfao', subjectId: 'orfa' },
+      ],
       reviews: [{ id: 'r1', planId: 'p1', studyId: 'st-orfao', subjectId: 's1', dueDate: '2026-05-02', interval: 1, status: 'pending' }],
       theme: 'light',
     }
