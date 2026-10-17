@@ -4,7 +4,8 @@ import type { AuthConfig, AuthErrorCode } from '@coado/shared'
 import { useAuth } from '../lib/auth'
 import { native } from '../lib/native'
 import { Logo } from '../components/Layout'
-import { CafeSceneArt, Equalizer, GoogleG, VinylArt } from '../components/cafe-art'
+import { CafeSceneArt, GoogleG } from '../components/cafe-art'
+import { RadioPlayer } from '../components/RadioPlayer'
 import { clsx } from '../lib/utils'
 
 const AUTH_ERRORS: Record<AuthErrorCode, string> = {
@@ -30,8 +31,6 @@ const MENU = [
   ['Estatísticas', 'com chantilly'],
 ]
 
-const TRACKS = ['chuva na janela', 'vinil arranhado das 2h', 'cafeteria vazia', 'gato ronronando', 'páginas virando']
-
 /** Lê e limpa ?authError= da URL (vem do callback do Google) */
 function useAuthError() {
   const [code] = useState(() => new URLSearchParams(window.location.search).get('authError') as AuthErrorCode | null)
@@ -49,13 +48,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
   const authError = useAuthError()
   const [busy, setBusy] = useState<'google' | 'dev' | null>(null)
   const [devError, setDevError] = useState('')
-  const [track, setTrack] = useState(0)
   const moment = MOMENTS.find((m) => new Date().getHours() < m.until) ?? MOMENTS[3]
-
-  useEffect(() => {
-    const t = setInterval(() => setTrack((i) => (i + 1) % TRACKS.length), 6000)
-    return () => clearInterval(t)
-  }, [])
 
   const google = () => {
     if (window.location.pathname === '/comunidade' && /^#convite=[a-f0-9]{48}$/.test(window.location.hash))
@@ -87,19 +80,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
       <section className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-b from-brand-100 via-kraft to-brand-200 px-6 pb-6 pt-10 dark:from-[#241a14] dark:via-[#2b2019] dark:to-[#1b1410] lg:min-h-screen lg:px-12 lg:pb-10">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-700/20" />
         <CafeSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
-        <div
-          className="mx-auto mt-6 flex w-full max-w-[600px] items-center gap-3 rounded-2xl border border-line/70 bg-surface/80 p-3 shadow-sm backdrop-blur animate-rise"
-          style={{ animationDelay: '150ms' }}
-        >
-          <VinylArt className="h-11 w-11 shrink-0" />
-          <div className="min-w-0 flex-1">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">tocando agora</p>
-            <p key={track} className="truncate font-display text-sm font-semibold animate-rise">
-              lofi pra estudar — {TRACKS[track]}
-            </p>
-          </div>
-          <Equalizer className="mr-1 text-brand-500" />
-        </div>
+        <RadioPlayer className="mx-auto mt-6 w-full max-w-[600px] animate-rise" />
       </section>
 
       {/* entrada */}

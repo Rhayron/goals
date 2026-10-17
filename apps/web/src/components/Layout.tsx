@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import {
   Award,
   Users,
@@ -30,6 +30,8 @@ import { StudyModal } from './StudyModal'
 import { TimerOverlay } from './TimerOverlay'
 import { NoteWidget } from './NoteWidget'
 import { CatWindowArt } from './art'
+import { RadioPlayer } from './RadioPlayer'
+import { YoutubeRadioCard } from './YoutubeRadioCard'
 import { Avatar, SyncBadge } from './account'
 import { useAuth, useMe } from '../lib/auth'
 
@@ -84,6 +86,7 @@ export function Logo({ className }: { className?: string }) {
 
 export function Layout() {
   const { state, setTheme, openTimer, timer } = useStore()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const dark = state.theme === 'dark' || (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
 
@@ -163,9 +166,12 @@ export function Layout() {
         <Logo />
       </div>
 
-      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-8">
+        <YoutubeRadioCard />
         <Outlet />
       </main>
+
+      <RadioPlayer key={pathname} className="fixed bottom-4 left-4 z-30 sm:left-6 lg:left-[17rem]" compact collapsible />
 
       {/* ações flutuantes */}
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-3">

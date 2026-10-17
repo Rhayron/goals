@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import type { AppState } from '@coado/shared'
 import { AuthProvider, useAuth } from './lib/auth'
+import { RadioProvider } from './lib/radio'
 import { api, ApiError } from './lib/api'
 import { recoverPending } from './lib/outbox'
 import { StoreProvider } from './lib/store'
@@ -33,7 +34,9 @@ export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Gate />
+        <RadioProvider>
+          <Gate />
+        </RadioProvider>
       </BrowserRouter>
     </AuthProvider>
   )

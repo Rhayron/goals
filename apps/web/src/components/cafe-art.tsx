@@ -31,11 +31,10 @@ function Steam({ xs, y, delay = 0.9 }: { xs: number[]; y: number; delay?: number
   )
 }
 
-/** Cena principal da entrada: janela com chuva, luminárias, estante e a xícara no balcão */
-export function CafeSceneArt({ className, title = 'Cafeteria em noite de chuva' }: ArtProps) {
+/** Cena principal da entrada: janela à noite, luminárias, estante e a xícara no balcão */
+export function CafeSceneArt({ className, title = 'Cafeteria à noite' }: ArtProps) {
   const clip = useSvgId('cafe-window')
   const glow = useSvgId('cafe-glow')
-  const drops = Array.from({ length: 30 }, (_, i) => ({ x: 70 + ((i * 41) % 250), d: (i % 9) * 0.13, l: 10 + (i % 4) * 5, y: (i * 29) % 190 }))
 
   return (
     <svg viewBox="0 0 480 440" className={clsx('block', className)} role="img" aria-label={title}>
@@ -49,7 +48,7 @@ export function CafeSceneArt({ className, title = 'Cafeteria em noite de chuva' 
         </radialGradient>
       </defs>
 
-      {/* janela em arco: cidade à noite e chuva */}
+      {/* janela em arco: cidade à noite */}
       <path d="M70 250V120a125 100 0 0 1 250 0v130z" fill="#2b2a3f" />
       <g clipPath={`url(#${clip})`}>
         <circle cx="255" cy="80" r="20" fill="#f1e6d7" opacity="0.9" />
@@ -74,21 +73,6 @@ export function CafeSceneArt({ className, title = 'Cafeteria em noite de chuva' 
           [300, 218],
         ].map(([x, y]) => (
           <rect key={`${x}-${y}`} x={x} y={y} width="5" height="6" fill="#e2b55e" opacity="0.85" />
-        ))}
-        {drops.map((r, i) => (
-          <line
-            key={i}
-            x1={r.x}
-            y1={0}
-            x2={r.x - 3}
-            y2={r.l}
-            stroke="#c9d3ee"
-            strokeOpacity="0.45"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            className="animate-rain"
-            style={{ animationDelay: `-${r.d}s`, transform: `translateY(${r.y}px)` }}
-          />
         ))}
       </g>
       <path d="M70 250V120a125 100 0 0 1 250 0v130z" fill="none" stroke="#5c3d24" strokeWidth="8" />
@@ -142,17 +126,19 @@ export function CafeSceneArt({ className, title = 'Cafeteria em noite de chuva' 
       <rect x="68" y="264" width="80" height="18" rx="3" {...stroke} />
       <path d="M78 273h40M72 291h50" {...stroke} strokeOpacity="0.4" />
 
-      {/* xícara grande com vapor */}
-      <ellipse cx="248" cy="300" rx="52" ry="6" fill={ink} opacity="0.1" />
-      <path d="M206 236h72v30a26 26 0 0 1-26 26h-20a26 26 0 0 1-26-26z" fill="var(--color-brand-100)" />
-      <path d="M206 236h72v30a26 26 0 0 1-26 26h-20a26 26 0 0 1-26-26z" {...stroke} />
-      <path d="M278 244h8a11 11 0 0 1 0 22h-8" {...stroke} />
-      <ellipse cx="242" cy="236" rx="36" ry="6" fill="var(--color-brand-600)" />
-      <ellipse cx="242" cy="236" rx="36" ry="6" {...stroke} />
-      <path d="M232 233c4-3 10-3 12 0c2 3-6 5-12 0z" fill="var(--color-brand-100)" opacity="0.9" />
-      <ellipse cx="242" cy="294" rx="50" ry="6" fill="var(--color-brand-200)" />
-      <ellipse cx="242" cy="294" rx="50" ry="6" {...stroke} />
-      <Steam xs={[226, 242, 258]} y={222} />
+      {/* xícara com vapor, apoiada no balcão */}
+      <g transform="translate(109 135) scale(0.55)">
+        <ellipse cx="248" cy="300" rx="52" ry="6" fill={ink} opacity="0.1" />
+        <path d="M206 236h72v30a26 26 0 0 1-26 26h-20a26 26 0 0 1-26-26z" fill="var(--color-brand-100)" />
+        <path d="M206 236h72v30a26 26 0 0 1-26 26h-20a26 26 0 0 1-26-26z" {...stroke} />
+        <path d="M278 244h8a11 11 0 0 1 0 22h-8" {...stroke} />
+        <ellipse cx="242" cy="236" rx="36" ry="6" fill="var(--color-brand-600)" />
+        <ellipse cx="242" cy="236" rx="36" ry="6" {...stroke} />
+        <path d="M232 233c4-3 10-3 12 0c2 3-6 5-12 0z" fill="var(--color-brand-100)" opacity="0.9" />
+        <ellipse cx="242" cy="294" rx="50" ry="6" fill="var(--color-brand-200)" />
+        <ellipse cx="242" cy="294" rx="50" ry="6" {...stroke} />
+        <Steam xs={[226, 242, 258]} y={222} />
+      </g>
 
       {/* rádio tocando lofi */}
       <rect x="330" y="262" width="78" height="38" rx="8" fill="var(--color-brand-200)" />

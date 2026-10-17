@@ -21,6 +21,8 @@ estudos** ou planejamento semanal, **pomodoro**, cronômetro e timer, **revisõe
 120 dias), histórico, **estatísticas**, simulados e uma gaveta de arquivos. O tema claro ("tarde na
 cafeteria") e o noturno ("madrugada de lofi") seguem o sistema.
 
+A **Rádio Coado** toca 24 faixas lo-fi em domínio público (cerca de 61 minutos), com play/pausa, próxima faixa e volume. O áudio continua entre as páginas e durante o cronômetro; começa somente após o usuário apertar play. No topo das páginas, o card do YouTube oferece seis estações de Lofi Girl e Chillhop Music em um player oficial visível. Escolher uma fonte interrompe a outra. Fontes, licenças e comportamento: [docs/RADIO.md](docs/RADIO.md).
+
 ### Rotina e comunidade
 
 - **Ciclo por tópico:** cada sessão pode apontar para um tópico; o timer e o registro recebem essa escolha.
