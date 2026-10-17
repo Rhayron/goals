@@ -65,27 +65,7 @@ const useNav = () => {
 export function Logo({ className }: { className?: string }) {
   return (
     <div className={clsx('flex items-center gap-2', className)}>
-      <svg viewBox="0 0 32 32" className="h-9 w-9" aria-hidden>
-        <rect width="32" height="32" rx="9" className="fill-brand-100 dark:fill-brand-900" />
-        <path d="M8 13h13v7a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5z" className="fill-brand-600" />
-        <path d="M21 15h2.5a2.5 2.5 0 0 1 0 5H21" fill="none" strokeWidth="2" className="stroke-brand-600" />
-        <path
-          d="M12 10c0-2 2-2 2-4"
-          fill="none"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          className="animate-steam stroke-brand-400"
-          style={{ transformOrigin: '13px 10px' }}
-        />
-        <path
-          d="M17 10c0-2 2-2 2-4"
-          fill="none"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          className="animate-steam stroke-brand-400"
-          style={{ transformOrigin: '18px 10px', animationDelay: '1.4s' }}
-        />
-      </svg>
+      <img src="/assets/coado-badge.png" width="40" height="40" alt="" aria-hidden className="h-10 w-10 shrink-0 object-contain" />
       <span className="font-display text-2xl font-bold tracking-tight">{BRAND_SLUG}</span>
     </div>
   )
@@ -108,38 +88,40 @@ export function Layout() {
           open ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        <div className="flex h-16 items-center justify-between px-5">
+        <div className="flex h-16 shrink-0 items-center justify-between px-5">
           <Logo />
           <button className="lg:hidden" onClick={() => setOpen(false)} aria-label="Fechar menu">
             <X size={20} />
           </button>
         </div>
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-2">
-          {nav.map(({ to, label, icon: Icon, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              onClick={() => setOpen(false)}
-              className={({ isActive }) =>
-                clsx(
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-                  isActive
-                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-brand-300'
-                    : 'text-muted hover:bg-surface-2 hover:text-ink',
-                )
-              }
-            >
-              <Icon size={18} />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-        <div className="px-4 pb-1 pt-3 [@media(max-height:820px)]:hidden">
-          <CatWindowArt className="w-full" />
-          <p className="mt-1 text-center font-display text-xs italic text-muted">{frases.tagline}</p>
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <nav className="space-y-0.5 px-3 py-2">
+            {nav.map(({ to, label, icon: Icon, end }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={end}
+                onClick={() => setOpen(false)}
+                className={({ isActive }) =>
+                  clsx(
+                    'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
+                    isActive
+                      ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-brand-300'
+                      : 'text-muted hover:bg-surface-2 hover:text-ink',
+                  )
+                }
+              >
+                <Icon size={18} />
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+          <div className="px-4 pb-4 pt-3">
+            <CatWindowArt className="w-full" showCat={false} />
+            <p className="mt-1 text-center font-display text-xs italic text-muted">{frases.tagline}</p>
+          </div>
         </div>
-        <div className="space-y-0.5 border-t border-line px-3 py-3">
+        <div className="shrink-0 space-y-0.5 border-t border-line px-3 py-3">
           <NavLink
             to="/configuracoes"
             onClick={() => setOpen(false)}
@@ -216,7 +198,7 @@ function UserCard({ onNavigate }: { onNavigate: () => void }) {
   }
 
   return (
-    <div className="flex items-center gap-1 border-t border-line px-3 py-3">
+    <div className="flex shrink-0 items-center gap-1 border-t border-line px-3 py-3">
       <NavLink
         to="/perfil"
         onClick={onNavigate}

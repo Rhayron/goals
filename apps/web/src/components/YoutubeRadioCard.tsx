@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { CloudMoon, Coffee, ExternalLink, Headphones, Leaf, Moon, Music2, Play, X, Youtube } from 'lucide-react'
+import { BookOpen, CloudMoon, ExternalLink, Headphones, Leaf, Moon, Music2, Play, X, Youtube } from 'lucide-react'
 import { useRadio } from '../lib/radio-context'
-import { useFrases } from '../lib/frases'
 import { clsx } from '../lib/utils'
 
 // Transmissões dos canais @LofiGirl e @ChillhopMusic, conferidas em 17/10/2026.
 const STATIONS = [
-  { videoId: 'rFZHOHl-L8A', name: 'Lofi Girl', channel: 'Lofi Girl', subtitle: 'Beats para estudar', description: 'Lofi hip hop para acompanhar o café, a leitura e mais um capítulo.', icon: Coffee },
+  { videoId: 'rFZHOHl-L8A', name: 'Lofi Girl', channel: 'Lofi Girl', subtitle: 'Beats para estudar', description: 'Lofi hip hop para acompanhar a leitura e mais um capítulo.', icon: BookOpen },
   { videoId: '4xDzrJKXOOY', name: 'Synthwave', channel: 'Lofi Girl', subtitle: 'Foco pela madrugada', description: 'Sintetizadores e uma atmosfera noturna para entrar no ritmo.', icon: Moon },
   { videoId: '5yx6BWlEVcY', name: 'Chillhop Radio', channel: 'Chillhop Music', subtitle: 'Jazz e hip hop suave', description: 'Batidas instrumentais e jazz para deixar a sessão de estudos mais leve.', icon: Headphones },
   { videoId: 'E2vONfzoyRI', name: 'Jazz Lofi', channel: 'Lofi Girl', subtitle: 'Clima de cafeteria', description: 'Jazz e lo-fi para acompanhar uma pausa, uma leitura ou um café demorado.', icon: Music2 },
@@ -53,7 +52,6 @@ function YoutubeStream({ videoId, title }: { videoId: string; title: string }) {
 }
 
 export function YoutubeRadioCard() {
-  const frases = useFrases()
   const { youtubeVideoId, selectYoutube, trackCount, toggle } = useRadio()
   const station = STATIONS.find((item) => item.videoId === youtubeVideoId)
 
@@ -68,7 +66,7 @@ export function YoutubeRadioCard() {
             <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
               <Youtube size={14} className="text-red-600 dark:text-red-400" aria-hidden /> Rádios do YouTube · {STATIONS.length} estações
             </div>
-            <h2 id="youtube-radio-heading" className="font-display text-lg font-semibold">{frases.radio}</h2>
+            <h2 id="youtube-radio-heading" className="font-display text-lg font-semibold">Trilhas para ler e estudar.</h2>
           </div>
           {station && (
             <button type="button" onClick={() => selectYoutube(null)} aria-label="Fechar rádio do YouTube" title="Fechar rádio do YouTube" className="ml-auto rounded-full p-2 text-muted hover:bg-surface-2 hover:text-ink">

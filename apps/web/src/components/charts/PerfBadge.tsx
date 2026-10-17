@@ -3,7 +3,7 @@ import { clsx, pct } from '../../lib/utils'
 /** Selo de % de acertos colorido por faixa */
 export function PerfBadge({ hits, misses }: { hits: number; misses: number }) {
   const total = hits + misses
-  if (!total) return <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold text-muted">—</span>
+  if (!total) return <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs font-semibold text-muted">Sem dados</span>
   const p = pct(hits, total)
   return (
     <span

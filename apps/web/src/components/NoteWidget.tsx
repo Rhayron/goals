@@ -12,7 +12,7 @@ export function NoteWidget() {
       {open && (
         <div className="absolute bottom-14 right-0 w-72 rotate-[-1deg] rounded-xl border border-line bg-kraft p-3 shadow-xl">
           <div className="mb-2 flex items-center justify-between">
-            <span className="font-display text-sm font-semibold text-brand-800 dark:text-brand-200">Anotações ✎</span>
+            <span className="font-display text-sm font-semibold text-brand-800 dark:text-brand-200">Anotações</span>
             <button onClick={() => setOpen(false)} className="text-muted hover:text-ink" aria-label="Fechar anotações">
               <X size={16} />
             </button>

@@ -4,7 +4,7 @@ import type { AuthConfig, AuthErrorCode } from '@coado/shared'
 import { useAuth } from '../lib/auth'
 import { native } from '../lib/native'
 import { Logo } from '../components/Layout'
-import { DeskSceneArt, GoogleG } from '../components/study-art'
+import { CafeSceneArt, GoogleG } from '../components/cafe-art'
 import { useFrases } from '../lib/frases'
 import { RadioPlayer } from '../components/RadioPlayer'
 import { clsx } from '../lib/utils'
@@ -23,7 +23,6 @@ const MOMENTS = [
   { until: 18, hello: 'Boa tarde.', line: 'Ainda dá tempo de mais um bloco de estudos.' },
   { until: 24, hello: 'Boa noite.', line: 'Uma sessão curta hoje já conta.' },
 ]
-
 /** Lê e limpa ?authError= da URL (vem do callback do Google) */
 function useAuthError() {
   const [code] = useState(() => new URLSearchParams(window.location.search).get('authError') as AuthErrorCode | null)
@@ -70,10 +69,13 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[1.1fr_1fr]">
-      {/* cena */}
-      <section className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-b from-brand-100 via-kraft to-brand-200 px-6 pb-6 pt-10 dark:from-brand-900 dark:via-surface dark:to-bg lg:min-h-screen lg:px-12 lg:pb-10">
+      <section className="study-scene-background relative flex flex-col justify-center overflow-hidden px-6 pb-6 pt-10 lg:min-h-screen lg:px-12 lg:pb-10">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-700/20" />
-        <DeskSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
+        <div className="mx-auto mb-3 w-full max-w-[600px] animate-rise">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-brand-800 dark:text-brand-200">Coado</p>
+          <p className="mt-2 font-display text-xl italic text-ink">{frases.tagline}</p>
+        </div>
+        <CafeSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
         <RadioPlayer className="mx-auto mt-6 w-full max-w-[600px] animate-rise" />
       </section>
 
@@ -147,10 +149,10 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             <p className="text-center font-display text-lg italic tracking-wide">{frases.quadro}</p>
             <ul className="mt-3 space-y-1.5 text-sm">
               {frases.menu.map(([item, note]) => (
-                <li key={item} className="flex items-baseline gap-2">
+                <li key={item} className="flex flex-col gap-0.5 border-b border-dotted border-white/15 pb-1.5 last:border-0 sm:flex-row sm:items-baseline sm:gap-2 sm:border-0 sm:pb-0">
                   <span className="font-bold">{item}</span>
-                  <span className="flex-1 border-b border-dotted border-white/25" />
-                  <span className="font-display italic text-white/75">{note}</span>
+                  <span className="hidden flex-1 border-b border-dotted border-white/25 sm:block" />
+                  <span className="font-display text-xs italic text-white/75 sm:text-sm">{note}</span>
                 </li>
               ))}
             </ul>

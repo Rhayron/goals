@@ -7,12 +7,11 @@ import { markLegacyMigrated, readLegacyState } from '../../lib/legacy'
 import { useStore } from '../../lib/store'
 import { clsx } from '../../lib/utils'
 import { CatWindowArt } from '../art'
-import { CalendarArt, ChartArt, CycleArt, FilesArt, ProgressRing, SubjectsArt, TimerArt } from '../study-art'
-import { BRAND } from '../../lib/brand'
+import { BeanJarArt, CalendarCupArt, CycleCupsArt, EnvelopeArt, FillingCup, MugChartArt, PourOverArt } from '../cafe-art'
 
 /*
- * Apresentação da plataforma no primeiro acesso, em passos; o anel ao lado se completa conforme a pessoa
- * avança. Pode ser revista pelo Perfil.
+ * Apresentação da plataforma no primeiro acesso. Cada passo é um "gole" de uma receita de café;
+ * a xícara ao lado enche conforme a pessoa avança. Pode ser revista pelo Perfil.
  */
 
 interface Step {
@@ -26,62 +25,62 @@ interface Step {
 const STEPS: Step[] = [
   {
     kicker: 'boas-vindas',
-    title: (name) => `Puxa uma cadeira, ${name}.`,
-    body: `O ${BRAND} é um lugar calmo para planejar seus estudos, estudar no seu ritmo e ver a evolução acontecer. Em alguns passos a gente te mostra como funciona.`,
+    title: (name) => `Bem-vindo, ${name}.`,
+    body: 'O Coado reúne o que você precisa para organizar a preparação, registrar os estudos e acompanhar o caminho até a prova.',
     art: <CatWindowArt className="w-full" />,
   },
   {
-    kicker: 'passo 1 · comece pelo plano',
+    kicker: 'etapa 1: plano e edital',
     title: () => 'Planos, disciplinas e edital',
-    body: 'Tudo começa pelo plano: o concurso que você quer, a data da prova e suas metas da semana.',
+    body: 'Defina o concurso, a data da prova e as metas que fazem sentido para a sua semana.',
     bullets: [
       'Um plano para cada concurso, com contagem regressiva até a prova',
       'Disciplinas com cor própria e os tópicos do edital verticalizado',
-      'Marque o que já viu e acompanhe quanto do edital já foi',
+      'Marque os tópicos estudados e acompanhe o andamento do edital',
     ],
-    art: <SubjectsArt className="w-full" />,
+    art: <BeanJarArt className="w-full" />,
   },
   {
-    kicker: 'passo 2 · estude com o tempo contando',
+    kicker: 'etapa 2: estudar e registrar',
     title: () => 'Cronômetro e registro de estudos',
-    body: `Dê o play e estude. Ao terminar, o ${BRAND} já sugere o registro com o tempo cronometrado.`,
+    body: 'Use o cronômetro, o pomodoro ou o temporizador. Ao terminar, o tempo já vai para o registro.',
     bullets: [
-      'Cronômetro, pomodoro e temporizador: o botão ⏱ fica sempre no canto da tela',
+      'Cronômetro, pomodoro e temporizador ficam sempre disponíveis no canto da tela',
       'Registre questões, páginas e vídeos de cada sessão',
       'Um bloco de notas rápido para não perder nenhuma ideia',
     ],
-    art: <TimerArt className="w-full" />,
+    art: <PourOverArt className="w-full" />,
   },
   {
-    kicker: 'passo 3 · siga o ritmo certo',
+    kicker: 'etapa 3: organizar a rotina',
     title: () => 'Planejamento em ciclo ou semana',
-    body: `Diga quanto tempo tem e quais matérias pesam mais; o ${BRAND} monta a sequência para você.`,
+    body: 'Informe o tempo disponível e as prioridades. O Coado organiza a sequência de estudo.',
     bullets: [
       'Ciclo de estudos gerado pelo peso e pelo seu domínio de cada disciplina',
       'Ou uma grade semanal com os dias que você tem livres',
       'A próxima sessão do ciclo aparece logo no Início',
     ],
-    art: <CycleArt className="w-full" />,
+    art: <CycleCupsArt className="w-full" />,
   },
   {
-    kicker: 'passo 4 · revise na hora certa',
+    kicker: 'etapa 4: revisar',
     title: () => 'Revisões espaçadas',
-    body: 'Conteúdo sem revisão se perde. Cada estudo registrado agenda as revisões na hora certa.',
+    body: 'Cada estudo pode gerar revisões automáticas nos intervalos que você definir.',
     bullets: ['Revisões automáticas em 1, 7, 30 dias (ou nos intervalos que preferir)', 'As revisões do dia aparecem no Início', 'Marque como feita ou ignore com um toque'],
-    art: <CalendarArt className="w-full" />,
+    art: <CalendarCupArt className="w-full" />,
   },
   {
-    kicker: 'passo 5 · veja e ajuste',
+    kicker: 'etapa 5: acompanhar o progresso',
     title: () => 'Estatísticas, histórico e simulados',
-    body: 'Veja onde você está acertando e o que merece mais atenção.',
+    body: 'Consulte o tempo investido, o desempenho e o histórico para ajustar o plano quando for preciso.',
     bullets: ['Tempo, desempenho e constância por disciplina', 'Histórico completo de cada sessão de estudo', 'Simulados com nota por matéria e evolução'],
-    art: <ChartArt className="w-full" />,
+    art: <MugChartArt className="w-full" />,
   },
   {
-    kicker: 'passo 6 · tudo na sua conta',
-    title: () => 'Sua mesa, guardada com você',
-    body: 'Planos, histórico, preferências e seus arquivos (PDFs, resumos, editais) ficam salvos na sua conta e sincronizam entre os seus aparelhos.',
-    art: <FilesArt className="w-full" />,
+    kicker: 'etapa 6: manter tudo sincronizado',
+    title: () => 'Seus dados, onde você precisar',
+    body: 'Planos, histórico, preferências e arquivos ficam na sua conta e acompanham você nos seus aparelhos.',
+    art: <EnvelopeArt className="w-full" />,
   },
 ]
 
@@ -178,8 +177,8 @@ function WelcomeDialog({ onClose }: { onClose: () => void }) {
           },
         ]
       : []),
-    { value: 'sample', title: 'Explorar com um plano de exemplo', desc: 'Petrobrás: disciplinas, edital, histórico e ciclo prontos pra fuçar.' },
-    { value: 'empty', title: 'Começar do zero', desc: 'Mesa limpa. Você cria seu primeiro plano agora.' },
+    { value: 'sample', title: 'Explorar um plano de exemplo', desc: 'Use o exemplo da Petrobras para conhecer disciplinas, edital, histórico e ciclo.' },
+    { value: 'empty', title: 'Começar do zero', desc: 'Crie o primeiro plano agora e ajuste os detalhes depois.' },
   ]
 
   return (
@@ -206,9 +205,9 @@ function WelcomeDialog({ onClose }: { onClose: () => void }) {
             {s.art}
           </div>
           <div className="flex items-center gap-3">
-            <ProgressRing level={(step + 1) / STEPS.length} className="h-16 w-16" />
+            <FillingCup level={(step + 1) / STEPS.length} className="h-16 w-16" />
             <div className="text-left">
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">seu progresso</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-muted">sua xícara</p>
               <p className="font-display text-lg font-bold tabular">
                 {Math.round(((step + 1) / STEPS.length) * 100)}%
               </p>
@@ -229,7 +228,7 @@ function WelcomeDialog({ onClose }: { onClose: () => void }) {
               <ul className="mt-5 space-y-2.5">
                 {s.bullets.map((b, i) => (
                   <li key={b} className="flex gap-3 text-sm animate-rise" style={{ animationDelay: `${120 + i * 80}ms` }}>
-                    <Marker className="mt-0.5 h-4 w-4 shrink-0" />
+                    <Bean className="mt-0.5 h-4 w-4 shrink-0" />
                     {b}
                   </li>
                 ))}
@@ -287,7 +286,7 @@ function WelcomeDialog({ onClose }: { onClose: () => void }) {
               className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-70"
             >
               {busy ? <Loader2 size={16} className="animate-spin" /> : last ? <Check size={16} /> : null}
-              {last ? 'Começar' : step === 0 ? 'Bora conhecer' : 'Próximo'}
+              {last ? 'Concluir' : step === 0 ? 'Conhecer o Coado' : 'Próxima etapa'}
               {!last && <ArrowRight size={16} />}
             </button>
           </footer>
@@ -297,12 +296,12 @@ function WelcomeDialog({ onClose }: { onClose: () => void }) {
   )
 }
 
-/** Marcador de lista: um ponto com um traço de "feito" */
-function Marker({ className }: { className?: string }) {
+/** Grão de café usado como marcador de lista */
+function Bean({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 16 16" className={className} aria-hidden>
-      <circle cx="8" cy="8" r="7" className="fill-brand-100 dark:fill-brand-900" />
-      <path d="M4.8 8.2l2.1 2.1l4.3-4.6" fill="none" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="stroke-brand-600" />
+      <ellipse cx="8" cy="8" rx="5" ry="6.5" transform="rotate(30 8 8)" fill="var(--color-brand-600)" />
+      <path d="M6 3.5c3 2.5 1 6 3.5 9" stroke="var(--color-brand-200)" strokeWidth="1.3" fill="none" strokeLinecap="round" />
     </svg>
   )
 }

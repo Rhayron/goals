@@ -132,7 +132,7 @@ export function PlanningWizard({ existing, onClose }: { existing: Planning | nul
             title="Ciclo de estudos"
             tag="Flexível"
           >
-            As disciplinas são estudadas em sequência, sem dias fixos. Terminou uma, passa para a próxima — ideal para rotinas
+            As disciplinas são estudadas em sequência, sem dias fixos. Ao terminar uma, você segue para a próxima. Funciona bem em rotinas
             imprevisíveis.
           </OptionCard>
           <OptionCard

@@ -182,7 +182,7 @@ function LoyaltyCard() {
       </ol>
       <p className="mt-4 text-xs text-muted">
         {stamps === LOYALTY_DAYS
-          ? 'Cartão completo! Dez dias seguidos de estudo.'
+          ? 'Cartão completo. Você registrou estudos em dez dias seguidos.'
           : 'Cada dia com estudo registrado ganha um carimbo. Complete o cartão estudando dez dias seguidos.'}
       </p>
     </section>
@@ -217,7 +217,7 @@ function NumbersCard() {
       sub: t.total ? `${Math.round((t.hits / t.total) * 100)}% de acerto` : undefined,
     },
     { label: 'Planos', value: state.plans.length },
-    { label: 'Arquivos', value: storage?.files ?? '–', sub: storage ? fmtBytes(storage.usage.used) : undefined },
+    { label: 'Arquivos', value: storage?.files ?? 'Não informado', sub: storage ? fmtBytes(storage.usage.used) : undefined },
   ]
 
   return (

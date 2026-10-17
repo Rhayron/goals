@@ -111,7 +111,7 @@ function PlanningView({ planning, onRestart }: { planning: Planning; onRestart: 
       {allDone && (
         <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-brand-200 bg-brand-50 p-5 dark:border-brand-600/30 dark:bg-brand-600/10">
           <div className="mr-auto">
-            <p className="text-lg font-semibold">Ciclo concluído! 🎉</p>
+            <p className="text-lg font-semibold">Ciclo concluído</p>
             <p className="text-sm text-muted">Você completou todas as sessões. Recomece para iniciar uma nova volta.</p>
           </div>
           <Button onClick={onRestart}>
