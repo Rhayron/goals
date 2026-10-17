@@ -12,6 +12,16 @@ import zipfile
 from pathlib import Path
 
 VAULT = Path("/home/davi/Documentos/Obsidian_Vaults/megabrain")
+OBS = VAULT / ".obsidian" / "plugins"
+PLUGIN_IDS = ["datacore", "dataview", "templater-obsidian", "tasknotes"]
+PLUGIN_SKIP = {"sync.log", "vault-scan-index.json"}
+SECRET_KEYS = {
+    "apiAuthToken",
+    "googleCalendarSyncTokens",
+    "microsoftCalendarSyncTokens",
+    "githubToken",
+    "lemonSqueezyLicenseKey",
+}
 OUT = Path("/home/davi/Projetos/worktrees/coado-temas/apps/web/public/vault-academico-demo.zip")
 LINK = re.compile(r"""dc\.fileLink\(\s*["']([^"']+)["']\s*\)""")
 PATH = re.compile(r"""System/(?:Templates|TaskNotes|Academico|Dashboards)/[^"'#\]]+""")
@@ -85,7 +95,9 @@ Só o sistema acadêmico: painel, widgets, núcleo do Coado na vault, templates 
 
 Não inclui notas pessoais, editais, PDFs nem o restante da vault.
 
-Abra esta pasta como vault no Obsidian, com Datacore e Templater. O painel está em `System/Dashboards/Painel Academico.md`.
+Abra esta pasta como vault no Obsidian. Na primeira abertura, confirme a confiança da vault para os plugins da comunidade carregarem: o Obsidian guarda essa permissão fora da pasta. Eles já vão instalados, configurados e listados como habilitados.
+
+Plugins: Datacore, Dataview, Templater, TaskNotes. O painel está em `System/Dashboards/Painel Academico.md`.
 """
 
 
@@ -116,6 +128,82 @@ def collect() -> set[str]:
     return seen
 
 
+def scrub(obj):
+    if isinstance(obj, dict):
+        return {k: ("" if k in SECRET_KEYS else scrub(v)) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [scrub(v) for v in obj]
+    return obj
+
+
+def add_plugins(zf: zipfile.ZipFile) -> None:
+    import json
+
+    enabled = []
+    for plugin_id in PLUGIN_IDS:
+        src = OBS / plugin_id
+        if not src.is_dir():
+            raise SystemExit(f"plugin ausente: {plugin_id}")
+        enabled.append(plugin_id)
+        for path in src.rglob("*"):
+            if not path.is_file() or path.name in PLUGIN_SKIP:
+                continue
+            rel = f".obsidian/plugins/{plugin_id}/{path.relative_to(src).as_posix()}"
+            if path.name == "data.json":
+                data = scrub(json.loads(path.read_text()))
+                zf.writestr(rel, json.dumps(data, indent=2) + "\n")
+            else:
+                zf.write(path, rel)
+    zf.writestr(".obsidian/community-plugins.json", json.dumps(enabled, indent=2) + "\n")
+    zf.writestr(
+        ".obsidian/core-plugins.json",
+        json.dumps(
+            [
+                "file-explorer",
+                "global-search",
+                "switcher",
+                "graph",
+                "backlink",
+                "outgoing-link",
+                "tag-pane",
+                "properties",
+                "page-preview",
+                "templates",
+                "note-composer",
+                "command-palette",
+                "editor-status",
+                "outline",
+                "word-count",
+                "bases",
+            ],
+            indent=2,
+        )
+        + "\n",
+    )
+    zf.writestr(
+        ".obsidian/app.json",
+        json.dumps(
+            {
+                "alwaysUpdateLinks": True,
+                "newFileLocation": "folder",
+                "newFileFolderPath": "System/Academico",
+                "propertiesInDocument": "visible",
+                "livePreview": True,
+                "defaultViewMode": "preview",
+                "openBehavior": "file:System/Dashboards/Painel Academico.md",
+                "strictLineBreaks": True,
+                "showInlineTitle": False,
+            },
+            indent=2,
+        )
+        + "\n",
+    )
+    zf.writestr(
+        ".obsidian/appearance.json",
+        json.dumps({"theme": "obsidian", "baseFontSize": 16, "showRibbon": True}, indent=2) + "\n",
+    )
+
+
 def main() -> None:
     files = collect()
     for rel in TEMPLATES + BASES:
@@ -128,6 +216,7 @@ def main() -> None:
         zf.writestr("System/Dashboards/Painel Academico.md", DASHBOARD)
         zf.writestr("System/Academico/Semestres/2026-2.md", SEMESTRE)
         zf.writestr("System/Academico/Disciplinas/DEMO01 Sistemas de exemplo.md", DISCIPLINA)
+        add_plugins(zf)
         for rel in sorted(files):
             zf.write(VAULT / rel, rel)
     print(f"files={len(files)} zip={OUT} bytes={OUT.stat().st_size}")
