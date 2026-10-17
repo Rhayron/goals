@@ -39,12 +39,13 @@ se falharem. Não use `AUTH_DEV_LOGIN` em produção.
 ## 2. Vercel
 
 Importe `Rhayron/goals` como um projeto Vercel na conta Rhayron, com **Root
-Directory** na raiz do repositório. O arquivo `vercel.mjs` define o build do web,
+Directory** na raiz do repositório. O arquivo `vercel.json` define o build do web,
 o diretório `apps/web/dist`, as rotas SPA e o encaminhamento da API.
 
-Defina `COADO_API_ORIGIN` como a origem HTTPS pública da API na Railway, por
-exemplo `https://nome.up.railway.app`. Não inclua `/api`. Publique só depois de
-`https://nome.up.railway.app/api/health` responder `{"status":"ok","db":"ok"}`.
+O rewrite `/api/*` aponta para `https://api-production-cd57.up.railway.app`.
+Se essa origem mudar, atualize `vercel.json`. Publique só depois de
+`https://api-production-cd57.up.railway.app/api/health` responder
+`{"status":"ok","db":"ok"}`.
 
 Depois do deploy, confira a URL Vercel atribuída: `/` deve abrir o site e
 `/api/health` deve responder pelo mesmo host. Verifique também login, escrita,
