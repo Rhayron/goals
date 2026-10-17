@@ -1,7 +1,7 @@
 package br.app.coado.shared
 
-/** O nome que aparece para quem usa. Provisório: muda aqui (e no app_name dos dois apps) quando o nome sair. */
+/** O nome que aparece para quem usa. */
 object Marca {
-    const val NOME = "Trilha"
-    const val SLUG = "trilha"
+    const val NOME = "Coado"
+    const val SLUG = "coado"
 }

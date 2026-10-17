@@ -53,7 +53,7 @@ class CoadoWatchApp : CoadoCore() {
             .addPart("time", time)
             .build()
         OngoingActivity.Builder(applicationContext, TimerService.ID, builder)
-            .setStaticIcon(SharedR.drawable.ic_trail)
+            .setStaticIcon(SharedR.drawable.ic_cup)
             .setTouchIntent(open)
             .setStatus(status)
             .build()

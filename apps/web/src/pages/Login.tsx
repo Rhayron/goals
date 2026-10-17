@@ -5,7 +5,7 @@ import { useAuth } from '../lib/auth'
 import { native } from '../lib/native'
 import { Logo } from '../components/Layout'
 import { DeskSceneArt, GoogleG } from '../components/study-art'
-import { TAGLINE } from '../lib/brand'
+import { useFrases } from '../lib/frases'
 import { RadioPlayer } from '../components/RadioPlayer'
 import { clsx } from '../lib/utils'
 
@@ -22,14 +22,6 @@ const MOMENTS = [
   { until: 12, hello: 'Bom dia!', line: 'De manhã cabe o conteúdo mais pesado.' },
   { until: 18, hello: 'Boa tarde.', line: 'Ainda dá tempo de mais um bloco de estudos.' },
   { until: 24, hello: 'Boa noite.', line: 'Uma sessão curta hoje já conta.' },
-]
-
-const MENU = [
-  ['Ciclo de estudos', 'pelo peso de cada matéria'],
-  ['Pomodoro', 'com pausas curtas e longas'],
-  ['Revisões espaçadas', '1 · 7 · 30 dias'],
-  ['Edital ou programa', 'tópico a tópico'],
-  ['Estatísticas', 'tempo, acertos e constância'],
 ]
 
 /** Lê e limpa ?authError= da URL (vem do callback do Google) */
@@ -49,6 +41,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
   const authError = useAuthError()
   const [busy, setBusy] = useState<'google' | 'dev' | null>(null)
   const [devError, setDevError] = useState('')
+  const frases = useFrases()
   const moment = MOMENTS.find((m) => new Date().getHours() < m.until) ?? MOMENTS[3]
 
   const google = () => {
@@ -95,7 +88,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             Seus estudos, organizados.
           </h1>
           <p className="mt-3 text-muted animate-rise" style={{ animationDelay: '160ms' }}>
-            {moment.line} Planeje o edital, cronometre as sessões, revise no tempo certo e veja o progresso aparecer, {TAGLINE}
+            {moment.line} Planeje o edital, cronometre as sessões, revise no tempo certo e veja o progresso aparecer, {frases.tagline}
           </p>
 
           {notice && (
@@ -150,10 +143,10 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             )}
           </div>
 
-          <section aria-label="O que tem aqui" className="chalkboard mt-10 rounded-2xl border-[6px] border-brand-700 p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] animate-rise" style={{ animationDelay: '300ms' }}>
-            <p className="text-center font-display text-lg italic tracking-wide">o que tem aqui</p>
+          <section aria-label={frases.quadroLabel} className="chalkboard mt-10 rounded-2xl border-[6px] border-brand-700 p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] animate-rise" style={{ animationDelay: '300ms' }}>
+            <p className="text-center font-display text-lg italic tracking-wide">{frases.quadro}</p>
             <ul className="mt-3 space-y-1.5 text-sm">
-              {MENU.map(([item, note]) => (
+              {frases.menu.map(([item, note]) => (
                 <li key={item} className="flex items-baseline gap-2">
                   <span className="font-bold">{item}</span>
                   <span className="flex-1 border-b border-dotted border-white/25" />

@@ -101,6 +101,7 @@ export function cachePalette(palette: Palette) {
 export function choosePalette(palette: Palette) {
   cachePalette(palette)
   applyPalette(palette)
+  window.dispatchEvent(new Event('coado:palette'))
 }
 
 /** A paleta troca só as variáveis de cor (index.css, `:root[data-palette=…]`); a original não marca nada */

@@ -138,7 +138,15 @@ export default function Help() {
   return (
     <>
       <PageHeader title="Ajuda" hidePlan />
-      <p className="mb-5 text-muted">Receitas rápidas para cuidar da sua rotina de estudos.</p>
+      <Card title="Vault acadêmica de demonstração">
+        <p className="text-sm text-muted">
+          O Coado continua o app. A vault demo traz só o sistema acadêmico: painel, widgets, templates de disciplina e semestre, e uma disciplina de exemplo. Não inclui o resto da vault pessoal.
+        </p>
+        <a href="/vault-academico-demo.zip" download className="mt-4 inline-block text-sm font-semibold text-brand-600 underline">
+          Baixar vault acadêmica
+        </a>
+      </Card>
+      <p className="mb-5 mt-6 text-muted">Receitas rápidas para cuidar da sua rotina de estudos.</p>
       <input
         aria-label="Buscar ajuda"
         className="field mb-5"

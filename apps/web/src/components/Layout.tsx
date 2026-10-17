@@ -30,7 +30,8 @@ import { StudyModal } from './StudyModal'
 import { TimerOverlay } from './TimerOverlay'
 import { NoteWidget } from './NoteWidget'
 import { CatWindowArt } from './art'
-import { BRAND_SLUG, TAGLINE } from '../lib/brand'
+import { BRAND_SLUG } from '../lib/brand'
+import { useFrases } from '../lib/frases'
 import { RadioPlayer } from './RadioPlayer'
 import { YoutubeRadioCard } from './YoutubeRadioCard'
 import { Avatar, SyncBadge } from './account'
@@ -93,6 +94,7 @@ export function Logo({ className }: { className?: string }) {
 export function Layout() {
   const { state, setTheme, openTimer, timer } = useStore()
   const { pathname } = useLocation()
+  const frases = useFrases()
   const [open, setOpen] = useState(false)
   const nav = useNav()
   const dark = state.theme === 'dark' || (state.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
@@ -135,7 +137,7 @@ export function Layout() {
         </nav>
         <div className="px-4 pb-1 pt-3 [@media(max-height:820px)]:hidden">
           <CatWindowArt className="w-full" />
-          <p className="mt-1 text-center font-display text-xs italic text-muted">{TAGLINE}</p>
+          <p className="mt-1 text-center font-display text-xs italic text-muted">{frases.tagline}</p>
         </div>
         <div className="space-y-0.5 border-t border-line px-3 py-3">
           <NavLink
