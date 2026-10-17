@@ -99,7 +99,7 @@ export function PlanningCard({ className }: { className?: string }) {
         Ciclo {planning.completedCycles + 1} · {done} de {items.length} sessões concluídas
       </p>
       {next.length === 0 ? (
-        <p className="py-4 text-center text-sm text-muted">Ciclo concluído! 🎉 Reinicie o ciclo em Planejamento.</p>
+        <p className="py-4 text-center text-sm text-muted">Ciclo concluído. Reinicie o ciclo em Planejamento.</p>
       ) : (
         <ul className="space-y-3">
           {next.map((it) => {
@@ -163,7 +163,7 @@ export function StudyTimeCard({ studies, subjects, className }: { studies: Study
       />
       {rows.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted">
-          {range === 'today' ? 'Você ainda não estudou hoje 😞' : 'Nenhum estudo registrado neste período.'}
+          {range === 'today' ? 'Nenhum estudo registrado hoje.' : 'Nenhum estudo registrado neste período.'}
         </p>
       ) : (
         <>

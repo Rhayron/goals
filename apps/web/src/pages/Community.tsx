@@ -145,9 +145,9 @@ export default function Community() {
         </Button>
       </PageHeader>
       <div className="mb-6 rounded-2xl border border-line bg-kraft/40 p-5">
-        <h2 className="font-display text-2xl font-bold">Uma mesa para estudar junto ☕</h2>
+        <h2 className="font-display text-2xl font-bold">Estude junto com sua turma</h2>
         <p className="mt-1 text-sm text-muted">
-          Convide seus amigos, acompanhe a semana e comemore cada avanço. Uma nova rodada começa toda segunda-feira.
+          Convide pessoas, acompanhe o ranking da semana e compare os avanços. A rodada muda toda segunda-feira.
         </p>
       </div>
       {error && (

@@ -13,6 +13,7 @@ import { WeeklyChartCard } from '../components/home/WeeklyChartCard'
 import { PlanningCard, RecentCard, StudyTimeCard, TodayReviewsCard } from '../components/home/ActivityCards'
 import { RemindersCard } from '../components/home/RemindersCard'
 import { CozyBanner } from '../components/home/CozyBanner'
+import { YoutubeRadioCard } from '../components/YoutubeRadioCard'
 
 const label = 'text-xs font-semibold uppercase tracking-wider text-muted'
 
@@ -23,6 +24,8 @@ export default function HomePage() {
     return (
       <>
         <PageHeader title="Início" />
+        <CozyBanner />
+        <YoutubeRadioCard />
         <Card>
           <Empty
             icon={<FolderOpen size={40} />}
@@ -48,6 +51,7 @@ export default function HomePage() {
     <>
       <PageHeader title="Início" />
       <CozyBanner />
+      <YoutubeRadioCard />
       <div className="grid gap-5 lg:grid-cols-3">
         <Card>
           <p className={label}>Tempo de estudo</p>

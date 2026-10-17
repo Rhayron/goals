@@ -25,36 +25,36 @@ interface Step {
 const STEPS: Step[] = [
   {
     kicker: 'boas-vindas',
-    title: (name) => `Puxa uma cadeira, ${name}.`,
-    body: 'O Coado é uma cafeteria de estudos: um cantinho calmo para planejar sua preparação, estudar no seu ritmo e ver a evolução acontecer. Em alguns goles a gente te mostra a casa.',
+    title: (name) => `Bem-vindo, ${name}.`,
+    body: 'O Coado reúne o que você precisa para organizar a preparação, registrar os estudos e acompanhar o caminho até a prova.',
     art: <CatWindowArt className="w-full" />,
   },
   {
-    kicker: 'gole 1 · escolha os grãos',
+    kicker: 'etapa 1: plano e edital',
     title: () => 'Planos, disciplinas e edital',
-    body: 'Tudo começa pelo plano: o concurso que você quer, a data da prova e suas metas da semana.',
+    body: 'Defina o concurso, a data da prova e as metas que fazem sentido para a sua semana.',
     bullets: [
       'Um plano para cada concurso, com contagem regressiva até a prova',
       'Disciplinas com cor própria e os tópicos do edital verticalizado',
-      'Marque o que já viu e acompanhe quanto do edital já foi',
+      'Marque os tópicos estudados e acompanhe o andamento do edital',
     ],
     art: <BeanJarArt className="w-full" />,
   },
   {
-    kicker: 'gole 2 · coe sem pressa',
+    kicker: 'etapa 2: estudar e registrar',
     title: () => 'Cronômetro e registro de estudos',
-    body: 'Dê o play e estude. Ao terminar, o Coado já sugere o registro com o tempo cronometrado.',
+    body: 'Use o cronômetro, o pomodoro ou o temporizador. Ao terminar, o tempo já vai para o registro.',
     bullets: [
-      'Cronômetro, pomodoro e temporizador: o botão ⏱ fica sempre no canto da tela',
+      'Cronômetro, pomodoro e temporizador ficam sempre disponíveis no canto da tela',
       'Registre questões, páginas e vídeos de cada sessão',
       'Um bloco de notas rápido para não perder nenhuma ideia',
     ],
     art: <PourOverArt className="w-full" />,
   },
   {
-    kicker: 'gole 3 · sirva no ritmo certo',
+    kicker: 'etapa 3: organizar a rotina',
     title: () => 'Planejamento em ciclo ou semana',
-    body: 'Diga quanto tempo tem e quais matérias pesam mais; o Coado monta a sequência para você.',
+    body: 'Informe o tempo disponível e as prioridades. O Coado organiza a sequência de estudo.',
     bullets: [
       'Ciclo de estudos gerado pelo peso e pelo seu domínio de cada disciplina',
       'Ou uma grade semanal com os dias que você tem livres',
@@ -63,23 +63,23 @@ const STEPS: Step[] = [
     art: <CycleCupsArt className="w-full" />,
   },
   {
-    kicker: 'gole 4 · requente no ponto',
+    kicker: 'etapa 4: revisar',
     title: () => 'Revisões espaçadas',
-    body: 'Conteúdo esquecido é café frio. Cada estudo registrado agenda as revisões na hora certa.',
+    body: 'Cada estudo pode gerar revisões automáticas nos intervalos que você definir.',
     bullets: ['Revisões automáticas em 1, 7, 30 dias (ou nos intervalos que preferir)', 'As revisões do dia aparecem no Início', 'Marque como feita ou ignore com um toque'],
     art: <CalendarCupArt className="w-full" />,
   },
   {
-    kicker: 'gole 5 · prove e ajuste',
+    kicker: 'etapa 5: acompanhar o progresso',
     title: () => 'Estatísticas, histórico e simulados',
-    body: 'Veja onde você está acertando e o que merece mais uma xícara de atenção.',
+    body: 'Consulte o tempo investido, o desempenho e o histórico para ajustar o plano quando for preciso.',
     bullets: ['Tempo, desempenho e constância por disciplina', 'Histórico completo de cada sessão de estudo', 'Simulados com nota por matéria e evolução'],
     art: <MugChartArt className="w-full" />,
   },
   {
-    kicker: 'gole 6 · tudo na sua conta',
-    title: () => 'Sua mesa, guardada com você',
-    body: 'Planos, histórico, preferências e seus arquivos (PDFs, resumos, editais) ficam salvos na sua conta e sincronizam entre os seus aparelhos.',
+    kicker: 'etapa 6: manter tudo sincronizado',
+    title: () => 'Seus dados, onde você precisar',
+    body: 'Planos, histórico, preferências e arquivos ficam na sua conta e acompanham você nos seus aparelhos.',
     art: <EnvelopeArt className="w-full" />,
   },
 ]
@@ -177,8 +177,8 @@ function WelcomeDialog({ onClose }: { onClose: () => void }) {
           },
         ]
       : []),
-    { value: 'sample', title: 'Explorar com um plano de exemplo', desc: 'Petrobrás: disciplinas, edital, histórico e ciclo prontos pra fuçar.' },
-    { value: 'empty', title: 'Começar do zero', desc: 'Mesa limpa e xícara cheia. Você cria seu primeiro plano agora.' },
+    { value: 'sample', title: 'Explorar um plano de exemplo', desc: 'Use o exemplo da Petrobras para conhecer disciplinas, edital, histórico e ciclo.' },
+    { value: 'empty', title: 'Começar do zero', desc: 'Crie o primeiro plano agora e ajuste os detalhes depois.' },
   ]
 
   return (
@@ -286,7 +286,7 @@ function WelcomeDialog({ onClose }: { onClose: () => void }) {
               className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-brand-700 disabled:opacity-70"
             >
               {busy ? <Loader2 size={16} className="animate-spin" /> : last ? <Check size={16} /> : null}
-              {last ? 'Servir ☕' : step === 0 ? 'Bora conhecer' : 'Próximo gole'}
+              {last ? 'Concluir' : step === 0 ? 'Conhecer o Coado' : 'Próxima etapa'}
               {!last && <ArrowRight size={16} />}
             </button>
           </footer>

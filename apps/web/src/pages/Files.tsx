@@ -143,7 +143,7 @@ export default function FilesPage() {
         >
           <EnvelopeArt className={clsx('h-28 w-auto shrink-0 transition', dragging && '-rotate-3 scale-105')} />
           <div className="min-w-0 flex-1">
-            <p className="font-display text-xl font-bold">{dragging ? 'Pode soltar aqui ✉️' : 'Guarde seus materiais'}</p>
+            <p className="font-display text-xl font-bold">{dragging ? 'Pode soltar aqui' : 'Guarde seus materiais'}</p>
             <p className="mt-1 text-sm text-muted">
               Arraste PDFs, resumos, editais e imagens, ou clique para escolher.
               {usage && ` Até ${fmtBytes(usage.maxFileSize)} por arquivo.`}

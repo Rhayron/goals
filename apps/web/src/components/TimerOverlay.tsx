@@ -1,30 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { CloudRain, Maximize2, Minimize2, Pause, Play, Settings, SkipForward, Square, X } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useTimerSession } from '../lib/timer-session'
 import { useStore } from '../lib/store'
 import { clsx, fmtClock } from '../lib/utils'
 import { Logo } from './Layout'
 import { CupArt, RainWindowArt } from './art'
 import { RadioPlayer } from './RadioPlayer'
-
-type Mode = 'stopwatch' | 'countdown' | 'pomodoro'
-type Phase = 'study' | 'short' | 'long'
-
-const beep = () => {
-  try {
-    const ctx = new AudioContext()
-    const o = ctx.createOscillator()
-    const g = ctx.createGain()
-    o.connect(g)
-    g.connect(ctx.destination)
-    o.frequency.value = 880
-    g.gain.setValueAtTime(0.25, ctx.currentTime)
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.2)
-    o.start()
-    o.stop(ctx.currentTime + 1.2)
-  } catch {
-    /* sem áudio */
-  }
-}
 
 /** Chuva ambiente gerada com ruído filtrado (sem arquivos de áudio) */
 function useRainSound() {
@@ -73,133 +55,42 @@ function useRainSound() {
 }
 
 export function TimerOverlay() {
-  const { timer, closeTimer, openStudy, subjects, topicsOf, state, update } = useStore()
+  const { timer, subjects, topicsOf, state, update } = useStore()
   const prefs = state.timerPrefs
-
-  const [mode, setMode] = useState<Mode>('stopwatch')
-  const [minimized, setMinimized] = useState(false)
+  const session = useTimerSession()
+  const {
+    mode, switchMode, minimized, setMinimized, subjectId, setSubjectId,
+    topicId, setTopicId, running, elapsed, target, display, phase, round,
+    start, pause, resetClock, advancePhase, finish, close, setSound,
+  } = session
   const [showPrefs, setShowPrefs] = useState(false)
-  const [subjectId, setSubjectId] = useState('')
-  const [topicId, setTopicId] = useState('')
-
-  // relógio baseado em timestamps: elapsed acumulado + início da corrida atual
-  const [running, setRunning] = useState(false)
-  const [accum, setAccum] = useState(0)
-  const startRef = useRef<number | null>(null)
-  const [, force] = useState(0)
-
-  // pomodoro
   const rain = useRainSound()
-  const [phase, setPhase] = useState<Phase>('study')
-  const [round, setRound] = useState(1)
-  /** tempo de estudo acumulado nas fases "study" concluídas */
-  const [studiedPomodoro, setStudiedPomodoro] = useState(0)
+  const navigate = useNavigate()
+  const { pathname } = useLocation()
 
-  useEffect(() => {
-    if (timer) {
-      setSubjectId(timer.subjectId ?? '')
-      setTopicId(timer.topicId ?? '')
-      setMinimized(false)
+  useEffect(() => { if (!timer) rain.stop() }, [timer])
+
+  const startFromOverlay = () => {
+    start()
+    if (mode === 'pomodoro') {
+      setMinimized(true)
+      navigate('/')
     }
-  }, [timer])
-
-  useEffect(() => {
-    if (!running) return
-    const t = setInterval(() => force((x) => x + 1), 250)
-    return () => clearInterval(t)
-  }, [running])
-
-  const elapsed = accum + (running && startRef.current ? (Date.now() - startRef.current) / 1000 : 0)
-
-  const phaseTarget = (p: Phase) => (p === 'study' ? prefs.pomodoroStudy : p === 'short' ? prefs.pomodoroShort : prefs.pomodoroLong) * 60
-  const target = mode === 'countdown' ? prefs.countdown * 60 : mode === 'pomodoro' ? phaseTarget(phase) : 0
-  const display = mode === 'stopwatch' ? elapsed : Math.max(0, target - elapsed)
-
-  // fim de contagem
-  useEffect(() => {
-    if (!running || mode === 'stopwatch' || elapsed < target) return
-    if (prefs.sound) beep()
-    if (mode === 'countdown') {
-      pause()
-      return
-    }
-    advancePhase(true)
-  })
-
-  const start = () => {
-    startRef.current = Date.now()
-    setRunning(true)
-  }
-  const pause = () => {
-    setAccum(elapsed)
-    startRef.current = null
-    setRunning(false)
-  }
-  const resetClock = () => {
-    setAccum(0)
-    startRef.current = running ? Date.now() : null
-  }
-
-  const advancePhase = (keepRunning: boolean) => {
-    if (phase === 'study') {
-      setStudiedPomodoro((s) => s + Math.min(elapsed, target))
-      setPhase(round % prefs.pomodoroRounds === 0 ? 'long' : 'short')
-    } else {
-      setPhase('study')
-      if (phase === 'long') setRound(1)
-      else setRound((r) => r + 1)
-    }
-    setAccum(0)
-    startRef.current = keepRunning ? Date.now() : null
-    setRunning(keepRunning)
-  }
-
-  const studiedSeconds = () => {
-    if (mode === 'pomodoro') return Math.round(studiedPomodoro + (phase === 'study' ? elapsed : 0))
-    return Math.round(Math.min(elapsed, mode === 'countdown' ? target : Infinity))
-  }
-
-  const resetAll = () => {
-    setRunning(false)
-    setAccum(0)
-    startRef.current = null
-    setPhase('study')
-    setRound(1)
-    setStudiedPomodoro(0)
-  }
-
-  const finish = () => {
-    const seconds = studiedSeconds()
-    resetAll()
-    rain.stop()
-    closeTimer()
-    if (seconds >= 60) openStudy({ duration: seconds, subjectId: subjectId || undefined, topicId: topicId || undefined, categoryId: timer?.categoryId })
-  }
-
-  const close = () => {
-    if (studiedSeconds() >= 60 && !window.confirm('Descartar o tempo em andamento?')) return
-    resetAll()
-    rain.stop()
-    closeTimer()
-  }
-
-  const switchMode = (m: Mode) => {
-    if (m === mode) return
-    if (studiedSeconds() >= 60 && !window.confirm('Trocar de modo zera o relógio atual. Continuar?')) return
-    resetAll()
-    setMode(m)
   }
 
   if (!timer) return null
 
   const subject = subjects.find((s) => s.id === subjectId)
 
+  // The cover contains the controls while a Pomodoro is visible on the home page.
+  if (minimized && mode === 'pomodoro' && pathname === '/') return null
+
   if (minimized) {
     return (
       <div className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-line bg-surface px-4 py-2 shadow-xl lg:left-[calc(50%+8rem)]">
         {subject && <span className="h-2.5 w-2.5 rounded-full" style={{ background: subject.color }} />}
         <span className="text-lg font-semibold tabular">{fmtClock(display)}</span>
-        <button onClick={running ? pause : start} className="text-brand-600" aria-label={running ? 'Pausar' : 'Iniciar'}>
+        <button onClick={running ? pause : startFromOverlay} className="text-brand-600" aria-label={running ? 'Pausar' : 'Iniciar'}>
           {running ? <Pause size={18} /> : <Play size={18} />}
         </button>
         <button onClick={finish} className="text-muted hover:text-ink" aria-label="Finalizar">
@@ -215,11 +106,10 @@ export function TimerOverlay() {
   const progress = target ? Math.min(100, (elapsed / target) * 100) : running ? 100 : 0
 
   return (
-    <div className="dark fixed inset-0 z-50 flex flex-col overflow-hidden bg-[#1b1410]/[0.97] text-white backdrop-blur">
+    <div className="dark fixed inset-0 z-50 flex flex-col overflow-y-auto bg-[#1b1410]/[0.97] text-white backdrop-blur">
       <RainWindowArt className="pointer-events-none absolute left-8 top-20 hidden w-72 opacity-90 lg:block" />
       <CupArt className="pointer-events-none absolute bottom-10 right-12 hidden w-44 lg:block" />
       <div className="relative flex flex-wrap items-center justify-end gap-1 p-4">
-        <RadioPlayer className="mr-auto w-full sm:w-72" compact />
         <button
           onClick={rain.toggle}
           className={clsx('flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition', rain.on ? 'border-brand-400 bg-brand-600/40 text-white' : 'border-white/15 text-white/60 hover:text-white')}
@@ -238,7 +128,7 @@ export function TimerOverlay() {
         </button>
       </div>
 
-      <div className="relative flex flex-1 flex-col items-center justify-center gap-6 px-4">
+      <div className="relative flex flex-1 flex-col items-center justify-center gap-6 px-4 pb-8 pt-4 sm:pb-40">
         <Logo className="text-white" />
 
         <div className="flex flex-wrap justify-center gap-2">
@@ -304,7 +194,7 @@ export function TimerOverlay() {
 
         <div className="flex items-center gap-4">
           <button
-            onClick={running ? pause : start}
+            onClick={running ? pause : startFromOverlay}
             className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-[#1b1410] transition hover:scale-105"
             aria-label={running ? 'Pausar' : 'Iniciar'}
           >
@@ -357,8 +247,10 @@ export function TimerOverlay() {
           </div>
         )}
 
-        <p className="text-xs text-white/40">Ao finalizar, o tempo estudado abre no formulário de registro. ☕</p>
+        <p className="text-xs text-white/40">Ao finalizar, o tempo estudado abre no formulário de registro.</p>
       </div>
+
+      <RadioPlayer className="relative z-10 m-4 mt-auto w-[calc(100%-2rem)] max-w-72 shrink-0 sm:absolute sm:bottom-4 sm:left-4 sm:m-0 sm:w-72" compact />
 
       {showPrefs && (
         <div className="absolute right-4 top-16 w-72 rounded-xl border border-white/10 bg-[#30251d] p-4 text-sm shadow-2xl">
@@ -366,7 +258,7 @@ export function TimerOverlay() {
           {(
             [
               ['countdown', 'Timer (min)'],
-              ['pomodoroStudy', 'Pomodoro – estudo (min)'],
+              ['pomodoroStudy', 'Pomodoro: estudo (min)'],
               ['pomodoroShort', 'Pausa curta (min)'],
               ['pomodoroLong', 'Pausa longa (min)'],
               ['pomodoroRounds', 'Sessões até pausa longa'],
@@ -384,7 +276,7 @@ export function TimerOverlay() {
             </label>
           ))}
           <label className="mt-3 flex items-center gap-2">
-            <input type="checkbox" checked={prefs.sound} onChange={(e) => update((s) => ({ ...s, timerPrefs: { ...s.timerPrefs, sound: e.target.checked } }))} />
+            <input type="checkbox" checked={prefs.sound} onChange={(e) => setSound(e.target.checked)} />
             <span className="text-white/70">Som ao terminar</span>
           </label>
         </div>

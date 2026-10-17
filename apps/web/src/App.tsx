@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './lib/auth'
 import { RadioProvider } from './lib/radio'
 import { api, ApiError } from './lib/api'
 import { recoverPending } from './lib/outbox'
+import { TimerSessionProvider } from './lib/timer-session'
 import { StoreProvider } from './lib/store'
 import { Layout } from './components/Layout'
 import { BrewingScreen } from './components/BrewingScreen'
@@ -75,32 +76,34 @@ function AccountApp() {
 
   return (
     <StoreProvider initial={data} onUnauthorized={expire}>
-      <WelcomeProvider>
-        <Routes>
-          <Route element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="planos" element={<Plans />} />
-            <Route path="disciplinas" element={<Subjects />} />
-            <Route path="edital" element={<Edital />} />
-            <Route path="planejamento" element={<PlanningPage />} />
-            <Route path="revisoes" element={<Reviews />} />
-            <Route path="historico" element={<HistoryPage />} />
-            <Route path="estatisticas" element={<Statistics />} />
-            <Route path="simulados" element={<Exams />} />
-            <Route path="arquivos" element={<FilesPage />} />
-            <Route path="comunidade" element={<Community />} />
-            <Route path="conquistas" element={<Achievements />} />
-            <Route path="modelos" element={<Templates />} />
-            <Route path="importar-edital" element={<ImportNotice />} />
-            <Route path="concursos" element={<NoticeCatalog />} />
-            <Route path="biblioteca" element={<Library />} />
-            <Route path="ajuda" element={<Help />} />
-            <Route path="perfil" element={<ProfilePage />} />
-            <Route path="configuracoes" element={<SettingsPage />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Route>
-        </Routes>
-      </WelcomeProvider>
+      <TimerSessionProvider>
+        <WelcomeProvider>
+          <Routes>
+            <Route element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="planos" element={<Plans />} />
+              <Route path="disciplinas" element={<Subjects />} />
+              <Route path="edital" element={<Edital />} />
+              <Route path="planejamento" element={<PlanningPage />} />
+              <Route path="revisoes" element={<Reviews />} />
+              <Route path="historico" element={<HistoryPage />} />
+              <Route path="estatisticas" element={<Statistics />} />
+              <Route path="simulados" element={<Exams />} />
+              <Route path="arquivos" element={<FilesPage />} />
+              <Route path="comunidade" element={<Community />} />
+              <Route path="conquistas" element={<Achievements />} />
+              <Route path="modelos" element={<Templates />} />
+              <Route path="importar-edital" element={<ImportNotice />} />
+              <Route path="concursos" element={<NoticeCatalog />} />
+              <Route path="biblioteca" element={<Library />} />
+              <Route path="ajuda" element={<Help />} />
+              <Route path="perfil" element={<ProfilePage />} />
+              <Route path="configuracoes" element={<SettingsPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Route>
+          </Routes>
+        </WelcomeProvider>
+      </TimerSessionProvider>
     </StoreProvider>
   )
 }

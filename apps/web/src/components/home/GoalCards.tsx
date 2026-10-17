@@ -18,7 +18,7 @@ function Countdown({ date }: { date: string }) {
           <p className="text-sm font-medium">{days === 1 ? 'dia' : 'dias'}</p>
         </>
       ) : days === 0 ? (
-        <p className="text-xl font-semibold">A prova é hoje! Boa sorte 🍀</p>
+        <p className="text-xl font-semibold">A prova é hoje. Boa sorte.</p>
       ) : (
         <p className="text-lg font-semibold">A prova foi há {plural(-days, 'dia')}</p>
       )}

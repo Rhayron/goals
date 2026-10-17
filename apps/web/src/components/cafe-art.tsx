@@ -1,428 +1,123 @@
-import { useId, type CSSProperties } from 'react'
 import { clsx } from '../lib/utils'
+import { ArtFrame, BookStack, Ground, line, Mug, paint, Steam, useArtId, type ArtProps } from './illustration-parts'
 
-/*
- * Ilustrações das telas de entrada, boas-vindas e conta — mesmo traço "feito à mão" de art.tsx
- * (contorno na cor da tinta, preenchimentos nos tons mocha) e seguem o modo claro/noturno.
- */
+export { LofiScene as CafeSceneArt } from './LofiScene'
 
-type ArtProps = { className?: string; title?: string }
-
-const ink = 'var(--app-ink)'
-const stroke = { stroke: ink, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round', fill: 'none' } as const
-
-/** id seguro para clipPath/gradiente (useId do React traz caracteres que não servem em url(#…)) */
-const useSvgId = (prefix: string) => `${prefix}-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`
-
-function Steam({ xs, y, delay = 0.9 }: { xs: number[]; y: number; delay?: number }) {
-  return (
-    <>
-      {xs.map((x, i) => (
-        <path
-          key={x}
-          d={`M${x} ${y}c-5-6 5-8 0-14`}
-          {...stroke}
-          strokeOpacity="0.5"
-          className="animate-steam"
-          style={{ animationDelay: `${i * delay}s`, transformOrigin: `${x}px ${y}px` }}
-        />
-      ))}
-    </>
-  )
-}
-
-/** Cena principal da entrada: janela à noite, luminárias, estante e a xícara no balcão */
-export function CafeSceneArt({ className, title = 'Cafeteria à noite' }: ArtProps) {
-  const clip = useSvgId('cafe-window')
-  const glow = useSvgId('cafe-glow')
-
-  return (
-    <svg viewBox="0 0 480 440" className={clsx('block', className)} role="img" aria-label={title}>
-      <defs>
-        <clipPath id={clip}>
-          <path d="M70 250V120a125 100 0 0 1 250 0v130z" />
-        </clipPath>
-        <radialGradient id={glow}>
-          <stop offset="0%" stopColor="#ffd98a" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#ffd98a" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      {/* janela em arco: cidade à noite */}
-      <path d="M70 250V120a125 100 0 0 1 250 0v130z" fill="#2b2a3f" />
-      <g clipPath={`url(#${clip})`}>
-        <circle cx="255" cy="80" r="20" fill="#f1e6d7" opacity="0.9" />
-        <circle cx="264" cy="73" r="18" fill="#2b2a3f" />
-        {[
-          [110, 70],
-          [150, 50],
-          [200, 95],
-          [290, 120],
-          [130, 110],
-        ].map(([x, y]) => (
-          <circle key={`${x}-${y}`} cx={x} cy={y} r="1.6" fill="#f1e6d7" opacity="0.7" />
-        ))}
-        <path d="M70 250v-62h26v-20h22v34h18v-48h28v58h16v-26h24v26h30v-38h22v50h26v-20h20v46z" fill="#1f1e2e" />
-        {[
-          [80, 200],
-          [104, 186],
-          [146, 168],
-          [152, 200],
-          [210, 210],
-          [262, 196],
-          [300, 218],
-        ].map(([x, y]) => (
-          <rect key={`${x}-${y}`} x={x} y={y} width="5" height="6" fill="#e2b55e" opacity="0.85" />
-        ))}
-      </g>
-      <path d="M70 250V120a125 100 0 0 1 250 0v130z" fill="none" stroke="#5c3d24" strokeWidth="8" />
-      <path d="M195 20v230M70 150h250" stroke="#5c3d24" strokeWidth="6" />
-
-      {/* luminárias pendentes */}
-      {[
-        [370, 70, 0],
-        [430, 110, 1.6],
-      ].map(([x, len, d]) => (
-        <g key={x} className="animate-float" style={{ animationDelay: `${d}s`, transformOrigin: `${x}px 0px` }}>
-          <ellipse cx={x} cy={len + 46} rx="46" ry="34" fill={`url(#${glow})`} />
-          <path d={`M${x} 0v${len}`} {...stroke} strokeWidth={1.5} />
-          <path d={`M${x - 18} ${len + 22}a18 18 0 0 1 36 0z`} fill="var(--color-brand-600)" />
-          <path d={`M${x - 18} ${len + 22}a18 18 0 0 1 36 0z`} {...stroke} />
-          <circle cx={x} cy={len + 25} r="4" fill="#ffd98a" />
-        </g>
-      ))}
-
-      {/* prateleira com potes e planta */}
-      <rect x="340" y="250" width="120" height="7" rx="3" fill="var(--color-brand-300)" />
-      <rect x="340" y="250" width="120" height="7" rx="3" {...stroke} />
-      {[
-        [350, 'var(--color-brand-200)'],
-        [378, 'var(--color-brand-100)'],
-      ].map(([x, fill]) => (
-        <g key={x}>
-          <rect x={Number(x)} y="222" width="22" height="28" rx="5" fill={String(fill)} />
-          <rect x={Number(x)} y="222" width="22" height="28" rx="5" {...stroke} />
-          <rect x={Number(x) + 3} y="216" width="16" height="7" rx="2" fill="var(--color-brand-600)" />
-          <rect x={Number(x) + 3} y="216" width="16" height="7" rx="2" {...stroke} />
-          {[0, 1, 2].map((k) => (
-            <ellipse key={k} cx={Number(x) + 7 + k * 4} cy={240 - (k % 2) * 6} rx="2.4" ry="1.6" fill="var(--color-brand-800)" />
-          ))}
-        </g>
-      ))}
-      <path d="M420 228h24l-3 22h-18z" fill="var(--color-brand-100)" />
-      <path d="M420 228h24l-3 22h-18z" {...stroke} />
-      <path d="M432 228c-14-6-16-24-4-32c10 8 12 22 4 32zM432 228c14-2 22-16 14-28c-10 4-16 16-14 28zM432 228c-4 6-22 10-26 0c6-8 20-8 26 0z" fill="var(--app-ok)" opacity="0.85" />
-      <path d="M432 228c-14-6-16-24-4-32M432 228c14-2 22-16 14-28" {...stroke} strokeOpacity="0.6" />
-
-      {/* balcão */}
-      <rect x="20" y="300" width="440" height="16" rx="6" fill="var(--color-brand-700)" />
-      <rect x="20" y="300" width="440" height="16" rx="6" {...stroke} />
-      <path d="M36 316v110M444 316v110" {...stroke} strokeOpacity="0.4" />
-
-      {/* livros */}
-      <rect x="60" y="282" width="96" height="18" rx="3" fill="var(--color-brand-300)" />
-      <rect x="60" y="282" width="96" height="18" rx="3" {...stroke} />
-      <rect x="68" y="264" width="80" height="18" rx="3" fill="var(--app-ok)" opacity="0.75" />
-      <rect x="68" y="264" width="80" height="18" rx="3" {...stroke} />
-      <path d="M78 273h40M72 291h50" {...stroke} strokeOpacity="0.4" />
-
-      {/* xícara com vapor, apoiada no balcão */}
-      <g transform="translate(109 135) scale(0.55)">
-        <ellipse cx="248" cy="300" rx="52" ry="6" fill={ink} opacity="0.1" />
-        <path d="M206 236h72v30a26 26 0 0 1-26 26h-20a26 26 0 0 1-26-26z" fill="var(--color-brand-100)" />
-        <path d="M206 236h72v30a26 26 0 0 1-26 26h-20a26 26 0 0 1-26-26z" {...stroke} />
-        <path d="M278 244h8a11 11 0 0 1 0 22h-8" {...stroke} />
-        <ellipse cx="242" cy="236" rx="36" ry="6" fill="var(--color-brand-600)" />
-        <ellipse cx="242" cy="236" rx="36" ry="6" {...stroke} />
-        <path d="M232 233c4-3 10-3 12 0c2 3-6 5-12 0z" fill="var(--color-brand-100)" opacity="0.9" />
-        <ellipse cx="242" cy="294" rx="50" ry="6" fill="var(--color-brand-200)" />
-        <ellipse cx="242" cy="294" rx="50" ry="6" {...stroke} />
-        <Steam xs={[226, 242, 258]} y={222} />
-      </g>
-
-      {/* rádio tocando lofi */}
-      <rect x="330" y="262" width="78" height="38" rx="8" fill="var(--color-brand-200)" />
-      <rect x="330" y="262" width="78" height="38" rx="8" {...stroke} />
-      <circle cx="352" cy="281" r="10" fill="var(--app-surface)" />
-      <circle cx="352" cy="281" r="10" {...stroke} />
-      <circle cx="352" cy="281" r="3" fill={ink} opacity="0.6" />
-      <path d="M372 274h26M372 281h26M372 288h18" {...stroke} strokeOpacity="0.5" />
-      <path d="M392 262l10-14" {...stroke} />
-      {[
-        ['M340 246c0-6 6-6 6-10v14a3 3 0 1 1-3-3', 0],
-        ['M384 236c0-6 6-6 6-10v14a3 3 0 1 1-3-3', 1.4],
-      ].map(([d, delay]) => (
-        <path key={String(delay)} d={String(d)} {...stroke} strokeOpacity="0.55" className="animate-steam" style={{ animationDelay: `${delay}s`, animationDuration: '4.5s' }} />
-      ))}
-
-      {/* gato dormindo no canto do balcão */}
-      <path d="M100 300c0-16 14-24 30-22s24 12 22 22z" fill="var(--color-brand-800)" />
-      <path d="M100 300c0-16 14-24 30-22s24 12 22 22z" {...stroke} />
-      <path d="M106 284l-2-10 9 6" {...stroke} fill="var(--color-brand-800)" />
-      <path d="M112 291c2 1 5 1 7 0" {...stroke} strokeWidth={1.5} />
-      <path d="M152 298c10 0 14-8 8-12" {...stroke} />
-      <text x="150" y="268" fontSize="12" fill={ink} opacity="0.5" className="animate-steam" style={{ animationDuration: '5s' }}>
-        z
-      </text>
-    </svg>
-  )
-}
-
-/** Xícara que enche conforme o progresso (0–1) */
 export function FillingCup({ level, className }: { level: number; className?: string }) {
-  const clip = useSvgId('fill-cup')
-  const l = Math.max(0, Math.min(1, level))
-  const style: CSSProperties = { transform: `translateY(${(1 - l) * 50}px)`, transition: 'transform 700ms cubic-bezier(.4,1.4,.6,1)' }
-  return (
-    <svg viewBox="0 0 120 120" className={clsx('block', className)} role="img" aria-label={`Xícara ${Math.round(l * 100)}% cheia`}>
-      <defs>
-        <clipPath id={clip}>
-          <path d="M26 46h60v24a22 22 0 0 1-22 22H48a22 22 0 0 1-22-22z" />
-        </clipPath>
-      </defs>
-      <ellipse cx="58" cy="104" rx="42" ry="5" fill={ink} opacity="0.08" />
-      <ellipse cx="56" cy="96" rx="40" ry="5" fill="var(--color-brand-200)" />
-      <ellipse cx="56" cy="96" rx="40" ry="5" {...stroke} />
-      <path d="M26 46h60v24a22 22 0 0 1-22 22H48a22 22 0 0 1-22-22z" fill="var(--app-surface)" />
-      <g clipPath={`url(#${clip})`}>
-        <g style={style}>
-          <path d="M0 44q10-5 20 0t20 0t20 0t20 0t20 0t20 0v60H0z" fill="var(--color-brand-600)" className="animate-wave" />
-          <path d="M14 52c6 4 18 4 24 0" {...stroke} stroke="var(--color-brand-200)" strokeOpacity="0.6" />
-        </g>
-      </g>
-      <path d="M26 46h60v24a22 22 0 0 1-22 22H48a22 22 0 0 1-22-22z" {...stroke} />
-      <path d="M86 52h8a9 9 0 0 1 0 18h-8" {...stroke} />
-      <g style={{ opacity: l >= 1 ? 1 : 0, transition: 'opacity 600ms' }}>
-        <Steam xs={[44, 58, 72]} y={36} />
-      </g>
-    </svg>
-  )
+  const clip = useArtId('coffee-fill')
+  const amount = Math.max(0, Math.min(1, level))
+  return <ArtFrame viewBox="0 0 160 160" title={`Xícara ${Math.round(amount * 100)}% cheia`} className={className}>
+    <defs><clipPath id={clip}><path d="M29 62h86v44c0 20-20 29-43 29s-43-9-43-29z" /></clipPath></defs>
+    <ellipse cx="77" cy="144" rx="63" ry="8" fill={paint.ink} opacity=".1" />
+    <ellipse cx="74" cy="136" rx="62" ry="9" fill={paint.cream} {...line} />
+    <path d="M115 72h10c28 0 26 39-3 39h-8" fill="none" stroke={paint.ink} strokeWidth="9" />
+    <path d="M115 72h10c28 0 26 39-3 39h-8" fill="none" stroke={paint.cream} strokeWidth="5" />
+    <path d="M29 62h86v44c0 20-20 29-43 29s-43-9-43-29z" fill={paint.paper} {...line} />
+    <g clipPath={`url(#${clip})`}><g style={{ transform: `translateY(${130 - amount * 68}px)`, transition: 'transform 800ms ease' }}>
+      <path d="M-30 0q20-5 40 0t40 0t40 0t40 0t40 0v100H-30z" fill={paint.clay} className="coado-coffee-surface" />
+      <path d="M-30 5h230v90H-30" fill="#926245" opacity=".35" />
+    </g></g>
+    <path d="M38 72v28q0 14 12 19" fill="none" stroke="#fff9ed" strokeWidth="5" strokeLinecap="round" opacity=".65" />
+    <ellipse cx="72" cy="62" rx="43" ry="8" fill={paint.cream} {...line} />
+    <ellipse cx="72" cy="63" rx="36" ry="4" fill={paint.ink} opacity=".65" />
+    <path d="M65 95q7-8 14 0q-2 8-7 11q-6-4-7-11" fill={paint.paper} opacity=".8" />
+    <Steam x={57} y={44} />
+  </ArtFrame>
 }
 
-/** Pote de grãos com etiquetas coloridas — planos e disciplinas */
-export function BeanJarArt({ className, title = 'Pote de grãos' }: ArtProps) {
-  const beans = [
-    [44, 96, 'var(--color-brand-800)'],
-    [58, 102, 'var(--color-brand-700)'],
-    [74, 96, 'var(--color-brand-800)'],
-    [88, 103, 'var(--color-brand-700)'],
-    [50, 84, 'var(--color-brand-700)'],
-    [66, 88, 'var(--color-brand-800)'],
-    [82, 84, 'var(--color-brand-700)'],
-    [58, 74, 'var(--color-brand-800)'],
-    [74, 72, 'var(--color-brand-700)'],
-  ] as const
-  return (
-    <svg viewBox="0 0 160 130" className={clsx('block', className)} role="img" aria-label={title}>
-      <ellipse cx="68" cy="122" rx="48" ry="5" fill={ink} opacity="0.08" />
-      <rect x="30" y="40" width="76" height="78" rx="14" fill="var(--color-brand-50)" />
-      {beans.map(([x, y, fill], i) => (
-        <g key={i} transform={`rotate(${i * 37} ${x} ${y})`}>
-          <ellipse cx={x} cy={y} rx="6" ry="4" fill={fill} />
-          <path d={`M${x - 4} ${y}q4 -2 8 0`} stroke="var(--color-brand-300)" strokeWidth="1" fill="none" />
-        </g>
-      ))}
-      <rect x="30" y="40" width="76" height="78" rx="14" {...stroke} />
-      <rect x="36" y="26" width="64" height="16" rx="4" fill="var(--color-brand-600)" />
-      <rect x="36" y="26" width="64" height="16" rx="4" {...stroke} />
-      <rect x="44" y="52" width="48" height="16" rx="3" fill="var(--app-kraft)" />
-      <rect x="44" y="52" width="48" height="16" rx="3" {...stroke} strokeWidth={1.5} />
-      <path d="M52 60h32" {...stroke} strokeOpacity="0.5" />
-      {/* etiquetas das disciplinas */}
-      {[
-        [116, 46, '#e8a598'],
-        [122, 70, '#9cc3a0'],
-        [116, 94, '#a9bde0'],
-      ].map(([x, y, c], i) => (
-        <g key={i} className="animate-float" style={{ animationDelay: `${i * 0.8}s` }}>
-          <rect x={Number(x)} y={Number(y)} width="34" height="14" rx="7" fill={String(c)} />
-          <rect x={Number(x)} y={Number(y)} width="34" height="14" rx="7" {...stroke} strokeWidth={1.5} />
-          <circle cx={Number(x) + 7} cy={Number(y) + 7} r="2" fill={ink} opacity="0.6" />
-        </g>
-      ))}
-    </svg>
-  )
+export function BeanJarArt({ className, title = 'Grãos de café, cadernos e matérias para organizar' }: ArtProps) {
+  return <ArtFrame title={title} className={className}>
+    <Ground />
+    <g transform="translate(113 76) scale(.85)"><BookStack /></g>
+    <rect x="36" y="49" width="84" height="106" rx="19" fill={paint.paper} fillOpacity=".8" {...line} />
+    {Array.from({length: 12}, (_, i) => <g key={i} transform={`translate(${50+i%4*18} ${104+Math.floor(i/4)*14}) rotate(${i*38})`}>
+      <ellipse rx="8" ry="5" fill={paint.clay} {...line} strokeWidth="1" /><path d="M-5 0q5-4 10 0" stroke={paint.cream} fill="none" strokeWidth="1" />
+    </g>)}
+    <rect x="32" y="38" width="92" height="18" rx="6" fill={paint.ink} />
+    <rect x="48" y="67" width="60" height="29" rx="5" fill={paint.sage} {...line} strokeWidth="1" />
+    <path d="M60 77h35m-35 8h24" stroke={paint.paper} strokeWidth="3" strokeLinecap="round" />
+    <path d="M44 61v54" stroke="#fff9ed" strokeWidth="4" opacity=".7" strokeLinecap="round" />
+  </ArtFrame>
 }
 
-/** Coador (V60) pingando na jarra — cronômetro e registro */
-export function PourOverArt({ className, title = 'Café coado' }: ArtProps) {
-  return (
-    <svg viewBox="0 0 140 140" className={clsx('block', className)} role="img" aria-label={title}>
-      <ellipse cx="70" cy="132" rx="44" ry="5" fill={ink} opacity="0.08" />
-      {/* chaleira */}
-      <path d="M8 22h22v18H8z" fill="var(--color-brand-300)" />
-      <path d="M8 22h22v18H8z" {...stroke} />
-      <path d="M30 26c10 0 14 4 22 12" {...stroke} />
-      <path d="M52 38c2 4 2 8 0 10" {...stroke} stroke="#a9c7e8" strokeDasharray="2 4" className="animate-drip" />
-      {/* coador */}
-      <path d="M40 46h60l-20 30H60z" fill="var(--color-brand-100)" />
-      <path d="M40 46h60l-20 30H60z" {...stroke} />
-      <path d="M50 52h40" {...stroke} strokeOpacity="0.4" />
-      <path d="M56 76h28v6H56z" fill="var(--color-brand-300)" />
-      <path d="M56 76h28v6H56z" {...stroke} />
-      {/* gotas */}
-      {[0, 0.6, 1.2].map((d) => (
-        <circle key={d} cx="70" cy="88" r="2.2" fill="var(--color-brand-700)" className="animate-drip" style={{ animationDelay: `${d}s` }} />
-      ))}
-      {/* jarra */}
-      <path d="M44 92h52l-4 34a6 6 0 0 1-6 5H54a6 6 0 0 1-6-5z" fill="var(--app-surface)" />
-      <path d="M47 110h46l-1.6 16a6 6 0 0 1-6 5H54.6a6 6 0 0 1-6-5z" fill="var(--color-brand-600)" opacity="0.9" />
-      <path d="M44 92h52l-4 34a6 6 0 0 1-6 5H54a6 6 0 0 1-6-5z" {...stroke} />
-      <path d="M96 98h6a8 8 0 0 1 0 16h-8" {...stroke} />
-      {/* relógio */}
-      <circle cx="116" cy="34" r="14" fill="var(--app-surface)" />
-      <circle cx="116" cy="34" r="14" {...stroke} />
-      <path d="M116 26v8l5 4" {...stroke} />
-      <path d="M112 18h8" {...stroke} />
-    </svg>
-  )
+export function PourOverArt({ className, title = 'Café sendo coado com calma' }: ArtProps) {
+  return <ArtFrame title={title} className={className}>
+    <Ground />
+    <path d="M73 91h78l12 52q2 14-16 14H77q-18 0-16-14z" fill={paint.paper} fillOpacity=".8" {...line} />
+    <path d="M65 128h95l3 15q2 14-16 14H77q-18 0-16-14z" fill={paint.clay} />
+    <path d="M157 103h13q27 19 0 36h-10" fill="none" {...line} strokeWidth="5" />
+    <path d="M67 41h91l-32 48H99z" fill={paint.sage} {...line} />
+    <ellipse cx="112" cy="41" rx="46" ry="10" fill={paint.paper} {...line} />
+    <ellipse cx="112" cy="42" rx="33" ry="6" fill={paint.ink} />
+    <path d="M83 50l19 30m-3-27l9 30m22-29l-12 29m30-30l-23 29" fill="none" stroke={paint.sageDark} strokeWidth="2" />
+    <rect x="91" y="87" width="43" height="7" rx="3" fill={paint.cream} {...line} />
+    <path d="M112 97v7" className="coado-drip" stroke={paint.clay} strokeWidth="4" strokeLinecap="round" />
+    <path d="M76 105l-6 32" fill="none" stroke="#fff9ed" strokeWidth="4" strokeLinecap="round" />
+    <g transform="translate(176 115)"><circle r="25" fill={paint.cream} {...line} /><circle r="20" fill={paint.paper} /><path d="M0-13V0l9 5" fill="none" {...line} /><circle r="2.5" fill={paint.clay} /></g>
+  </ArtFrame>
 }
 
-/** Xícaras em roda — ciclo de estudos */
-export function CycleCupsArt({ className, title = 'Ciclo de xícaras' }: ArtProps) {
-  const colors = ['#e8a598', '#f2cf8a', '#9cc3a0', '#a9bde0', '#c9b1d9', '#e4c7a8']
-  return (
-    <svg viewBox="0 0 140 140" className={clsx('block', className)} role="img" aria-label={title}>
-      <circle cx="70" cy="70" r="44" {...stroke} strokeDasharray="4 7" strokeOpacity="0.45" />
-      <g className="animate-spin-slow" style={{ transformOrigin: '70px 70px' }}>
-        {colors.map((c, i) => {
-          const a = (i / colors.length) * Math.PI * 2 - Math.PI / 2
-          const x = 70 + Math.cos(a) * 44
-          const y = 70 + Math.sin(a) * 44
-          return (
-            <g key={c} transform={`translate(${x - 10} ${y - 9})`}>
-              <path d="M2 4h16v7a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6z" fill={c} />
-              <path d="M2 4h16v7a6 6 0 0 1-6 6H8a6 6 0 0 1-6-6z" {...stroke} strokeWidth={1.6} />
-              <path d="M18 6h2a3 3 0 0 1 0 6h-2" {...stroke} strokeWidth={1.6} />
-            </g>
-          )
-        })}
-      </g>
-      <path d="M57 70a13 13 0 1 1 4 9.5" {...stroke} />
-      <path d="M57 63v7h7" {...stroke} />
-    </svg>
-  )
+export function CycleCupsArt({ className, title = 'Ciclo de estudos entre livros e uma pausa para café' }: ArtProps) {
+  return <ArtFrame title={title} className={className}>
+    <path d="M55 100Q35 20 120 20Q205 20 190 106Q175 168 92 145" fill="none" stroke={paint.sageDark} strokeWidth="2.5" strokeDasharray="5 8" className="coado-cycle" />
+    <g transform="translate(18 81) scale(.7)"><Mug color={paint.sage} /></g>
+    <g transform="translate(104 65) scale(.9)"><BookStack /></g>
+    {[[68,37,'1'],[170,38,'2'],[190,148,'3']].map(([x,y,n]) => <g key={n}><circle cx={x} cy={y} r="14" fill={paint.paper} {...line} /><text x={x} y={Number(y)+5} textAnchor="middle" fontSize="14" fontWeight="700" fill={paint.ink}>{n}</text></g>)}
+  </ArtFrame>
 }
 
-/** Calendário com xícaras marcadas — revisões espaçadas */
-export function CalendarCupArt({ className, title = 'Calendário de revisões' }: ArtProps) {
-  const marks = new Set([1, 8, 16])
-  return (
-    <svg viewBox="0 0 150 130" className={clsx('block', className)} role="img" aria-label={title}>
-      <ellipse cx="72" cy="122" rx="52" ry="5" fill={ink} opacity="0.08" />
-      <rect x="18" y="20" width="110" height="96" rx="10" fill="var(--app-surface)" />
-      <rect x="18" y="20" width="110" height="24" rx="10" fill="var(--color-brand-600)" />
-      <rect x="18" y="20" width="110" height="96" rx="10" {...stroke} />
-      <path d="M18 44h110" {...stroke} />
-      <path d="M42 12v14M104 12v14" {...stroke} strokeWidth={3} />
-      {Array.from({ length: 20 }, (_, i) => {
-        const x = 30 + (i % 5) * 20
-        const y = 54 + Math.floor(i / 5) * 15
-        return marks.has(i) ? (
-          <g key={i}>
-            <circle cx={x + 2} cy={y + 3} r="7" fill="var(--color-brand-200)" />
-            <path d={`M${x - 3} ${y}h9v3a4 4 0 0 1-4 4h-1a4 4 0 0 1-4-4z`} {...stroke} strokeWidth={1.4} />
-          </g>
-        ) : (
-          <circle key={i} cx={x + 2} cy={y + 3} r="1.8" fill={ink} opacity="0.25" />
-        )
-      })}
-      <path d="M32 57c20-14 26 18 50 6s20 14 30 20" {...stroke} strokeDasharray="3 5" strokeOpacity="0.5" />
-      <g className="animate-float">
-        <circle cx="128" cy="104" r="15" fill="var(--color-brand-100)" />
-        <circle cx="128" cy="104" r="15" {...stroke} />
-        <path d="M121 104a7 7 0 1 0 2-5" {...stroke} />
-        <path d="M121 97v5h5" {...stroke} />
-      </g>
-    </svg>
-  )
+export function CalendarCupArt({ className, title = 'Calendário de revisões com páginas marcadas' }: ArtProps) {
+  return <ArtFrame title={title} className={className}>
+    <Ground />
+    <rect x="36" y="24" width="160" height="132" rx="11" fill={paint.cream} {...line} />
+    <rect x="30" y="18" width="160" height="132" rx="11" fill={paint.paper} {...line} />
+    <path d="M41 18h138q11 0 11 11v28H30V29q0-11 11-11" fill={paint.sage} />
+    <path d="M30 57h160" {...line} />
+    {[58,164].map(x => <path key={x} d={`M${x} 10v20`} stroke={paint.ink} strokeWidth="6" strokeLinecap="round" />)}
+    {Array.from({length:15},(_,i) => <g key={i} transform={`translate(${52+i%5*29} ${78+Math.floor(i/5)*26})`}>
+      <rect x="-8" y="-8" width="16" height="16" rx="4" fill={[0,7,14].includes(i)?paint.sage:paint.cream} />
+      {[0,7,14].includes(i)&&<path d="M-4 0l3 3l6-7" fill="none" stroke={paint.paper} strokeWidth="2" strokeLinecap="round" />}
+    </g>)}
+    <g transform="translate(165 112) scale(.53)"><Mug color={paint.clay} steam={false} /></g>
+  </ArtFrame>
 }
 
-/** Gráfico de barras feito de canecas empilhadas — estatísticas e simulados */
-export function MugChartArt({ className, title = 'Gráfico de canecas' }: ArtProps) {
-  const bars = [2, 3, 1, 4]
-  return (
-    <svg viewBox="0 0 150 130" className={clsx('block', className)} role="img" aria-label={title}>
-      <path d="M14 116h124" {...stroke} />
-      <path d="M14 116V20" {...stroke} strokeOpacity="0.4" />
-      {bars.map((n, i) =>
-        Array.from({ length: n }, (_, k) => {
-          const x = 26 + i * 28
-          const y = 100 - k * 20
-          return (
-            <g key={`${i}-${k}`} className="animate-pop" style={{ animationDelay: `${(i + k) * 0.12}s` }}>
-              <path d={`M${x} ${y}h18v9a6 6 0 0 1-6 6h-6a6 6 0 0 1-6-6z`} fill={k % 2 ? 'var(--color-brand-300)' : 'var(--color-brand-600)'} />
-              <path d={`M${x} ${y}h18v9a6 6 0 0 1-6 6h-6a6 6 0 0 1-6-6z`} {...stroke} strokeWidth={1.6} />
-              <path d={`M${x + 18} ${y + 2}h2a3.5 3.5 0 0 1 0 7h-2`} {...stroke} strokeWidth={1.6} />
-            </g>
-          )
-        }),
-      )}
-      <path d="M30 80l28-18l28 30l32-58" {...stroke} stroke="var(--app-ok)" strokeWidth={2.5} />
-      <path d="M110 32l8 2l-1 8" {...stroke} stroke="var(--app-ok)" strokeWidth={2.5} />
-    </svg>
-  )
+export function MugChartArt({ className, title = 'Progresso nos estudos, um livro de cada vez' }: ArtProps) {
+  return <ArtFrame title={title} className={className}>
+    <Ground />
+    {[2,3,5,7].map((n,i) => <g key={i} className="coado-books-enter" style={{animationDelay:`${i*.12}s`}}>
+      {Array.from({length:n},(_,j) => <g key={j}><rect x={30+i*46} y={146-j*15} width="37" height="13" rx="3" fill={[paint.clay,paint.sage,paint.blue,paint.lilac][i]} {...line} strokeWidth="1.3" /><path d={`M${36+i*46} ${152-j*15}h23`} stroke={paint.paper} opacity=".65" /></g>)}
+    </g>)}
+    <path d="M38 105q44-8 69-33t74-42m-9-4l11 3l-2 12" fill="none" stroke={paint.sageDark} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+  </ArtFrame>
 }
 
-/** Envelope kraft com papéis e um selo — conta, perfil e arquivos */
-export function EnvelopeArt({ className, title = 'Envelope com seus arquivos' }: ArtProps) {
-  return (
-    <svg viewBox="0 0 150 130" className={clsx('block', className)} role="img" aria-label={title}>
-      <ellipse cx="75" cy="122" rx="54" ry="5" fill={ink} opacity="0.08" />
-      {/* papéis saindo */}
-      <g className="animate-float">
-        <rect x="34" y="18" width="52" height="66" rx="4" fill="var(--app-surface)" transform="rotate(-8 60 50)" />
-        <rect x="34" y="18" width="52" height="66" rx="4" {...stroke} transform="rotate(-8 60 50)" />
-        <path d="M42 34h30M42 42h36M42 50h24" {...stroke} strokeOpacity="0.4" transform="rotate(-8 60 50)" />
-      </g>
-      <g className="animate-float" style={{ animationDelay: '1.2s' }}>
-        <rect x="66" y="14" width="50" height="64" rx="4" fill="var(--color-brand-50)" transform="rotate(7 90 46)" />
-        <rect x="66" y="14" width="50" height="64" rx="4" {...stroke} transform="rotate(7 90 46)" />
-        <rect x="74" y="24" width="18" height="22" rx="2" fill="#e8a598" transform="rotate(7 90 46)" />
-        <text x="76" y="40" fontSize="8" fontWeight="800" fill={ink} transform="rotate(7 90 46)">
-          PDF
-        </text>
-        <path d="M74 56h30M74 64h22" {...stroke} strokeOpacity="0.4" transform="rotate(7 90 46)" />
-      </g>
-      {/* envelope */}
-      <path d="M20 58h110v54a6 6 0 0 1-6 6H26a6 6 0 0 1-6-6z" fill="var(--app-kraft)" />
-      <path d="M20 58l55 34l55-34" fill="var(--color-brand-200)" />
-      <path d="M20 58h110v54a6 6 0 0 1-6 6H26a6 6 0 0 1-6-6zM20 58l55 34l55-34" {...stroke} />
-      <path d="M20 118l42-32M130 118l-42-32" {...stroke} strokeOpacity="0.35" />
-      {/* selo de café */}
-      <circle cx="112" cy="100" r="11" fill="var(--color-brand-600)" />
-      <circle cx="112" cy="100" r="11" {...stroke} />
-      <ellipse cx="112" cy="100" rx="3.5" ry="5.5" fill="var(--color-brand-100)" transform="rotate(30 112 100)" />
-      <path d="M110 96q3 4 0 8" stroke="var(--color-brand-600)" strokeWidth="1.2" fill="none" />
-    </svg>
-  )
+export function EnvelopeArt({ className, title = 'Resumos e materiais guardados em uma pasta' }: ArtProps) {
+  return <ArtFrame title={title} className={className}>
+    <Ground />
+    <path d="M27 69h64l10 12h111v67a9 9 0 0 1-9 9H36a9 9 0 0 1-9-9z" fill={paint.sageDark} {...line} />
+    <g transform="rotate(-8 93 83)"><rect x="50" y="25" width="86" height="112" rx="5" fill={paint.paper} {...line} /><path d="M64 43h45m-45 12h56m-56 12h52m-52 12h33" stroke={paint.blue} strokeWidth="3" strokeLinecap="round" opacity=".7" /></g>
+    <g transform="rotate(7 155 90)"><rect x="117" y="37" width="72" height="105" rx="5" fill={paint.cream} {...line} /><rect x="131" y="51" width="43" height="33" rx="4" fill={paint.clay} /><path d="M141 67l8 8l15-18" stroke={paint.paper} fill="none" strokeWidth="3" strokeLinecap="round" /><path d="M132 98h40m-40 10h29" stroke={paint.ink} strokeWidth="2" opacity=".35" /></g>
+    <path d="M20 102h195l-12 48q-2 7-10 7H39q-8 0-10-7z" fill={paint.sage} {...line} />
+    <rect x="85" y="115" width="65" height="22" rx="5" fill={paint.paper} /><path d="M98 126h39" stroke={paint.sageDark} strokeWidth="3" strokeLinecap="round" />
+  </ArtFrame>
 }
 
-/** Disco de vinil girando — "tocando agora" */
 export function VinylArt({ className, spinning = true }: { className?: string; spinning?: boolean }) {
-  return (
-    <svg viewBox="0 0 48 48" className={clsx('block', className)} aria-hidden>
-      <g className={spinning ? 'animate-spin-slow' : undefined} style={{ transformOrigin: '24px 24px' }}>
-        <circle cx="24" cy="24" r="22" fill="#2a1f19" />
-        <circle cx="24" cy="24" r="16" fill="none" stroke="#4a3a30" strokeWidth="1" />
-        <circle cx="24" cy="24" r="12" fill="none" stroke="#4a3a30" strokeWidth="1" />
-        <circle cx="24" cy="24" r="8" fill="var(--color-brand-400)" />
-        <path d="M20 21a5 5 0 0 1 6-2" stroke="#fff" strokeOpacity="0.5" strokeWidth="1.2" fill="none" />
-        <circle cx="24" cy="24" r="1.6" fill="#2a1f19" />
-      </g>
-    </svg>
-  )
+  return <svg viewBox="0 0 64 64" className={clsx('coado-art block', className)} aria-hidden>
+    <g className={spinning ? 'coado-vinyl' : undefined} style={{transformOrigin:'32px 32px'}}>
+      <circle cx="32" cy="32" r="30" fill="#34303a" stroke="#191b26" strokeWidth="2" />
+      {[26,22,18].map(r=><circle key={r} cx="32" cy="32" r={r} fill="none" stroke="#59515a" strokeWidth=".8" />)}
+      <path d="M10 22q5-12 18-15M54 42q-5 12-18 15" fill="none" stroke="#8b7d85" strokeWidth="3" opacity=".4" />
+      <circle cx="32" cy="32" r="12" fill={paint.sage} /><path d="M24 32q8-7 16 0v4H24z" fill={paint.cream} /><circle cx="32" cy="32" r="2.5" fill="#34303a" />
+    </g>
+  </svg>
 }
 
-/** Barras de equalizador animadas */
 export function Equalizer({ className, bars = 4 }: { className?: string; bars?: number }) {
-  return (
-    <span className={clsx('inline-flex h-3.5 items-end gap-[3px]', className)} aria-hidden>
-      {Array.from({ length: bars }, (_, i) => (
-        <span key={i} className="w-[3px] origin-bottom rounded-full bg-current animate-eq" style={{ height: '100%', animationDelay: `${(i * 0.23) % 1}s` }} />
-      ))}
-    </span>
-  )
+  return <span className={clsx('inline-flex h-3.5 items-end gap-[3px]', className)} aria-hidden>
+    {Array.from({length:bars},(_,i)=><span key={i} className="coado-equalizer w-[3px] origin-bottom rounded-full bg-current" style={{height:'100%',animationDelay:`${i*-.23}s`}} />)}
+  </span>
 }
 
 /** "G" oficial do Google (usado no botão de entrar, conforme a identidade da marca) */

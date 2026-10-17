@@ -127,6 +127,17 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* A mesa de estudos acrescenta tons de papel, sálvia e azul ao café da marca. */
+.study-scene-background {
+  background: radial-gradient(circle at 20% 24%, #f7f2df 0, transparent 38%),
+    linear-gradient(145deg, #e5e9db 0%, #efe4d4 54%, #ddd0bd 100%);
+}
+
+.dark .study-scene-background {
+  background: radial-gradient(circle at 20% 20%, #343b42 0, transparent 42%),
+    linear-gradient(145deg, #242c32 0%, #2a2525 56%, #1b1719 100%);
+}
+
 h1,
 h2.display,
 .font-display {
@@ -234,4 +245,45 @@ svg .animate-pop {
   border-radius: 8px;
   border: 2px solid transparent;
   background-clip: padding-box;
+}
+
+/* Coado illustration motion: small, local movements keep the study area calm. */
+.coado-steam { animation: coado-steam 5.4s ease-in-out infinite; opacity: 0; }
+.coado-cat-breathe { transform-box: fill-box; transform-origin: center bottom; animation: coado-breathe 5s ease-in-out infinite; }
+.coado-cat-eyes { transform-box: fill-box; transform-origin: center; animation: coado-blink 8s ease-in-out infinite; }
+.coado-tail { transform-box: fill-box; transform-origin: left bottom; animation: coado-tail 7s ease-in-out infinite; }
+.coado-rain { animation: coado-rain 3.6s linear infinite; }
+.coado-room-rain { animation: coado-room-rain 5.5s linear infinite; }
+.coado-lamplight { animation: coado-light 8s ease-in-out infinite; }
+.coado-dust { animation: coado-dust 12s ease-in-out infinite; opacity: 0; }
+.coado-tape-reel { animation: spin 12s linear infinite; }
+.coado-vinyl { animation: spin 9s linear infinite; }
+.coado-cycle { animation: coado-dash 16s linear infinite; }
+.coado-drip { animation: coado-drip 2s ease-in infinite; }
+.coado-coffee-surface { animation: coado-wave 4s ease-in-out infinite; }
+.coado-books-enter { transform-box: fill-box; transform-origin: center bottom; animation: coado-settle 650ms ease both; }
+.coado-equalizer { animation: eq 1.6s ease-in-out infinite; }
+.coado-room[data-paused="true"] * { animation-play-state: paused !important; }
+
+@keyframes coado-steam {
+  0% { opacity: 0; transform: translateY(6px) scaleX(.9); }
+  30% { opacity: .48; }
+  100% { opacity: 0; transform: translateY(-24px) scaleX(1.12); }
+}
+@keyframes coado-breathe { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.025); } }
+@keyframes coado-blink { 0%, 44%, 48%, 91%, 95%, 100% { transform: scaleY(1); } 46%, 93% { transform: scaleY(.08); } }
+@keyframes coado-tail { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-4deg); } }
+@keyframes coado-rain { from { transform: translate(0,-30px); } to { transform: translate(-12px,170px); } }
+@keyframes coado-room-rain { from { transform: translate(0,-100px); } to { transform: translate(-60px,650px); } }
+@keyframes coado-light { 0%, 100% { opacity: .35; } 50% { opacity: .7; } }
+@keyframes coado-dust { 0%, 100% { opacity: 0; transform: translate(0, 8px); } 35% { opacity: .5; } 80% { opacity: .1; transform: translate(18px, -24px); } }
+@keyframes coado-dash { to { stroke-dashoffset: -78; } }
+@keyframes coado-drip { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(24px); } }
+@keyframes coado-wave { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-20px); } }
+@keyframes coado-settle { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .coado-art *, .coado-room *, .coado-equalizer { animation: none !important; transition: none !important; }
+  .coado-motion-control { display: none; }
+  .coado-steam { opacity: .2; }
 }

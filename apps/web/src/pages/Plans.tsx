@@ -231,7 +231,7 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
             className="field"
             value={form.name}
             onChange={(e) => set('name', e.target.value)}
-            placeholder="Ex.: Petrobras 2026 – Técnico"
+            placeholder="Ex.: Petrobras 2026: Técnico"
           />
         </div>
         <div>

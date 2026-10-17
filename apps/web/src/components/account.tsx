@@ -29,7 +29,7 @@ export function Avatar({ name, src, className }: { name: string; src: string | n
       )}
       aria-hidden
     >
-      {initials || '☕'}
+      {initials || 'C'}
     </span>
   )
 }

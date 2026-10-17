@@ -83,7 +83,7 @@ export function ExamModal({ exam, onClose }: { exam?: Exam; onClose: () => void 
             className={clsx('field', submitted && !name.trim() && 'border-bad!')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Ex.: Simulado 01 – Cebraspe"
+            placeholder="Ex.: Simulado 01: Cebraspe"
           />
         </div>
         <div>

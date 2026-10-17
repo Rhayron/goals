@@ -17,18 +17,18 @@ const AUTH_ERRORS: Record<AuthErrorCode, string> = {
 }
 
 const MOMENTS = [
-  { until: 5, hello: 'Ainda acordado?', line: 'A gente também. Café fresco e silêncio de madrugada.' },
-  { until: 12, hello: 'Bom dia!', line: 'O primeiro café já tá passando. Mesa perto da janela livre.' },
-  { until: 18, hello: 'Boa tarde.', line: 'Hora do cafezinho e de mais um bloco de estudos.' },
-  { until: 24, hello: 'Boa noite.', line: 'Chuva lá fora, café aqui dentro. Bora estudar?' },
+  { until: 5, hello: 'Ainda estudando?', line: 'Registre a sessão antes de encerrar o dia.' },
+  { until: 12, hello: 'Bom dia.', line: 'Escolha uma matéria e comece pelo que está mais perto.' },
+  { until: 18, hello: 'Boa tarde.', line: 'Confira o plano e siga para a próxima sessão.' },
+  { until: 24, hello: 'Boa noite.', line: 'Organize o que ficou para amanhã e feche o dia com clareza.' },
 ]
 
 const MENU = [
-  ['Ciclo de estudos', 'coado na hora'],
-  ['Pomodoro duplo', 'com pausa pro biscoito'],
-  ['Revisões espaçadas', 'servidas no ponto · 1 · 7 · 30'],
-  ['Edital verticalizado', 'na prensa francesa'],
-  ['Estatísticas', 'com chantilly'],
+  ['Ciclo de estudos', 'organizado pelas suas prioridades'],
+  ['Pomodoro', 'com pausas configuráveis'],
+  ['Revisões espaçadas', 'nos intervalos que você escolher'],
+  ['Edital verticalizado', 'por disciplina e tópico'],
+  ['Estatísticas', 'para acompanhar o progresso'],
 ]
 
 /** Lê e limpa ?authError= da URL (vem do callback do Google) */
@@ -76,9 +76,13 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
 
   return (
     <div className="min-h-screen lg:grid lg:grid-cols-[1.1fr_1fr]">
-      {/* cena */}
-      <section className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-b from-brand-100 via-kraft to-brand-200 px-6 pb-6 pt-10 dark:from-[#241a14] dark:via-[#2b2019] dark:to-[#1b1410] lg:min-h-screen lg:px-12 lg:pb-10">
+      {/* mesa de estudos */}
+      <section className="study-scene-background relative flex flex-col justify-center overflow-hidden px-6 pb-6 pt-10 lg:min-h-screen lg:px-12 lg:pb-10">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-700/20" />
+        <div className="mx-auto mb-3 w-full max-w-[600px] animate-rise">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.24em] text-brand-800 dark:text-brand-200">Coado: seu espaço de estudo</p>
+          <p className="mt-2 font-display text-xl italic text-ink">Planeje, estude e acompanhe seu progresso.</p>
+        </div>
         <CafeSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
         <RadioPlayer className="mx-auto mt-6 w-full max-w-[600px] animate-rise" />
       </section>
@@ -91,10 +95,10 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             {moment.hello}
           </p>
           <h1 className="mt-1 text-4xl font-bold leading-tight tracking-tight animate-rise" style={{ animationDelay: '120ms' }}>
-            Seu cantinho de estudos te espera.
+            Organize a preparação do seu jeito.
           </h1>
           <p className="mt-3 text-muted animate-rise" style={{ animationDelay: '160ms' }}>
-            {moment.line} Planeje o edital, cronometre as sessões, revise no tempo certo e veja o progresso aparecer, um gole por vez.
+            {moment.line} Planeje o edital, registre os estudos, revise e acompanhe os resultados em um só lugar.
           </p>
 
           {notice && (
@@ -106,7 +110,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
           <div className="mt-8 space-y-3 animate-rise" style={{ animationDelay: '220ms' }}>
             {unreachable ? (
               <div className="rounded-2xl border border-line bg-surface p-4 text-sm">
-                <p className="font-semibold">A cafeteria não atendeu.</p>
+                <p className="font-semibold">Não foi possível abrir seu espaço de estudo.</p>
                 <p className="mt-1 text-muted">Não consegui falar com o servidor. Confere a conexão e tenta de novo.</p>
                 <button
                   onClick={reload}
@@ -149,23 +153,23 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             )}
           </div>
 
-          {/* cardápio */}
+          {/* cardápio da casa */}
           <section
             aria-label="Cardápio da casa"
             className="chalkboard mt-10 rounded-2xl border-[6px] border-brand-700 p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] animate-rise"
             style={{ animationDelay: '300ms' }}
           >
-            <p className="text-center font-display text-lg italic tracking-wide">~ cardápio da casa ~</p>
+            <p className="text-center font-display text-lg italic tracking-wide">O que você encontra aqui</p>
             <ul className="mt-3 space-y-1.5 text-sm">
               {MENU.map(([item, note]) => (
-                <li key={item} className="flex items-baseline gap-2">
+                <li key={item} className="flex flex-col gap-0.5 border-b border-dotted border-white/15 pb-1.5 last:border-0 sm:flex-row sm:items-baseline sm:gap-2 sm:border-0 sm:pb-0">
                   <span className="font-bold">{item}</span>
-                  <span className="flex-1 border-b border-dotted border-white/25" />
-                  <span className="font-display italic text-white/75">{note}</span>
+                  <span className="hidden flex-1 border-b border-dotted border-white/25 sm:block" />
+                  <span className="font-display text-xs italic text-white/75 sm:text-sm">{note}</span>
                 </li>
               ))}
             </ul>
-            <p className="mt-4 text-center text-xs text-white/60">tudo à vontade · refil grátis</p>
+            <p className="mt-4 text-center text-xs text-white/60">Tudo no mesmo lugar, sem perder o fio da preparação.</p>
           </section>
 
           <p className="mt-6 text-center text-xs text-muted">

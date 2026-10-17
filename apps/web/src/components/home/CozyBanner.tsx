@@ -3,7 +3,7 @@ import { Play } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { firstName, useMe } from '../../lib/auth'
 import { constancy, cycleProgress, fmtMinutes, today } from '../../lib/utils'
-import { CupArt } from '../art'
+import { PomodoroScene } from './PomodoroScene'
 
 const greeting = () => {
   const h = new Date().getHours()
@@ -24,14 +24,15 @@ export function CozyBanner() {
 
   const line =
     c.current > 0
-      ? `Você está há ${c.current} ${c.current === 1 ? 'dia' : 'dias'} seguidos estudando. Mantém o ritmo ☕`
+      ? `Você estudou nos últimos ${c.current} ${c.current === 1 ? 'dia' : 'dias'}. Continue no seu ritmo.`
       : c.daysSinceLast === null
-        ? 'Coloca um lofi, pega um café e registra o primeiro estudo.'
-        : `Faz ${c.daysSinceLast} ${c.daysSinceLast === 1 ? 'dia' : 'dias'} desde o último estudo. Um café e 30 minutos já contam.`
+        ? 'Escolha uma matéria e registre o primeiro estudo quando terminar.'
+        : `Faz ${c.daysSinceLast} ${c.daysSinceLast === 1 ? 'dia' : 'dias'} desde o último estudo. Retome por uma sessão curta.`
 
   return (
-    <section className="mb-6 flex items-center gap-4 overflow-hidden rounded-2xl border border-line bg-gradient-to-r from-brand-100 via-surface to-surface p-5 dark:from-brand-900/60">
-      <div className="min-w-0 flex-1">
+    <section className="mb-6 grid overflow-hidden rounded-2xl border border-line bg-surface shadow-sm xl:grid-cols-[.8fr_1.2fr]">
+      <div className="min-w-0 self-center p-5 sm:p-6">
+        <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-brand-700 dark:text-brand-300">Seu espaço de estudo</p>
         <h2 className="font-display text-2xl font-bold">
           {greeting()}, {firstName(me.name)}.
         </h2>
@@ -56,7 +57,7 @@ export function CozyBanner() {
           )}
         </div>
       </div>
-      <CupArt className="hidden h-28 w-auto shrink-0 sm:block" />
+      <PomodoroScene />
     </section>
   )
 }

@@ -494,7 +494,7 @@ export default function ImportNotice() {
                 </Button>
               </div>
               <label className="block text-sm">
-                Tópicos — um por linha
+                Tópicos: um por linha
                 <textarea
                   className="field mt-1 min-h-36 text-sm"
                   value={s.topics.join('\n')}

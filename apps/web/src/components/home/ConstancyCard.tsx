@@ -14,7 +14,7 @@ function Message({ c }: { c: Constancy }) {
   if (c.current > 0)
     return (
       <>
-        Sequência atual: <b>{plural(c.current, 'dia')}</b> 🔥 {c.daysSinceLast > 0 && 'Estude hoje para não perder a sequência! '}
+        Sequência atual: <b>{plural(c.current, 'dia')}</b>. {c.daysSinceLast > 0 && 'Registre um estudo hoje para manter a sequência. '}
         Seu recorde é de <b>{plural(c.record, 'dia')}</b> seguidos.
       </>
     )

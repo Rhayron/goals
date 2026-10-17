@@ -366,7 +366,7 @@ export default function StatisticsPage() {
                         <td className="py-2 pr-2">
                           <span className="flex items-center gap-2">
                             <ColorDot color={r.subject?.color ?? '#ccc'} />
-                            <span className="line-clamp-1">{r.subject?.name ?? '—'}</span>
+                            <span className="line-clamp-1">{r.subject?.name ?? 'Sem disciplina'}</span>
                           </span>
                         </td>
                         <td className="px-2 py-2">
