@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { CalendarDays, Check, Laptop, Loader2, LogOut, Pencil, Smartphone, Sparkles, Trash2, Watch } from 'lucide-react'
 import { BRAND } from '../lib/brand'
@@ -17,15 +18,48 @@ export default function ProfilePage() {
   return (
     <>
       <PageHeader title="Perfil" hidePlan />
-      <div className="grid gap-6 lg:grid-cols-[1.2fr_1fr]">
-        <div className="space-y-6">
-          <IdentityCard />
-          <LoyaltyCard />
-          <NumbersCard />
-        </div>
-        <div className="space-y-6">
-          <SessionsCard />
-          <DangerCard />
+      <div className="grid gap-6 xl:grid-cols-[180px_1fr]">
+        <nav
+          aria-label="Navegação do perfil"
+          className="flex flex-wrap gap-2 self-start rounded-2xl border border-line bg-surface p-3 xl:sticky xl:top-6 xl:flex-col"
+        >
+          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#identidade">
+            Minha conta
+          </a>
+          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#atividade">
+            Minha atividade
+          </a>
+          <Link className="rounded-lg p-2 text-sm hover:bg-surface-2" to="/conquistas">
+            Conquistas
+          </Link>
+          <Link className="rounded-lg p-2 text-sm hover:bg-surface-2" to="/comunidade">
+            Meus grupos e ranking
+          </Link>
+          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#aparelhos">
+            Aparelhos conectados
+          </a>
+          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#conta">
+            Gerenciar conta
+          </a>
+        </nav>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
+            <section id="identidade" className="scroll-mt-20">
+              <IdentityCard />
+            </section>
+            <LoyaltyCard />
+            <section id="atividade" className="scroll-mt-20">
+              <NumbersCard />
+            </section>
+          </div>
+          <div className="space-y-6">
+            <section id="aparelhos" className="scroll-mt-20">
+              <SessionsCard />
+            </section>
+            <section id="conta" className="scroll-mt-20">
+              <DangerCard />
+            </section>
+          </div>
         </div>
       </div>
     </>
@@ -57,7 +91,7 @@ function IdentityCard() {
     <section className="relative overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-brand-100 via-surface to-surface p-6 dark:from-brand-900/60">
       <div className="relative flex flex-wrap items-center gap-5">
         <Avatar name={me.name} src={me.avatarUrl} className="h-20 w-20 text-2xl shadow-md" />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 basis-52 flex-1">
           {editing ? (
             <form
               className="flex gap-2"
@@ -66,7 +100,14 @@ function IdentityCard() {
                 void save()
               }}
             >
-              <input autoFocus className="field max-w-xs" value={name} maxLength={120} onChange={(e) => setName(e.target.value)} aria-label="Seu nome" />
+              <input
+                autoFocus
+                className="field max-w-xs"
+                value={name}
+                maxLength={120}
+                onChange={(e) => setName(e.target.value)}
+                aria-label="Seu nome"
+              />
               <Button type="submit" disabled={saving}>
                 {saving && <Loader2 size={14} className="animate-spin" />} Salvar
               </Button>
@@ -79,7 +120,7 @@ function IdentityCard() {
               </button>
             </h2>
           )}
-          <p className="text-sm text-muted">{me.email}</p>
+          <p className="break-all text-sm text-muted">{me.email}</p>
           <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface/80 px-3 py-1 text-xs font-semibold">
             <CalendarDays size={13} className="text-brand-600" /> estudando desde {since}
           </p>
@@ -119,11 +160,17 @@ function LoyaltyCard() {
       </div>
       <ol className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-10">
         {days.map((d, i) => (
-          <li key={d.date} className="flex flex-col items-center gap-1" title={`${d.date.split('-').reverse().join('/')}${d.stamped ? ' · estudou' : ''}`}>
+          <li
+            key={d.date}
+            className="flex flex-col items-center gap-1"
+            title={`${d.date.split('-').reverse().join('/')}${d.stamped ? ' · estudou' : ''}`}
+          >
             <span
               className={clsx(
                 'flex h-10 w-10 items-center justify-center rounded-full border-2 transition',
-                d.stamped ? 'rotate-[-8deg] border-brand-600 bg-brand-600 text-white shadow-sm animate-pop' : 'border-dashed border-brand-300 text-brand-300',
+                d.stamped
+                  ? 'rotate-[-8deg] border-brand-600 bg-brand-600 text-white shadow-sm animate-pop'
+                  : 'border-dashed border-brand-300 text-brand-300',
               )}
               style={d.stamped ? { animationDelay: `${i * 60}ms` } : undefined}
             >
@@ -164,7 +211,11 @@ function NumbersCard() {
     { label: 'Tempo de estudo', value: fmtDuration(t.seconds) },
     { label: 'Dias estudados', value: t.days },
     { label: 'Sessões', value: state.studies.length },
-    { label: 'Questões', value: t.total.toLocaleString('pt-BR'), sub: t.total ? `${Math.round((t.hits / t.total) * 100)}% de acerto` : undefined },
+    {
+      label: 'Questões',
+      value: t.total.toLocaleString('pt-BR'),
+      sub: t.total ? `${Math.round((t.hits / t.total) * 100)}% de acerto` : undefined,
+    },
     { label: 'Planos', value: state.plans.length },
     { label: 'Arquivos', value: storage?.files ?? '–', sub: storage ? fmtBytes(storage.usage.used) : undefined },
   ]
@@ -190,7 +241,6 @@ function describeAgent(ua: string | null) {
   // sessão de aparelho pareado (apps/watch): "Coado Watch (modelo)"
   const watch = /^Coado Watch(?: \((.+)\))?/.exec(ua)
   if (watch) return { label: `Relógio ${BRAND}${watch[1] ? ` · ${watch[1]}` : ''}`, mobile: false, watch: true }
-  // app do celular (apps/android/phone): "Coado Android (marca modelo)"
   const phone = /^Coado Android(?: \((.+)\))?/.exec(ua)
   if (phone) return { label: `Celular ${BRAND}${phone[1] ? ` · ${phone[1]}` : ''}`, mobile: true, watch: false }
   const browser = /Edg\//.test(ua) ? 'Edge' : /OPR\//.test(ua) ? 'Opera' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'Navegador'
@@ -261,9 +311,13 @@ function SessionsCard() {
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium">
                     {a.label}
-                    {s.current && <span className="ml-2 rounded-full bg-ok/15 px-2 py-0.5 text-[10px] font-bold uppercase text-ok">este aparelho</span>}
+                    {s.current && (
+                      <span className="ml-2 rounded-full bg-ok/15 px-2 py-0.5 text-[10px] font-bold uppercase text-ok">este aparelho</span>
+                    )}
                   </p>
-                  <p className="text-xs text-muted">ativo {ago(s.lastSeenAt)} · desde {new Date(s.createdAt).toLocaleDateString('pt-BR')}</p>
+                  <p className="text-xs text-muted">
+                    ativo {ago(s.lastSeenAt)} · desde {new Date(s.createdAt).toLocaleDateString('pt-BR')}
+                  </p>
                 </div>
                 {!s.current && (
                   <Button variant="ghost" size="sm" onClick={() => void revoke(s.id)}>
@@ -301,7 +355,8 @@ function DangerCard() {
   return (
     <Card title="Fechar a conta">
       <p className="text-sm text-muted">
-        Apaga sua conta, todos os planos, o histórico de estudos e os arquivos guardados. Não dá para desfazer; se quiser, exporte um backup em Configurações antes.
+        Apaga sua conta, todos os planos, o histórico de estudos e os arquivos guardados. Não dá para desfazer; se quiser, exporte um backup
+        em Configurações antes.
       </p>
       <Button variant="danger" size="sm" className="mt-4" onClick={() => setOpen(true)}>
         <Trash2 size={14} /> Apagar minha conta
@@ -316,7 +371,11 @@ function DangerCard() {
             <Button variant="secondary" onClick={() => setOpen(false)} disabled={busy}>
               Melhor não
             </Button>
-            <Button variant="danger" onClick={() => void confirm()} disabled={busy || typed.trim().toLowerCase() !== me.email.toLowerCase()}>
+            <Button
+              variant="danger"
+              onClick={() => void confirm()}
+              disabled={busy || typed.trim().toLowerCase() !== me.email.toLowerCase()}
+            >
               {busy && <Loader2 size={14} className="animate-spin" />} Apagar tudo
             </Button>
           </>
@@ -325,7 +384,14 @@ function DangerCard() {
         <p className="text-sm">
           Para confirmar, digite seu e-mail <strong>{me.email}</strong>.
         </p>
-        <input className="field mt-3" value={typed} onChange={(e) => setTyped(e.target.value)} placeholder={me.email} aria-label="Confirme seu e-mail" autoComplete="off" />
+        <input
+          className="field mt-3"
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          placeholder={me.email}
+          aria-label="Confirme seu e-mail"
+          autoComplete="off"
+        />
         {error && <p className="mt-2 text-sm text-bad">{error}</p>}
       </Modal>
     </Card>

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useMemo, useState, type ReactNode } from 'react'
 import { BookOpen, Briefcase, Building2, CalendarDays, Check, FileText, ListChecks, Pencil, Plus, Trash2 } from 'lucide-react'
 import { PageHeader } from '../components/Layout'
@@ -62,7 +63,12 @@ export default function PlansPage() {
 
   return (
     <>
-      <PageHeader title="Planos" hidePlan />
+      <PageHeader title="Planos" hidePlan>
+        <Link to="/importar-edital" className="rounded-lg border border-line px-4 py-2 text-sm font-semibold">Importar edital</Link>
+        <Link to="/modelos" className="rounded-lg border border-line px-4 py-2 text-sm font-semibold">
+          Explorar modelos
+        </Link>
+      </PageHeader>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {state.plans.map((p) => {

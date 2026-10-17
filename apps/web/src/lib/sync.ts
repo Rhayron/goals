@@ -1,163 +1,135 @@
 import { diffState, type AppState } from '@coado/shared'
 import { api, ApiError } from './api'
-
-/*
- * Motor de sincronização: o estado vive em memória (ações instantâneas) e as diferenças em
- * relação ao último estado confirmado pelo servidor são enviadas em lote para POST /api/sync.
- * Falhas de rede são repetidas com backoff; o lote seguinte sempre inclui o que ficou para trás.
- */
+import { appendChange, pendingChanges, removeChange, type PendingChange } from './outbox'
 
 export type SyncStatus = 'saved' | 'pending' | 'saving' | 'offline' | 'error'
 
-const DEBOUNCE_MS = 700
-const MAX_WAIT_MS = 4000
-const MAX_RETRY_MS = 30_000
-
+/** Fila durável por conta. Cada lote sai do IndexedDB somente após confirmação do servidor. */
 export class SyncEngine {
-  /** último estado que o servidor confirmou */
-  private base: AppState
   private current: AppState
-  private status: SyncStatus = 'saved'
+  private status: SyncStatus = 'pending'
   private timer: ReturnType<typeof setTimeout> | null = null
-  private firstPendingAt = 0
-  private retryMs = 0
   private inFlight: Promise<void> | null = null
   private listeners = new Set<() => void>()
-  private readonly onUnauthorized: () => void
-
+  private writes: Promise<unknown> = Promise.resolve()
+  private unpersisted: PendingChange[] = []
+  private retryMs = 2000
+  private disposed = false
+  private clock = Date.now()
   errorMessage = ''
 
-  constructor(initial: AppState, onUnauthorized: () => void) {
-    this.base = initial
+  private onUnauthorized: () => void
+  private account: string
+  constructor(initial: AppState, onUnauthorized: () => void, account: string) {
     this.current = initial
     this.onUnauthorized = onUnauthorized
+    this.account = account
   }
-
+  start() {
+    this.disposed = false
+    this.retry()
+  }
   subscribe = (fn: () => void) => {
     this.listeners.add(fn)
     return () => this.listeners.delete(fn)
   }
-
   getStatus = () => this.status
-
-  /** há algo que ainda não chegou ao servidor */
   get dirty() {
-    return this.current !== this.base || this.inFlight !== null
+    return this.status !== 'saved' || this.unpersisted.length > 0 || this.inFlight !== null
   }
-
-  private setStatus(s: SyncStatus) {
-    if (s === this.status) return
-    this.status = s
+  get idle() {
+    return !this.dirty && !this.timer
+  }
+  get snapshot() {
+    return this.current
+  }
+  private setStatus(status: SyncStatus) {
+    this.status = status
     this.listeners.forEach((fn) => fn())
   }
-
-  /** Chamado a cada mudança de estado */
-  push(next: AppState) {
-    if (next === this.current) return
-    this.current = next
-    if (this.status === 'saved') this.setStatus('pending')
-    if (!this.firstPendingAt) this.firstPendingAt = Date.now()
-    if (this.retryMs) return // já há uma nova tentativa agendada
-    this.schedule(Math.min(DEBOUNCE_MS, Math.max(0, this.firstPendingAt + MAX_WAIT_MS - Date.now())))
+  private persist() {
+    this.writes = this.writes
+      .catch(() => undefined)
+      .then(async () => {
+        while (this.unpersisted.length) {
+          await appendChange(this.unpersisted[0])
+          this.unpersisted.shift()
+        }
+      })
+    return this.writes
   }
-
+  push(next: AppState) {
+    const patch = diffState(this.current, next)
+    this.current = next
+    if (!patch) return
+    this.clock = Math.max(Date.now(), this.clock + 1)
+    this.unpersisted.push({ id: crypto.randomUUID(), account: this.account, createdAt: this.clock, patch })
+    this.setStatus('pending')
+    void this.persist().catch(() => {
+      this.errorMessage = 'O navegador não conseguiu guardar a fila local. Mantenha esta aba aberta e tente novamente.'
+      this.setStatus('error')
+    })
+    if (!this.timer) this.schedule(700)
+  }
   private schedule(ms: number) {
+    if (this.disposed) return
     if (this.timer) clearTimeout(this.timer)
     this.timer = setTimeout(() => {
       this.timer = null
       void this.flush()
     }, ms)
   }
-
-  /** Envia o que estiver pendente agora */
-  flush(opts: { keepalive?: boolean } = {}): Promise<void> {
+  flush(_opts: { keepalive?: boolean } = {}): Promise<void> {
     if (this.inFlight) return this.inFlight
-    const req = diffState(this.base, this.current)
-    if (!req) {
-      this.base = this.current
-      this.firstPendingAt = 0
-      this.setStatus('saved')
-      return Promise.resolve()
+    const run = async () => {
+      await this.persist()
+      const changes = await pendingChanges(this.account)
+      if (changes.length) this.setStatus('saving')
+      for (const change of changes) {
+        await api.post('/sync', change.patch)
+        await removeChange(change.id)
+      }
+      this.errorMessage = ''
+      this.retryMs = 2000
+      const remaining = this.unpersisted.length || (await pendingChanges(this.account)).length
+      this.setStatus(remaining ? 'pending' : 'saved')
+      if (remaining) this.schedule(700)
     }
-    const sending = this.current
-    this.setStatus('saving')
-    this.inFlight = api
-      .post('/sync', req, { keepalive: opts.keepalive })
-      .then(() => {
-        this.base = sending
-        this.retryMs = 0
-        this.errorMessage = ''
-        if (this.current === sending) {
-          this.firstPendingAt = 0
-          this.setStatus('saved')
-        } else {
-          this.firstPendingAt = Date.now()
-          this.setStatus('pending')
-          this.schedule(DEBOUNCE_MS)
+    // Uma única aba envia por vez; os lotes são idempotentes também no fallback.
+    this.inFlight = (navigator.locks ? navigator.locks.request(`coado-sync:${this.account}`, run) : run())
+      .catch((e: unknown) => {
+        this.errorMessage = (e as Error).message
+        if (e instanceof ApiError && e.status === 401) {
+          this.setStatus('error')
+          this.onUnauthorized()
+          return
         }
+        if (e instanceof ApiError && (e.status === 0 || e.status >= 500 || e.status === 429)) {
+          this.errorMessage = 'Alterações guardadas neste navegador. Vamos reenviar quando a conexão voltar.'
+          this.setStatus('offline')
+          this.schedule(this.retryMs)
+          this.retryMs = Math.min(30_000, this.retryMs * 2)
+        } else this.setStatus('error')
       })
-      .catch((e: unknown) => this.fail(e))
       .finally(() => {
         this.inFlight = null
       })
     return this.inFlight
   }
-
-  private fail(e: unknown) {
-    const err = e instanceof ApiError ? e : new ApiError(0, 'offline', String(e))
-    if (err.status === 401) {
-      this.setStatus('error')
-      this.onUnauthorized()
-      return
-    }
-    // dados recusados (400/409/413): repetir não resolve
-    if (err.status >= 400 && err.status < 500) {
-      this.errorMessage = err.message
-      this.setStatus('error')
-      return
-    }
-    this.errorMessage = err.message
-    this.setStatus('offline')
-    this.retryMs = Math.min(MAX_RETRY_MS, this.retryMs ? this.retryMs * 2 : 2000)
-    this.schedule(this.retryMs)
-  }
-
-  /** Tenta de novo imediatamente (ex.: voltou a conexão) */
   retry() {
-    if (this.status !== 'offline' && this.status !== 'error') return
-    this.retryMs = 0
     void this.flush()
   }
-
-  /** Aguarda envios em andamento e cancela o agendado (antes de substituir tudo) */
   async settle() {
     if (this.timer) clearTimeout(this.timer)
     this.timer = null
-    if (this.inFlight) await this.inFlight
+    await this.flush()
+    if (this.dirty) throw new Error('Sincronize as alterações pendentes antes de substituir os dados da conta.')
   }
-
-  /** Estado vindo do servidor passa a ser a nova base (importação, recarga) */
   rebase(state: AppState) {
-    if (this.timer) clearTimeout(this.timer)
-    this.timer = null
-    this.base = state
     this.current = state
-    this.retryMs = 0
-    this.firstPendingAt = 0
-    this.errorMessage = ''
-    this.setStatus('saved')
   }
-
-  /** O usuário está sem nada pendente e o estado local é exatamente a base */
-  get idle() {
-    return !this.inFlight && !this.timer && this.current === this.base
-  }
-
-  get snapshot() {
-    return this.current
-  }
-
   dispose() {
+    this.disposed = true
     if (this.timer) clearTimeout(this.timer)
     this.listeners.clear()
   }

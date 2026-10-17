@@ -9,7 +9,18 @@ import { PlanningWizard } from '../components/planning/PlanningWizard'
 import { RecentStudiesModal } from '../components/planning/RecentStudiesModal'
 import { useStore } from '../lib/store'
 import type { Planning } from '../lib/types'
-import { clsx, cycleProgress, fmtDuration, fmtMinutes, parseDate, pct, today, weeklySchedule, WEEKDAYS_LONG, type CycleProgressItem } from '../lib/utils'
+import {
+  clsx,
+  cycleProgress,
+  fmtDuration,
+  fmtMinutes,
+  parseDate,
+  pct,
+  today,
+  weeklySchedule,
+  WEEKDAYS_LONG,
+  type CycleProgressItem,
+} from '../lib/utils'
 
 export default function PlanningPage() {
   const { plan, planning, restartCycle, deletePlanning } = useStore()
@@ -24,7 +35,10 @@ export default function PlanningPage() {
             icon={<FolderOpen size={36} />}
             title="Nenhum plano ativo"
             action={
-              <Link to="/planos" className="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700">
+              <Link
+                to="/planos"
+                className="inline-flex rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700"
+              >
                 Ir para Planos
               </Link>
             }
@@ -159,14 +173,14 @@ function EditCycleButton({ onClick }: { onClick: () => void }) {
   )
 }
 
-function ItemActions({ subjectId, onRecent }: { subjectId: string; onRecent: (id: string) => void }) {
+function ItemActions({ subjectId, topicId, onRecent }: { subjectId: string; topicId?: string; onRecent: (id: string) => void }) {
   const { openTimer, openStudy } = useStore()
   return (
     <div className="flex shrink-0 items-center">
-      <IconButton title="Iniciar estudo" onClick={() => openTimer({ subjectId })} className="text-brand-600 dark:text-brand-300">
+      <IconButton title="Iniciar estudo" onClick={() => openTimer({ subjectId, topicId })} className="text-brand-600 dark:text-brand-300">
         <Play size={16} />
       </IconButton>
-      <IconButton title="Adicionar estudo manualmente" onClick={() => openStudy({ subjectId })}>
+      <IconButton title="Adicionar estudo manualmente" onClick={() => openStudy({ subjectId, topicId })}>
         <Plus size={16} />
       </IconButton>
       <IconButton title="Ver últimos estudos" onClick={() => onRecent(subjectId)}>
@@ -225,9 +239,10 @@ function CycleSequence({ items, onEdit, onRecent }: { items: CycleProgressItem[]
                       {fmtDuration(it.studied)} / {fmtMinutes(it.duration)} · <span className="font-semibold text-ink">{p}%</span>
                     </span>
                   </div>
+                  <p className="text-xs text-muted">{state.topics.find((t) => t.id === it.topicId)?.name}</p>
                   <ProgressBar value={p} color={color} className="mt-1.5 h-1.5" />
                 </div>
-                <ItemActions subjectId={it.subjectId} onRecent={onRecent} />
+                <ItemActions topicId={it.topicId} subjectId={it.subjectId} onRecent={onRecent} />
               </li>
             )
           })}
@@ -297,7 +312,8 @@ function WeeklyView({
                           {done && <Check size={12} className="text-ok" />}
                           {fmtMinutes(it.duration)}
                         </span>
-                        {isToday && <ItemActions subjectId={it.subjectId} onRecent={onRecent} />}
+                        <span className="block text-xs text-muted">{state.topics.find((t) => t.id === it.topicId)?.name}</span>
+                        {isToday && <ItemActions topicId={it.topicId} subjectId={it.subjectId} onRecent={onRecent} />}
                       </li>
                     )
                   })}

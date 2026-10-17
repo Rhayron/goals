@@ -21,7 +21,7 @@ function DurationSelect({ value, onChange, label }: { value: number; onChange: (
 }
 
 export function CycleEditor({ planning, onClose }: { planning: Planning; onClose: () => void }) {
-  const { state, subjects, savePlanning } = useStore()
+  const { state, subjects, topicsOf, savePlanning } = useStore()
   const [items, setItems] = useState<CycleItem[]>(planning.cycle)
   const [newSubject, setNewSubject] = useState(subjects[0]?.id ?? '')
   const [newDuration, setNewDuration] = useState(60)
@@ -50,7 +50,8 @@ export function CycleEditor({ planning, onClose }: { planning: Planning; onClose
       footer={
         <>
           <span className="mr-auto text-sm text-muted">
-            {items.length} {items.length === 1 ? 'sessão' : 'sessões'} · <span className="tabular font-medium text-ink">{fmtMinutes(total)}</span>
+            {items.length} {items.length === 1 ? 'sessão' : 'sessões'} ·{' '}
+            <span className="tabular font-medium text-ink">{fmtMinutes(total)}</span>
           </span>
           <Button variant="secondary" onClick={onClose}>
             Cancelar
@@ -64,10 +65,24 @@ export function CycleEditor({ planning, onClose }: { planning: Planning; onClose
       ) : (
         <ol className="divide-y divide-line rounded-xl border border-line">
           {items.map((it, idx) => (
-            <li key={it.id} className="flex items-center gap-2 px-3 py-2">
+            <li key={it.id} className="flex flex-wrap items-center gap-2 px-3 py-2">
               <span className="w-6 text-right text-xs font-semibold tabular text-muted">{idx + 1}</span>
               <ColorDot color={subjectColor(state.subjects, it.subjectId)} />
               <span className="min-w-0 flex-1 truncate text-sm">{nameOf(it.subjectId)}</span>
+              <select
+                aria-label={`Tópico de ${nameOf(it.subjectId)}`}
+                className="field min-w-0 max-w-44 py-1.5"
+                value={it.topicId ?? ''}
+                onChange={(e) => setItems((list) => list.map((x) => (x.id === it.id ? { ...x, topicId: e.target.value || undefined } : x)))}
+              >
+                <option value="">Qualquer tópico</option>
+                {topicsOf(it.subjectId).map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.finished ? '✓ ' : ''}
+                    {t.name}
+                  </option>
+                ))}
+              </select>
               <DurationSelect
                 label="Duração"
                 value={it.duration}
@@ -95,7 +110,12 @@ export function CycleEditor({ planning, onClose }: { planning: Planning; onClose
       <div className="mt-4 rounded-xl bg-surface-2 p-3">
         <p className="label">Adicionar sessão</p>
         <div className="flex flex-wrap items-center gap-2">
-          <select className="field min-w-0 flex-1 py-1.5" value={newSubject} onChange={(e) => setNewSubject(e.target.value)} aria-label="Disciplina">
+          <select
+            className="field min-w-0 flex-1 py-1.5"
+            value={newSubject}
+            onChange={(e) => setNewSubject(e.target.value)}
+            aria-label="Disciplina"
+          >
             {subjects.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}

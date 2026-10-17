@@ -144,7 +144,7 @@ fun CoadoWatchRoot(
                                         onStartNext = { item ->
                                             val subject = view.subject(item.subjectId) ?: return@HomeScreen
                                             ensureNotifications()
-                                            scope.launch { app.engine.start(subject, item.id, prefs.mode) }
+                                            scope.launch { app.engine.start(subject, item.id, prefs.mode, topicId = item.topicId) }
                                         },
                                         onStartAssessment = { a ->
                                             val subject = view.subject(a.subjectId) ?: return@HomeScreen
@@ -165,7 +165,7 @@ fun CoadoWatchRoot(
                                         onMode = { m -> scope.launch { app.store.updatePrefs { it.copy(mode = m) } } },
                                         onStart = { subject, cycleItemId ->
                                             ensureNotifications()
-                                            scope.launch { app.engine.start(subject, cycleItemId, prefs.mode) }
+                                            scope.launch { app.engine.start(subject, cycleItemId, prefs.mode, topicId = view.cycle.firstOrNull { it.id == cycleItemId }?.topicId) }
                                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                                         },
                                     )

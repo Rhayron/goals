@@ -1,18 +1,8 @@
 import { useMemo, useState, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { BarChart3, FolderOpen } from 'lucide-react'
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  ComposedChart,
-  Line,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
+import ProgressInsights from '../components/statistics/ProgressInsights'
 import { PageHeader } from '../components/Layout'
 import { Card, ColorDot, Empty, ProgressBar } from '../components/ui'
 import { FilterBar } from '../components/charts/FilterBar'
@@ -106,7 +96,10 @@ export default function StatisticsPage() {
     const subjectRows = subjects
       .map((s) => ({ subject: s, name: short(s.name), ...totals(bySubject.get(s.id) ?? []) }))
       .filter((r) => r.duration > 0 || r.questions > 0)
-    const subjectHours = [...subjectRows].filter((r) => r.duration > 0).sort((a, b) => b.duration - a.duration).map((r) => ({ ...r, hours: toHours(r.duration) }))
+    const subjectHours = [...subjectRows]
+      .filter((r) => r.duration > 0)
+      .sort((a, b) => b.duration - a.duration)
+      .map((r) => ({ ...r, hours: toHours(r.duration) }))
     const subjectPerf = subjectRows.filter((r) => r.questions > 0).map((r) => ({ ...r, perf: r.performance }))
 
     const categories = [...groupBy(filtered, (s) => s.categoryId)]
@@ -116,10 +109,22 @@ export default function StatisticsPage() {
 
     const topicMap = new Map(state.topics.map((tp) => [tp.id, tp]))
     const subjectMap = new Map(state.subjects.map((s) => [s.id, s]))
-    const topics = [...groupBy(filtered.filter((s) => s.topicId && s.hits + s.misses > 0), (s: Study) => s.topicId!)]
+    const topics = [
+      ...groupBy(
+        filtered.filter((s) => s.topicId && s.hits + s.misses > 0),
+        (s: Study) => s.topicId!,
+      ),
+    ]
       .map(([id, list]) => {
         const tt = totals(list)
-        return { id, topic: topicMap.get(id), subject: subjectMap.get(list[0].subjectId), hits: tt.hits, misses: tt.misses, questions: tt.questions }
+        return {
+          id,
+          topic: topicMap.get(id),
+          subject: subjectMap.get(list[0].subjectId),
+          hits: tt.hits,
+          misses: tt.misses,
+          questions: tt.questions,
+        }
       })
       .sort((a, b) => b.questions - a.questions)
 
@@ -214,6 +219,7 @@ export default function StatisticsPage() {
         </MiniStat>
       </div>
 
+      <ProgressInsights filters={filters} />
       {data.filtered.length === 0 ? (
         <Card>
           <Empty icon={<BarChart3 size={40} />} title="Sem dados no período">
@@ -233,7 +239,16 @@ export default function StatisticsPage() {
                   <Tooltip {...tooltipProps} formatter={(v, name) => (name === 'Desempenho' ? [`${v}%`, name] : [v, name])} />
                   <Bar yAxisId="q" dataKey="hits" name="Acertos" stackId="q" fill={OK} maxBarSize={28} />
                   <Bar yAxisId="q" dataKey="misses" name="Erros" stackId="q" fill={BAD} radius={[4, 4, 0, 0]} maxBarSize={28} />
-                  <Line yAxisId="pct" dataKey="perf" name="Desempenho" stroke={BRAND} strokeWidth={2} dot={{ r: 2.5 }} connectNulls type="monotone" />
+                  <Line
+                    yAxisId="pct"
+                    dataKey="perf"
+                    name="Desempenho"
+                    stroke={BRAND}
+                    strokeWidth={2}
+                    dot={{ r: 2.5 }}
+                    connectNulls
+                    type="monotone"
+                  />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
@@ -263,7 +278,11 @@ export default function StatisticsPage() {
                     <CartesianGrid {...gridProps} vertical horizontal={false} />
                     <XAxis type="number" {...axisProps} tickFormatter={(v) => `${v}h`} />
                     <YAxis type="category" dataKey="name" {...axisProps} width={130} interval={0} />
-                    <Tooltip {...tooltipProps} formatter={(v) => [fmtDuration(Number(v) * 3600), 'Tempo']} labelFormatter={(_, p) => p?.[0]?.payload?.subject?.name ?? ''} />
+                    <Tooltip
+                      {...tooltipProps}
+                      formatter={(v) => [fmtDuration(Number(v) * 3600), 'Tempo']}
+                      labelFormatter={(_, p) => p?.[0]?.payload?.subject?.name ?? ''}
+                    />
                     <Bar dataKey="hours" radius={[0, 4, 4, 0]} maxBarSize={22}>
                       {subjectHours.map((r) => (
                         <Cell key={r.subject.id} fill={r.subject.color} />

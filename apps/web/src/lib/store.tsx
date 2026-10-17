@@ -19,6 +19,7 @@ import { addDays, nowTime, today, uid } from './utils'
 import { emptyState, seededState } from '../data/seed'
 import { api } from './api'
 import { native } from './native'
+import { useMe } from './auth'
 import { applyTheme, cacheTheme } from './legacy'
 import { SyncEngine, type SyncStatus } from './sync'
 
@@ -98,7 +99,7 @@ interface Store {
     retry: () => void
     /** envia já o que estiver pendente */
     flush: () => Promise<void>
-    /** descarta o estado local e baixa de novo da conta */
+    /** sincroniza as pendências e baixa de novo da conta */
     reload: () => Promise<void>
   }
 }
@@ -108,15 +109,27 @@ const Ctx = createContext<Store | null>(null)
 /** Recarrega da conta ao voltar para a aba depois desse tempo (mudanças feitas em outro aparelho) */
 const REFRESH_AFTER_MS = 60_000
 
-export function StoreProvider({ initial, onUnauthorized, children }: { initial: AppState; onUnauthorized: () => void; children: ReactNode }) {
+export function StoreProvider({
+  initial,
+  onUnauthorized,
+  children,
+}: {
+  initial: AppState
+  onUnauthorized: () => void
+  children: ReactNode
+}) {
+  const me = useMe()
   const [state, setState] = useState<AppState>(initial)
   const [studyDraft, setStudyDraft] = useState<StudyDraft | null>(null)
   const [timer, setTimer] = useState<TimerRequest | null>(null)
-  const [engine] = useState(() => new SyncEngine(initial, onUnauthorized))
+  const [engine] = useState(() => new SyncEngine(initial, onUnauthorized, me.id))
   const syncStatus = useSyncExternalStore(engine.subscribe, engine.getStatus)
 
   useEffect(() => engine.push(state), [engine, state])
-  useEffect(() => () => engine.dispose(), [engine])
+  useEffect(() => {
+    engine.start()
+    return () => engine.dispose()
+  }, [engine])
 
   // salva antes de sair e recarrega ao voltar para a aba
   useEffect(() => {
@@ -192,7 +205,7 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
     const studies = state.studies.filter((s) => s.planId === planId)
     const reviews = state.reviews.filter((r) => r.planId === planId)
     const exams = state.exams.filter((e) => e.planId === planId).sort((a, b) => b.date.localeCompare(a.date))
-    const planning = planId ? state.plannings[planId] ?? null : null
+    const planning = planId ? (state.plannings[planId] ?? null) : null
     const assessments = state.assessments
       .filter((a) => a.planId === planId)
       .sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? '').localeCompare(b.time ?? ''))
@@ -228,7 +241,7 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
         return {
           ...s,
           plans,
-          activePlanId: s.activePlanId === id ? plans[0]?.id ?? null : s.activePlanId,
+          activePlanId: s.activePlanId === id ? (plans[0]?.id ?? null) : s.activePlanId,
           subjects: s.subjects.filter((x) => x.planId !== id),
           topics: s.topics.filter((t) => !subjectIds.has(t.subjectId)),
           studies: s.studies.filter((x) => x.planId !== id),
@@ -292,6 +305,12 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
       update((s) => ({
         ...s,
         topics: s.topics.filter((t) => t.id !== id),
+        plannings: Object.fromEntries(
+          Object.entries(s.plannings).map(([key, p]) => [
+            key,
+            { ...p, cycle: p.cycle.map((c) => (c.topicId === id ? { ...c, topicId: undefined } : c)) },
+          ]),
+        ),
         studies: s.studies.map((x) => (x.topicId === id ? { ...x, topicId: undefined } : x)),
         reviews: s.reviews.map((x) => (x.topicId === id ? { ...x, topicId: undefined } : x)),
       }))
@@ -299,9 +318,7 @@ export function StoreProvider({ initial, onUnauthorized, children }: { initial: 
     const setTopicFinished = (id: ID, finished: boolean) =>
       update((s) => ({
         ...s,
-        topics: s.topics.map((t) =>
-          t.id === id ? { ...t, finished, finishedAt: finished ? new Date().toISOString() : undefined } : t,
-        ),
+        topics: s.topics.map((t) => (t.id === id ? { ...t, finished, finishedAt: finished ? new Date().toISOString() : undefined } : t)),
       }))
 
     const reorderTopics = (subjectId: ID, orderedIds: ID[]) =>

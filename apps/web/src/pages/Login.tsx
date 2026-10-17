@@ -51,6 +51,8 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
   const moment = MOMENTS.find((m) => new Date().getHours() < m.until) ?? MOMENTS[3]
 
   const google = () => {
+    if (window.location.pathname === '/comunidade' && /^#convite=[a-f0-9]{48}$/.test(window.location.hash))
+      sessionStorage.setItem('coado-invite', window.location.hash)
     // na WebView do app o Google recusa o fluxo web: o app faz o login nativo e renova a sessão daqui
     const app = native()
     if (app) return app.signIn()
@@ -78,7 +80,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
       <section className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-b from-brand-100 via-kraft to-brand-200 px-6 pb-6 pt-10 dark:from-brand-900 dark:via-surface dark:to-bg lg:min-h-screen lg:px-12 lg:pb-10">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-700/20" />
         <DeskSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
-</section>
+      </section>
 
       {/* entrada */}
       <main className="flex items-center justify-center px-6 py-10 lg:px-12">
@@ -105,7 +107,10 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
               <div className="rounded-2xl border border-line bg-surface p-4 text-sm">
                 <p className="font-semibold">O servidor não respondeu.</p>
                 <p className="mt-1 text-muted">Não consegui falar com o servidor. Confere a conexão e tenta de novo.</p>
-                <button onClick={reload} className="mt-3 inline-flex items-center gap-2 rounded-lg border border-line px-3 py-1.5 text-sm font-medium hover:bg-surface-2">
+                <button
+                  onClick={reload}
+                  className="mt-3 inline-flex items-center gap-2 rounded-lg border border-line px-3 py-1.5 text-sm font-medium hover:bg-surface-2"
+                >
                   <RefreshCcw size={14} /> Tentar de novo
                 </button>
               </div>
@@ -143,7 +148,6 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             )}
           </div>
 
-          {/* o que tem aqui */}
           <section aria-label="O que tem aqui" className="chalkboard mt-10 rounded-2xl border-[6px] border-brand-700 p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] animate-rise" style={{ animationDelay: '300ms' }}>
             <p className="text-center font-display text-lg italic tracking-wide">o que tem aqui</p>
             <ul className="mt-3 space-y-1.5 text-sm">
@@ -159,7 +163,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
           </section>
 
           <p className="mt-6 text-center text-xs text-muted">
-            Ao entrar, seus planos, arquivos e histórico ficam guardados na sua conta e só você tem acesso.
+            Seus planos, arquivos e anotações ficam privados. Você escolhe se quer compartilhar totais de estudo nos rankings e grupos.
           </p>
         </div>
       </main>

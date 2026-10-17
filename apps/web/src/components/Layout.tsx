@@ -1,6 +1,11 @@
 import { useState, type ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import {
+  Award,
+  Users,
+  UserRound,
+  HelpCircle,
+  Library,
   BarChart3,
   BookOpen,
   CalendarRange,
@@ -36,6 +41,8 @@ const useNav = () => {
   return [
     { to: '/', label: 'Início', icon: Home, end: true },
     { to: '/planos', label: 'Planos', icon: FolderOpen },
+    { to: '/modelos', label: 'Modelos de planos', icon: Library },
+    { to: '/concursos', label: 'Base de editais', icon: BookOpen },
     { to: '/disciplinas', label: 'Disciplinas', icon: BookOpen },
     { to: '/edital', label: t.edital, icon: ListChecks },
     { to: '/planejamento', label: 'Planejamento', icon: CalendarRange },
@@ -44,6 +51,11 @@ const useNav = () => {
     { to: '/estatisticas', label: 'Estatísticas', icon: BarChart3 },
     { to: t.rotaAvaliacoes, label: t.avaliacoes, icon: ClipboardCheck },
     { to: '/arquivos', label: 'Arquivos', icon: Paperclip },
+    { to: '/biblioteca', label: 'Biblioteca', icon: BookOpen },
+    { to: '/conquistas', label: 'Conquistas', icon: Award },
+    { to: '/comunidade', label: 'Ranking e grupos', icon: Users },
+    { to: '/perfil', label: 'Meu perfil', icon: UserRound },
+    { to: '/ajuda', label: 'Ajuda', icon: HelpCircle },
   ]
 }
 
@@ -52,10 +64,24 @@ export function Logo({ className }: { className?: string }) {
     <div className={clsx('flex items-center gap-2', className)}>
       <svg viewBox="0 0 32 32" className="h-9 w-9" aria-hidden>
         <rect width="32" height="32" rx="9" className="fill-brand-100 dark:fill-brand-900" />
-        {/* trilha: um caminho entre dois marcos */}
-        <path d="M9 23c5 0 4-6 7-6s3-6 7-6" fill="none" strokeWidth="2.4" strokeLinecap="round" className="stroke-brand-600" />
-        <circle cx="9" cy="23" r="2.8" className="fill-brand-600" />
-        <circle cx="23" cy="11" r="2.8" className="fill-brand-400" />
+        <path d="M8 13h13v7a5 5 0 0 1-5 5h-3a5 5 0 0 1-5-5z" className="fill-brand-600" />
+        <path d="M21 15h2.5a2.5 2.5 0 0 1 0 5H21" fill="none" strokeWidth="2" className="stroke-brand-600" />
+        <path
+          d="M12 10c0-2 2-2 2-4"
+          fill="none"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          className="animate-steam stroke-brand-400"
+          style={{ transformOrigin: '13px 10px' }}
+        />
+        <path
+          d="M17 10c0-2 2-2 2-4"
+          fill="none"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          className="animate-steam stroke-brand-400"
+          style={{ transformOrigin: '18px 10px', animationDelay: '1.4s' }}
+        />
       </svg>
       <span className="font-display text-2xl font-bold tracking-tight">{BRAND_SLUG}</span>
     </div>
@@ -93,7 +119,9 @@ export function Layout() {
               className={({ isActive }) =>
                 clsx(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-                  isActive ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-brand-300' : 'text-muted hover:bg-surface-2 hover:text-ink',
+                  isActive
+                    ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-brand-300'
+                    : 'text-muted hover:bg-surface-2 hover:text-ink',
                 )
               }
             >
@@ -113,7 +141,9 @@ export function Layout() {
             className={({ isActive }) =>
               clsx(
                 'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition',
-                isActive ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-brand-300' : 'text-muted hover:bg-surface-2 hover:text-ink',
+                isActive
+                  ? 'bg-brand-50 text-brand-700 dark:bg-brand-600/15 dark:text-brand-300'
+                  : 'text-muted hover:bg-surface-2 hover:text-ink',
               )
             }
           >
@@ -182,7 +212,9 @@ function UserCard({ onNavigate }: { onNavigate: () => void }) {
       <NavLink
         to="/perfil"
         onClick={onNavigate}
-        className={({ isActive }) => clsx('flex min-w-0 flex-1 items-center gap-3 rounded-xl p-1.5 transition hover:bg-surface-2', isActive && 'bg-surface-2')}
+        className={({ isActive }) =>
+          clsx('flex min-w-0 flex-1 items-center gap-3 rounded-xl p-1.5 transition hover:bg-surface-2', isActive && 'bg-surface-2')
+        }
       >
         <Avatar name={me.name} src={me.avatarUrl} className="h-9 w-9 text-sm" />
         <span className="min-w-0">
@@ -209,6 +241,15 @@ export function PageHeader({ title, children, hidePlan }: { title: string; child
   return (
     <div className="mb-6 flex flex-wrap items-center gap-3 border-b border-line pb-4">
       <h1 className="mr-auto text-2xl font-bold tracking-tight">{title}</h1>
+      {title !== 'Ajuda' && (
+        <NavLink
+          to={`/ajuda#${({ 'Importar edital': 'importar-edital', 'Base de editais': 'importar-edital', Planejamento: 'planejamento', Revisões: 'revisoes', Estatísticas: 'estatisticas', Simulados: 'simulados', Perfil: 'perfil', 'Ranking e grupos': 'comunidade', Conquistas: 'conquistas' } as Record<string, string>)[title] ?? 'planos'}`}
+          aria-label={`Ajuda sobre ${title}`}
+          className="rounded-full p-2 text-muted hover:bg-surface-2"
+        >
+          <HelpCircle size={18} />
+        </NavLink>
+      )}
       {children}
       {!hidePlan && state.plans.length > 0 && (
         <select

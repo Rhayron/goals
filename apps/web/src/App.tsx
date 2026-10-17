@@ -3,10 +3,18 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import type { AppState } from '@coado/shared'
 import { AuthProvider, useAuth } from './lib/auth'
 import { api, ApiError } from './lib/api'
+import { recoverPending } from './lib/outbox'
 import { StoreProvider } from './lib/store'
 import { Layout } from './components/Layout'
 import { LoadingScreen } from './components/LoadingScreen'
 import { WelcomeProvider } from './components/welcome/Welcome'
+import Community from './pages/Community'
+import Achievements from './pages/Achievements'
+import Templates from './pages/Templates'
+import Help from './pages/Help'
+import Library from './pages/Library'
+import ImportNotice from './pages/ImportNotice'
+import NoticeCatalog from './pages/NoticeCatalog'
 import LoginPage from './pages/Login'
 import Home from './pages/Home'
 import Plans from './pages/Plans'
@@ -42,7 +50,8 @@ function Gate() {
 
 /** Baixa os dados da conta e monta o app em cima deles */
 function AccountApp() {
-  const { expire } = useAuth()
+  const { expire, state: auth } = useAuth()
+  const account = auth.status === 'authenticated' ? auth.me.id : ''
   const [data, setData] = useState<AppState | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -50,12 +59,13 @@ function AccountApp() {
     setError(null)
     api
       .get<AppState>('/state')
+      .then((data) => recoverPending(account, data))
       .then(setData)
       .catch((e: unknown) => {
         if (e instanceof ApiError && e.status === 401) expire()
         else setError(e instanceof ApiError ? e.message : 'Não foi possível carregar seus dados.')
       })
-  }, [expire])
+  }, [expire, account])
 
   useEffect(load, [load])
 
@@ -77,6 +87,13 @@ function AccountApp() {
             <Route path="simulados" element={<Exams />} />
             <Route path="avaliacoes" element={<Assessments />} />
             <Route path="arquivos" element={<FilesPage />} />
+            <Route path="comunidade" element={<Community />} />
+            <Route path="conquistas" element={<Achievements />} />
+            <Route path="modelos" element={<Templates />} />
+            <Route path="importar-edital" element={<ImportNotice />} />
+            <Route path="concursos" element={<NoticeCatalog />} />
+            <Route path="biblioteca" element={<Library />} />
+            <Route path="ajuda" element={<Help />} />
             <Route path="perfil" element={<ProfilePage />} />
             <Route path="configuracoes" element={<SettingsPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
