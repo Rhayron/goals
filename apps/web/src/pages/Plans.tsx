@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { useMemo, useState, type ReactNode } from 'react'
 import { BookOpen, Briefcase, Building2, CalendarDays, Check, FileText, ListChecks, Pencil, Plus, Trash2 } from 'lucide-react'
 import { PageHeader } from '../components/Layout'
@@ -61,7 +62,12 @@ export default function PlansPage() {
 
   return (
     <>
-      <PageHeader title="Planos" hidePlan />
+      <PageHeader title="Planos" hidePlan>
+        <Link to="/importar-edital" className="rounded-lg border border-line px-4 py-2 text-sm font-semibold">Importar edital</Link>
+        <Link to="/modelos" className="rounded-lg border border-line px-4 py-2 text-sm font-semibold">
+          Explorar modelos
+        </Link>
+      </PageHeader>
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {state.plans.map((p) => {
@@ -232,13 +238,25 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
           <label className="label" htmlFor="plan-org">
             Órgão / Edital
           </label>
-          <input id="plan-org" className="field" value={form.org} onChange={(e) => set('org', e.target.value)} placeholder="Ex.: Petrobras" />
+          <input
+            id="plan-org"
+            className="field"
+            value={form.org}
+            onChange={(e) => set('org', e.target.value)}
+            placeholder="Ex.: Petrobras"
+          />
         </div>
         <div>
           <label className="label" htmlFor="plan-role">
             Cargo
           </label>
-          <input id="plan-role" className="field" value={form.role} onChange={(e) => set('role', e.target.value)} placeholder="Ex.: Técnico de Administração" />
+          <input
+            id="plan-role"
+            className="field"
+            value={form.role}
+            onChange={(e) => set('role', e.target.value)}
+            placeholder="Ex.: Técnico de Administração"
+          />
         </div>
         <div>
           <label className="label" htmlFor="plan-exam">
@@ -291,8 +309,8 @@ function PlanModal({ plan, onClose }: { plan?: Plan; onClose: () => void }) {
             {showImport && (
               <div className="mt-3 space-y-2">
                 <p className="text-xs text-muted">
-                  Cole o conteúdo do edital: cada linha sem recuo vira uma disciplina; linhas iniciadas por “-”, “•” ou com recuo
-                  viram tópicos da disciplina acima.
+                  Cole o conteúdo do edital: cada linha sem recuo vira uma disciplina; linhas iniciadas por “-”, “•” ou com recuo viram
+                  tópicos da disciplina acima.
                 </p>
                 <textarea
                   rows={10}

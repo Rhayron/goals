@@ -123,7 +123,7 @@ fun PomodoroFlow(
                 onMode = { m -> scope.launch { app.store.updatePrefs { it.copy(mode = m) } } },
                 onStart = { subject, cycleItemId, category ->
                     ensureNotifications()
-                    scope.launch { app.engine.start(subject, cycleItemId, prefs.mode, category, request.topicId) }
+                    scope.launch { app.engine.start(subject, cycleItemId, prefs.mode, category, request.topicId?.takeIf { request.subjectId == subject.id } ?: view.cycle.firstOrNull { it.id == cycleItemId }?.topicId) }
                 },
                 onClose = onClose,
             )

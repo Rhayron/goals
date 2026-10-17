@@ -119,10 +119,10 @@ export function PlanningCard({ className }: { className?: string }) {
                   </div>
                   <ProgressBar value={(it.studied / (it.duration * 60)) * 100} color={color} />
                 </div>
-                <IconButton title="Iniciar cronômetro" onClick={() => openTimer({ subjectId: it.subjectId })}>
+                <IconButton title="Iniciar cronômetro" onClick={() => openTimer({ subjectId: it.subjectId, topicId: it.topicId })}>
                   <Play size={15} />
                 </IconButton>
-                <IconButton title="Adicionar estudo" onClick={() => openStudy({ subjectId: it.subjectId })}>
+                <IconButton title="Adicionar estudo" onClick={() => openStudy({ subjectId: it.subjectId, topicId: it.topicId })}>
                   <Plus size={16} />
                 </IconButton>
               </li>

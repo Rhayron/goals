@@ -15,7 +15,7 @@ const greeting = () => {
 
 /** Faixa de boas-vindas no topo do Início: saudação, sequência e a próxima sessão do ciclo */
 export function CozyBanner() {
-  const { studies, reviews, planning, subjects, openTimer } = useStore()
+  const { state, studies, reviews, planning, subjects, openTimer } = useStore()
   const me = useMe()
   const c = constancy(studies)
   const due = reviews.filter((r) => r.status === 'pending' && r.dueDate <= today()).length
@@ -32,19 +32,25 @@ export function CozyBanner() {
   return (
     <section className="mb-6 flex items-center gap-4 overflow-hidden rounded-2xl border border-line bg-gradient-to-r from-brand-100 via-surface to-surface p-5 dark:from-brand-900/60">
       <div className="min-w-0 flex-1">
-        <h2 className="font-display text-2xl font-bold">{greeting()}, {firstName(me.name)}.</h2>
+        <h2 className="font-display text-2xl font-bold">
+          {greeting()}, {firstName(me.name)}.
+        </h2>
         <p className="mt-1 text-sm text-muted">{line}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
           {nextSubject && (
             <button
-              onClick={() => openTimer({ subjectId: nextSubject.id })}
+              onClick={() => openTimer({ subjectId: nextSubject.id, topicId: next?.topicId })}
               className="inline-flex items-center gap-2 rounded-full bg-brand-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-brand-700"
             >
               <Play size={12} /> Próxima do ciclo: {nextSubject.name} · {fmtMinutes(next!.duration)}
+              {next?.topicId && ` · ${state.topics.find((t) => t.id === next.topicId)?.name ?? ''}`}
             </button>
           )}
           {due > 0 && (
-            <Link to="/revisoes" className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-surface-2">
+            <Link
+              to="/revisoes"
+              className="rounded-full border border-line bg-surface px-3 py-1.5 text-xs font-semibold text-ink hover:bg-surface-2"
+            >
               {due} {due === 1 ? 'revisão pendente' : 'revisões pendentes'}
             </Link>
           )}

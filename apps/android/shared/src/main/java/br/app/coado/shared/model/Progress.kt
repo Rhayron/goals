@@ -126,6 +126,7 @@ fun constancy(dates: Collection<String>, ref: String): Constancy {
 data class CycleProgressItem(val item: CycleItem, /** segundos estudados atribuídos a este item */ val studied: Int) {
     val id get() = item.id
     val subjectId get() = item.subjectId
+    val topicId get() = item.topicId
     /** minutos planejados */
     val duration get() = item.duration
     val done get() = studied >= duration * 60
@@ -142,7 +143,7 @@ fun cycleProgress(planning: PlanningLite, studies: List<WatchStudy>): List<Cycle
         .sortedBy { it.date + (it.time ?: "") }
     for (s in relevant) {
         var remaining = s.duration
-        val own = planning.cycle.indices.filter { planning.cycle[it].subjectId == s.subjectId }
+        val own = planning.cycle.indices.filter { planning.cycle[it].subjectId == s.subjectId && (planning.cycle[it].topicId == null || planning.cycle[it].topicId == s.topicId) }
         if (own.isEmpty()) continue
         for (i in own) {
             if (remaining <= 0) break

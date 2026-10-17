@@ -22,8 +22,7 @@ export const addDays = (s: DateStr, n: number): DateStr => {
   return toDateStr(d)
 }
 
-export const diffDays = (a: DateStr, b: DateStr) =>
-  Math.round((parseDate(a).getTime() - parseDate(b).getTime()) / 86_400_000)
+export const diffDays = (a: DateStr, b: DateStr) => Math.round((parseDate(a).getTime() - parseDate(b).getTime()) / 86_400_000)
 
 /** Domingo da semana da data */
 export const startOfWeek = (s: DateStr): DateStr => addDays(s, -parseDate(s).getDay())
@@ -74,7 +73,10 @@ export const fmtClock = (seconds: number) => {
 
 /** "01:30:00" | "1:30" | "90" → segundos */
 export const parseClock = (v: string) => {
-  const parts = v.trim().split(':').map((p) => Number(p) || 0)
+  const parts = v
+    .trim()
+    .split(':')
+    .map((p) => Number(p) || 0)
   if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
   if (parts.length === 2) return parts[0] * 3600 + parts[1] * 60
   return parts[0] * 60
@@ -199,9 +201,7 @@ export const generateCycle = (cfg: PlanningConfig): CycleItem[] => {
   const out: CycleItem[] = []
   let last: string | null = null
   while (queues.some((q) => q.sessions.length)) {
-    const candidates = queues
-      .filter((q) => q.sessions.length)
-      .sort((a, b) => b.sessions.length - a.sessions.length || b.weight - a.weight)
+    const candidates = queues.filter((q) => q.sessions.length).sort((a, b) => b.sessions.length - a.sessions.length || b.weight - a.weight)
     const pick = candidates.find((q) => q.subjectId !== last) ?? candidates[0]
     out.push({ id: uid(), subjectId: pick.subjectId, duration: pick.sessions.shift()! })
     last = pick.subjectId
@@ -226,7 +226,7 @@ export const cycleProgress = (planning: Planning, studies: Study[]): CycleProgre
     .sort((a, b) => (a.date + (a.time ?? '')).localeCompare(b.date + (b.time ?? '')))
   for (const s of relevant) {
     let remaining = s.duration
-    const own = items.filter((i) => i.subjectId === s.subjectId)
+    const own = items.filter((i) => i.subjectId === s.subjectId && (!i.topicId || i.topicId === s.topicId))
     if (!own.length) continue
     for (const it of own) {
       if (remaining <= 0) break
@@ -262,8 +262,22 @@ export const weeklySchedule = (planning: Planning) => {
 // ---------- cores ----------
 
 export const SUBJECT_COLORS = [
-  '#e7b7a3', '#d9c3a5', '#c9d3b3', '#b8cfc6', '#e8c6c0', '#dfd0b8', '#c6b9d3', '#a9c5c9',
-  '#f0cfa8', '#c8b7a6', '#b7c9b1', '#e3b9b1', '#d6c4de', '#a8bfd4', '#e9d5a1', '#bcd2bd',
+  '#e7b7a3',
+  '#d9c3a5',
+  '#c9d3b3',
+  '#b8cfc6',
+  '#e8c6c0',
+  '#dfd0b8',
+  '#c6b9d3',
+  '#a9c5c9',
+  '#f0cfa8',
+  '#c8b7a6',
+  '#b7c9b1',
+  '#e3b9b1',
+  '#d6c4de',
+  '#a8bfd4',
+  '#e9d5a1',
+  '#bcd2bd',
 ]
 
 export const subjectColor = (subjects: Subject[], id: string) => subjects.find((s) => s.id === id)?.color ?? '#ccc'

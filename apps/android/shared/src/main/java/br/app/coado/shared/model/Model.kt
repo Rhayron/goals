@@ -38,7 +38,7 @@ data class SubjectLite(val id: String, val name: String, val color: String)
 data class CategoryLite(val id: String, val name: String)
 
 @Serializable
-data class CycleItem(val id: String, val subjectId: String, /** minutos planejados */ val duration: Int)
+data class CycleItem(val id: String, val subjectId: String, /** minutos planejados */ val duration: Int, val topicId: String? = null)
 
 @Serializable
 data class PlanningLite(

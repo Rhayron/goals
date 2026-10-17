@@ -6,7 +6,8 @@
 
 Planner de estudos para concursos com tema café/lofi: planos, edital verticalizado, ciclo e planejamento
 semanal, cronômetro/pomodoro, revisões espaçadas, estatísticas, simulados e uma gaveta de arquivos.
-Login com Google; perfil, dados, arquivos e histórico ficam presos à conta.
+Login com Google; planos, arquivos e histórico ficam presos à conta. A comunidade compartilha apenas
+apelido e totais semanais, mediante participação em grupos ou adesão ao ranking global.
 
 O mesmo app roda em três lugares, sempre na mesma conta: no **navegador**, no **celular Android** e no
 **relógio Wear OS**, onde o pomodoro faz mais sentido.
@@ -19,6 +20,18 @@ Planos (um por concurso, com a data da prova), disciplinas com cor, **edital ver
 estudos** ou planejamento semanal, **pomodoro**, cronômetro e timer, **revisões espaçadas** (1, 7, 30, 60 e
 120 dias), histórico, **estatísticas**, simulados e uma gaveta de arquivos. O tema claro ("tarde na
 cafeteria") e o noturno ("madrugada de lofi") seguem o sistema.
+
+### Rotina e comunidade
+
+- **Ciclo por tópico:** cada sessão pode apontar para um tópico; o timer e o registro recebem essa escolha.
+- **Evolução:** avanço por disciplina, conclusões mensais e média por dia da semana, incluindo os dias sem estudo.
+- **Modelos:** três bases originais de preparação (engenharia, administrativa e fiscal), importadas como novos planos. Confira o edital oficial antes de usar.
+- **Conquistas:** marcos de constância, horas, questões, leitura, revisões e simulados, calculados a partir dos registros. Cartão em SVG para baixar.
+- **Ranking e grupos:** competição semanal por horas, questões ou páginas; global opcional e grupos privados de até 200 membros. Convites expiram em sete dias, podem ser revogados e exigem confirmação de entrada. O criador administra os membros; até 20 grupos por criador.
+- **Perfil, biblioteca e ajuda:** navegação própria à esquerda no perfil, guias originais de estudo e instruções contextuais.
+- **Fila durável no navegador:** alterações pendentes ficam no IndexedDB, separadas por conta, e são removidas após confirmação da API. Fechar/reabrir a aba preserva a fila. A entrada ainda depende da API; não é um modo totalmente offline. Limpar os dados do navegador também apaga pendências locais. Em uma rejeição permanente, exporte um backup em Configurações antes de qualquer recuperação manual.
+
+Rankings usam a semana de segunda a domingo no horário de Brasília, somam todos os planos e ignoram datas futuras. Questões são acertos + erros; páginas seguem a convenção existente (final − inicial). Os dados são autodeclarados e a edição do histórico recalcula pontuações e conquistas. E-mails, materiais, arquivos e comentários não são compartilhados. Os rankings mostram os primeiros 100 e a posição pessoal, quando houver pontuação. Preferências e associações da comunidade ficam na API e não fazem parte do backup de planos.
 
 <table>
   <tr>
@@ -34,6 +47,16 @@ cafeteria") e o noturno ("madrugada de lofi") seguem o sistema.
     <td><img src="docs/img/web-pomodoro.png" alt="Pomodoro no site"><br><sub><b>Pomodoro.</b> Tela cheia, com chuva na janela e som de chuva gerado no navegador. Ao finalizar, abre o registro do estudo.</sub></td>
   </tr>
 </table>
+
+### Novas telas (ambiente local)
+
+As capturas abaixo usam contas e estudos fictícios de validação, sem dados de produção.
+
+| Ranking de um grupo | Perfil com navegação própria |
+| --- | --- |
+| ![Ranking de grupo](docs/img/web-ranking-grupos.png) | ![Menu do perfil](docs/img/web-perfil-menu.png) |
+
+A interface também foi conferida em 390 px: [ranking no celular](docs/img/web-ranking-mobile.png).
 
 ## Celular (Android)
 
@@ -201,3 +224,9 @@ adb install -r watch/build/outputs/apk/debug/watch-debug.apk
 Para o login com Google no celular, crie também um cliente OAuth do tipo **Android** (pacote `br.app.coado` e o
 SHA-1 do certificado de assinatura) no mesmo projeto do Google Cloud. O app usa o ID do cliente web que a api
 informa em `/api/auth/config`.
+
+### Editais: importar, revisar e consultar
+
+Em **Planos → Importar edital**, selecione um PDF ou informe um link público. Escolha as páginas do conteúdo programático, confira as disciplinas e os tópicos, informe o cargo e confirme a revisão. Só então o Coado cria um plano separado, preservando os anteriores. A leitura do arquivo local acontece no navegador. O limite é 20 MB e 300 páginas; não há OCR integrado.
+
+A **Base de editais** pesquisa nosso catálogo compartilhado por texto e UF. O catálogo começa vazio e só mostra registros publicados após conferência. A QAPI é uma fonte opcional para o coletor independente; o site não consulta o fornecedor diretamente. Cada plano mantém sua procedência e não muda automaticamente com retificações. Configuração, custos, limitações e comandos editoriais estão na [seção 6 do guia de deploy](DEPLOY.md#6-importação-e-base-compartilhada-de-editais).
