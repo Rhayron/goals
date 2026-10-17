@@ -142,8 +142,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
                   </button>
                 ) : (
                   <p className="rounded-xl border border-line bg-surface px-4 py-3 text-sm text-muted">
-                    Login com Google ainda não configurado. Defina <code className="font-semibold">GOOGLE_CLIENT_ID</code> e{' '}
-                    <code className="font-semibold">GOOGLE_CLIENT_SECRET</code> no <code>.env</code> do servidor.
+                    A entrada com Google está em preparação. Volte em breve.
                   </p>
                 )}
                 {config.devLogin && (
