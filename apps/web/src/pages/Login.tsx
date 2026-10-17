@@ -6,6 +6,7 @@ import { native } from '../lib/native'
 import { Logo } from '../components/Layout'
 import { DeskSceneArt, GoogleG } from '../components/study-art'
 import { TAGLINE } from '../lib/brand'
+import { RadioPlayer } from '../components/RadioPlayer'
 import { clsx } from '../lib/utils'
 
 const AUTH_ERRORS: Record<AuthErrorCode, string> = {
@@ -80,6 +81,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
       <section className="relative flex flex-col justify-center overflow-hidden bg-gradient-to-b from-brand-100 via-kraft to-brand-200 px-6 pb-6 pt-10 dark:from-brand-900 dark:via-surface dark:to-bg lg:min-h-screen lg:px-12 lg:pb-10">
         <div className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-brand-300/30 blur-3xl dark:bg-brand-700/20" />
         <DeskSceneArt className="mx-auto w-full max-w-[600px] animate-rise" />
+        <RadioPlayer className="mx-auto mt-6 w-full max-w-[600px] animate-rise" />
       </section>
 
       {/* entrada */}

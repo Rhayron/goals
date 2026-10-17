@@ -4,6 +4,7 @@ import { useStore } from '../lib/store'
 import { clsx, fmtClock } from '../lib/utils'
 import { Logo } from './Layout'
 import { LampArt, RainWindowArt } from './art'
+import { RadioPlayer } from './RadioPlayer'
 
 type Mode = 'stopwatch' | 'countdown' | 'pomodoro'
 type Phase = 'study' | 'short' | 'long'
@@ -217,10 +218,11 @@ export function TimerOverlay() {
     <div className="dark fixed inset-0 z-50 flex flex-col overflow-hidden bg-[#1b1410]/[0.97] text-white backdrop-blur">
       <RainWindowArt className="pointer-events-none absolute left-8 top-20 hidden w-72 opacity-90 lg:block" />
       <LampArt className="pointer-events-none absolute bottom-10 right-12 hidden w-44 lg:block" />
-      <div className="relative flex items-center justify-end gap-1 p-4">
+      <div className="relative flex flex-wrap items-center justify-end gap-1 p-4">
+        <RadioPlayer className="mr-auto w-full sm:w-72" compact />
         <button
           onClick={rain.toggle}
-          className={clsx('mr-auto flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition', rain.on ? 'border-brand-400 bg-brand-600/40 text-white' : 'border-white/15 text-white/60 hover:text-white')}
+          className={clsx('flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition', rain.on ? 'border-brand-400 bg-brand-600/40 text-white' : 'border-white/15 text-white/60 hover:text-white')}
           title="Som de chuva ambiente"
         >
           <CloudRain size={14} /> {rain.on ? 'Chuva ligada' : 'Chuva'}
