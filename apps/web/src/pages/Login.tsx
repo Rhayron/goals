@@ -90,7 +90,7 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             Seus estudos, organizados.
           </h1>
           <p className="mt-3 text-muted animate-rise" style={{ animationDelay: '160ms' }}>
-            {moment.line} Planeje o edital, cronometre as sessões, revise no tempo certo e veja o progresso aparecer, {frases.tagline}
+            {moment.line} Planeje seus estudos, cronometre as sessões, revise no tempo certo e veja o progresso aparecer, {frases.tagline}
           </p>
 
           {notice && (
@@ -118,11 +118,13 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
                     onClick={google}
                     disabled={busy !== null}
                     className={clsx(
-                      'group flex h-12 w-full items-center justify-center gap-3 rounded-full border border-[#747775] bg-white px-5 text-[15px] font-semibold text-[#1f1f1f] shadow-sm transition',
-                      'hover:-translate-y-0.5 hover:shadow-md disabled:translate-y-0 disabled:opacity-70 dark:border-[#8e918f] dark:bg-[#131314] dark:text-[#e3e3e3]',
+                      'group flex min-h-14 w-full items-center justify-center gap-3 rounded-2xl border border-brand-800/30 bg-brand-700 px-4 py-2 text-[15px] font-bold text-brand-50 shadow-[0_3px_10px_-3px_rgba(67,44,27,0.35),inset_0_1px_0_rgba(255,255,255,0.15)] transition',
+                      'hover:-translate-y-0.5 hover:bg-brand-800 hover:shadow-md active:translate-y-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-600 disabled:translate-y-0 disabled:opacity-70 dark:border-brand-200/20 dark:bg-brand-300 dark:text-brand-900 dark:hover:bg-brand-200',
                     )}
                   >
-                    {busy === 'google' ? <Loader2 size={20} className="animate-spin" /> : <GoogleG className="h-5 w-5" />}
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white shadow-sm" aria-hidden>
+                      {busy === 'google' ? <Loader2 size={20} className="animate-spin text-brand-700" /> : <GoogleG className="h-5 w-5" />}
+                    </span>
                     Continuar com o Google
                   </button>
                 ) : (
