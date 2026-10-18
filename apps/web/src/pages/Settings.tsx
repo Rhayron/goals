@@ -1,3 +1,4 @@
+import { isTutorial, tutorialOnlyMessage } from '../lib/tutorial-mode'
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
 import { Database, Download, Monitor, Moon, Plus, RotateCcw, Sun, Trash2, Upload, Watch } from 'lucide-react'
 import type { PairCode } from '@coado/shared'
@@ -126,6 +127,7 @@ function DataSection() {
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
 
   const exportBackup = () => {
+    if (isTutorial) { setMessage({ ok: false, text: tutorialOnlyMessage }); return }
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')

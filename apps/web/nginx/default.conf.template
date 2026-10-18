@@ -7,6 +7,21 @@ map $http_x_forwarded_proto $forwarded_proto {
     ''      $scheme;
 }
 
+# Only the isolated tutorial document can be embedded by this same site.
+# request_uri survives the SPA's internal redirect to index.html.
+map $request_uri $spa_frame_ancestors {
+    default "'none'";
+    ~^/tutorial(?:\?|$) "'self'";
+}
+map $request_uri $spa_frame_options {
+    default DENY;
+    ~^/tutorial(?:\?|$) SAMEORIGIN;
+}
+map $request_uri $spa_connect_src {
+    default "'self'";
+    ~^/tutorial(?:\?|$) "'none'";
+}
+
 server {
     listen 80;
     server_tokens off;

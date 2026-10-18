@@ -1,3 +1,4 @@
+import { isTutorial, tutorialOnlyMessage } from '../lib/tutorial-mode'
 import { useCallback, useEffect, useMemo, useRef, useState, type DragEvent } from 'react'
 import { Download, ExternalLink, FileArchive, FileImage, FileSpreadsheet, FileText, File as FileIcon, Loader2, Pencil, Search, Trash2, UploadCloud } from 'lucide-react'
 import type { FileMeta, FilesResponse, StorageUsage } from '@coado/shared'
@@ -119,6 +120,7 @@ export default function FilesPage() {
   }
 
   const open = (f: FileMeta) => {
+    if (isTutorial) { window.alert(tutorialOnlyMessage); return }
     if (f.mime.startsWith('image/') && INLINE.has(f.mime)) setPreview(f)
     else window.open(contentUrl(f, !INLINE.has(f.mime)), '_blank', 'noopener')
   }

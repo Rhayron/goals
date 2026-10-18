@@ -51,7 +51,7 @@ export default function HomePage() {
     <>
       <PageHeader title="Início" compact />
       <CozyBanner />
-      <div className="grid gap-3 lg:grid-cols-3 [&>section]:px-4 [&>section]:py-3 [&>section>header]:mb-3">
+      <div data-tour="home-summary" className="grid gap-3 lg:grid-cols-3 [&>section]:px-4 [&>section]:py-3 [&>section>header]:mb-3">
         <Card>
           <p className={label}>Tempo de estudo</p>
           <p className="mt-2 text-3xl font-semibold tabular">{fmtDuration(t.duration)}</p>

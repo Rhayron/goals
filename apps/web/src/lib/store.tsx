@@ -105,6 +105,8 @@ interface Store {
 }
 
 const Ctx = createContext<Store | null>(null)
+const transientSubscribe = () => () => undefined
+const transientStatus = (): SyncStatus => 'saved'
 
 /** Recarrega da conta ao voltar para a aba depois desse tempo (mudanças feitas em outro aparelho) */
 const REFRESH_AFTER_MS = 60_000
@@ -112,27 +114,32 @@ const REFRESH_AFTER_MS = 60_000
 export function StoreProvider({
   initial,
   onUnauthorized,
+  transient = false,
   children,
 }: {
   initial: AppState
   onUnauthorized: () => void
+  /** Tutorial: no API, outbox, browser storage or native timer. Fixed for this mount. */
+  transient?: boolean
   children: ReactNode
 }) {
   const me = useMe()
   const [state, setState] = useState<AppState>(initial)
   const [studyDraft, setStudyDraft] = useState<StudyDraft | null>(null)
   const [timer, setTimer] = useState<TimerRequest | null>(null)
-  const [engine] = useState(() => new SyncEngine(initial, onUnauthorized, me.id))
-  const syncStatus = useSyncExternalStore(engine.subscribe, engine.getStatus)
+  const [engine] = useState(() => transient ? null : new SyncEngine(initial, onUnauthorized, me.id))
+  const syncStatus = useSyncExternalStore(engine?.subscribe ?? transientSubscribe, engine?.getStatus ?? transientStatus)
 
-  useEffect(() => engine.push(state), [engine, state])
+  useEffect(() => engine?.push(state), [engine, state])
   useEffect(() => {
+    if (!engine) return
     engine.start()
     return () => engine.dispose()
   }, [engine])
 
   // salva antes de sair e recarrega ao voltar para a aba
   useEffect(() => {
+    if (!engine) return
     let lastFetch = Date.now()
     const refresh = async () => {
       if (!engine.idle || Date.now() - lastFetch < REFRESH_AFTER_MS) return
@@ -167,19 +174,20 @@ export function StoreProvider({
 
   // tema
   useEffect(() => {
-    cacheTheme(state.theme)
+    if (!transient) cacheTheme(state.theme)
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const apply = () => applyTheme(state.theme)
     apply()
     mq.addEventListener('change', apply)
     return () => mq.removeEventListener('change', apply)
-  }, [state.theme])
+  }, [state.theme, transient])
 
   const update = useCallback((fn: (s: AppState) => AppState) => setState(fn), [])
 
   /** Troca tudo na conta e adota a resposta do servidor como novo estado */
   const replaceAll = useCallback(
     async (next: AppState) => {
+      if (!engine) { setState(next); return }
       await engine.settle()
       const saved = await api.put<AppState>('/state', next)
       engine.rebase(saved)
@@ -189,6 +197,7 @@ export function StoreProvider({
   )
 
   const reload = useCallback(async () => {
+    if (!engine) return
     await engine.settle()
     const fresh = await api.get<AppState>('/state')
     engine.rebase(fresh)
@@ -494,13 +503,13 @@ export function StoreProvider({
     closeStudy: () => setStudyDraft(null),
     timer,
     openTimer: (req) => {
-      const app = native()
+      const app = transient ? null : native()
       if (app) app.openTimer(JSON.stringify(req ?? {}))
       else setTimer(req ?? {})
     },
     closeTimer: () => setTimer(null),
     ...actions,
-    sync: { status: syncStatus, errorMessage: engine.errorMessage, retry: () => engine.retry(), flush: () => engine.flush(), reload },
+    sync: { status: syncStatus, errorMessage: engine?.errorMessage ?? '', retry: () => engine?.retry(), flush: () => engine?.flush() ?? Promise.resolve(), reload },
   }
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>

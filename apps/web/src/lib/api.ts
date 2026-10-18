@@ -1,3 +1,4 @@
+import { isTutorial, tutorialOnlyMessage } from './tutorial-mode'
 import { CSRF_HEADER, type ApiErrorBody } from '@coado/shared'
 
 /** Erro HTTP da api (status 0 = sem conexão) */
@@ -19,6 +20,10 @@ export class ApiError extends Error {
 type Options = { body?: unknown; signal?: AbortSignal; keepalive?: boolean }
 
 async function request<T>(method: string, path: string, { body, signal, keepalive }: Options = {}): Promise<T> {
+  if (isTutorial) {
+    const { tutorialRequest } = await import('../components/welcome/tutorial-api')
+    return tutorialRequest<T>(method, path)
+  }
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (method !== 'GET') headers[CSRF_HEADER] = '1'
   const isForm = body instanceof FormData
@@ -58,6 +63,7 @@ export const api = {
 
 /** Upload com progresso (fetch ainda não expõe progresso de envio) */
 export function uploadWithProgress<T>(path: string, form: FormData, onProgress: (ratio: number) => void): Promise<T> {
+  if (isTutorial) return Promise.reject(new Error(tutorialOnlyMessage))
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', `/api${path}`)

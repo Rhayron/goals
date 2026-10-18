@@ -1,3 +1,4 @@
+import { isTutorial } from '../lib/tutorial-mode'
 import { useCallback, useEffect, useState, type FormEvent } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Coffee, Copy, Crown, Plus, Trophy, Users } from 'lucide-react'
@@ -30,6 +31,7 @@ export default function Community() {
   const location = useLocation(),
     navigate = useNavigate()
   useEffect(() => {
+    if (isTutorial) return
     const saved = sessionStorage.getItem('coado-invite')
     if (saved) {
       sessionStorage.removeItem('coado-invite')

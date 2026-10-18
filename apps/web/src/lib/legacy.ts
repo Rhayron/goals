@@ -1,3 +1,4 @@
+import { isTutorial } from './tutorial-mode'
 import { emptyState, type AppState } from '@coado/shared'
 import { SUBJECT_COLORS } from './utils'
 import { native } from './native'
@@ -27,6 +28,7 @@ const migrateColors = (s: AppState): AppState => ({
 })
 
 export function readLegacyState(): AppState | null {
+  if (isTutorial) return null
   try {
     const raw = localStorage.getItem(LEGACY_KEY)
     if (!raw) return null
@@ -39,6 +41,7 @@ export function readLegacyState(): AppState | null {
 }
 
 export function markLegacyMigrated() {
+  if (isTutorial) return
   try {
     const raw = localStorage.getItem(LEGACY_KEY)
     if (raw) localStorage.setItem(MIGRATED_KEY, raw)
@@ -50,6 +53,7 @@ export function markLegacyMigrated() {
 
 /** Tema em cache para pintar a tela certa antes de os dados chegarem */
 export function cachedTheme(): AppState['theme'] {
+  if (isTutorial) return 'light'
   try {
     const t = localStorage.getItem(THEME_KEY)
     return t === 'light' || t === 'dark' ? t : 'system'
@@ -59,6 +63,7 @@ export function cachedTheme(): AppState['theme'] {
 }
 
 export function cacheTheme(theme: AppState['theme']) {
+  if (isTutorial) return
   try {
     localStorage.setItem(THEME_KEY, theme)
   } catch {
@@ -81,6 +86,7 @@ const PALETTES: Palette[] = ['cafe', 'grafite', 'oceano', 'floresta', 'ameixa', 
 
 /** Paleta salva nesta instância (a original, se não houver) */
 export function cachedPalette(): Palette {
+  if (isTutorial) return (document.documentElement.dataset.palette as Palette) || 'cafe'
   try {
     const p = localStorage.getItem(PALETTE_KEY) as Palette | null
     return p && PALETTES.includes(p) ? p : 'cafe'
@@ -90,6 +96,7 @@ export function cachedPalette(): Palette {
 }
 
 export function cachePalette(palette: Palette) {
+  if (isTutorial) return
   try {
     localStorage.setItem(PALETTE_KEY, palette)
   } catch {
@@ -109,5 +116,5 @@ export function applyPalette(palette: Palette) {
   const root = document.documentElement
   if (!palette || palette === 'cafe') delete root.dataset.palette
   else root.dataset.palette = palette
-  native()?.setPalette?.(palette || 'cafe')
+  if (!isTutorial) native()?.setPalette?.(palette || 'cafe')
 }

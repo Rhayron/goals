@@ -1,3 +1,4 @@
+import { isTutorial, tutorialOnlyMessage } from '../lib/tutorial-mode'
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { FileText, Link2, Plus, Trash2, Upload } from 'lucide-react'
@@ -143,6 +144,7 @@ export default function ImportNotice() {
     })
   const link = (target: string) =>
     void run(async (signal) => {
+      if (isTutorial) throw new Error(tutorialOnlyMessage)
       const res = await fetch('/api/notices/source', {
         method: 'POST',
         credentials: 'same-origin',

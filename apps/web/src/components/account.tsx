@@ -1,3 +1,4 @@
+import { isTutorial } from '../lib/tutorial-mode'
 import { useState } from 'react'
 import { AlertTriangle, CloudOff, RefreshCcw } from 'lucide-react'
 import { useStore } from '../lib/store'
@@ -61,7 +62,7 @@ export function SyncBadge({ className }: { className?: string }) {
       ) : (
         <span className={clsx('h-1.5 w-1.5 rounded-full', status === 'saved' ? 'bg-ok' : 'animate-pulse bg-warn')} />
       )}
-      {LABELS[status]}
+      {isTutorial ? 'somente no tutorial' : LABELS[status]}
       {problem && (
         <button
           onClick={() => sync.retry()}

@@ -1,3 +1,4 @@
+import { isTutorial, tutorialOnlyMessage } from '../lib/tutorial-mode'
 import { useState } from 'react'
 import { Award, Download, Lock } from 'lucide-react'
 import { PageHeader } from '../components/Layout'
@@ -19,6 +20,7 @@ export default function Achievements() {
   let visible = all.filter((a) => filter === 'all' || (filter === 'earned' ? a.unlocked : !a.unlocked))
   if (timeline) visible = visible.filter((a) => a.unlocked).sort((a, b) => (b.date ?? '').localeCompare(a.date ?? ''))
   function download(a: Achievement) {
+    if (isTutorial) { window.alert(tutorialOnlyMessage); return }
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="600" viewBox="0 0 1000 600"><rect width="1000" height="600" rx="32" fill="#f8efe2"/><rect x="28" y="28" width="944" height="544" rx="24" fill="none" stroke="#865a38" stroke-width="3"/><g fill="#583821" text-anchor="middle" font-family="Georgia,serif"><text x="500" y="110" font-size="36">coado · conquistas</text><text x="500" y="240" font-size="44">${escape(a.title)}</text><text x="500" y="320" font-size="28">${escape(me.name)}</text><text x="500" y="400" font-size="24">${a.target} ${escape(a.unit)}</text><text x="500" y="490" font-size="20">${a.date ? escape(fmtDate(a.date)) : 'Conquista desbloqueada'} · um gole por vez</text></g></svg>`
     const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
     const link = document.createElement('a')

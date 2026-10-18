@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react'
+import { BrowserRouter } from 'react-router-dom'
 import type { AppState } from '@coado/shared'
 import { AuthProvider, useAuth } from './lib/auth'
 import { RadioProvider } from './lib/radio'
@@ -7,32 +7,16 @@ import { api, ApiError } from './lib/api'
 import { recoverPending } from './lib/outbox'
 import { TimerSessionProvider } from './lib/timer-session'
 import { StoreProvider } from './lib/store'
-import { Layout } from './components/Layout'
 import { LoadingScreen } from './components/LoadingScreen'
 import { WelcomeProvider } from './components/welcome/Welcome'
-import Community from './pages/Community'
-import Achievements from './pages/Achievements'
-import Templates from './pages/Templates'
-import Help from './pages/Help'
-import Library from './pages/Library'
-import ImportNotice from './pages/ImportNotice'
-import NoticeCatalog from './pages/NoticeCatalog'
 import LoginPage from './pages/Login'
-import Home from './pages/Home'
-import Plans from './pages/Plans'
-import Subjects from './pages/Subjects'
-import Edital from './pages/Edital'
-import PlanningPage from './pages/Planning'
-import Reviews from './pages/Reviews'
-import HistoryPage from './pages/History'
-import Statistics from './pages/Statistics'
-import Exams from './pages/Exams'
-import Assessments from './pages/Assessments'
-import FilesPage from './pages/Files'
-import ProfilePage from './pages/Profile'
-import SettingsPage from './pages/Settings'
+import { AppRoutes } from './AppRoutes'
+import { isTutorial } from './lib/tutorial-mode'
+
+const TutorialApp = lazy(() => import('./components/welcome/TutorialApp'))
 
 export default function App() {
+  if (isTutorial) return <Suspense fallback={<LoadingScreen />}><TutorialApp /></Suspense>
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -79,31 +63,7 @@ function AccountApp() {
     <StoreProvider initial={data} onUnauthorized={expire}>
       <TimerSessionProvider>
         <WelcomeProvider>
-          <Routes>
-            <Route element={<Layout />}>
-              <Route index element={<Home />} />
-              <Route path="planos" element={<Plans />} />
-              <Route path="disciplinas" element={<Subjects />} />
-              <Route path="edital" element={<Edital />} />
-              <Route path="planejamento" element={<PlanningPage />} />
-              <Route path="revisoes" element={<Reviews />} />
-              <Route path="historico" element={<HistoryPage />} />
-              <Route path="estatisticas" element={<Statistics />} />
-              <Route path="simulados" element={<Exams />} />
-              <Route path="avaliacoes" element={<Assessments />} />
-              <Route path="arquivos" element={<FilesPage />} />
-              <Route path="comunidade" element={<Community />} />
-              <Route path="conquistas" element={<Achievements />} />
-              <Route path="modelos" element={<Templates />} />
-              <Route path="importar-edital" element={<ImportNotice />} />
-              <Route path="concursos" element={<NoticeCatalog />} />
-              <Route path="biblioteca" element={<Library />} />
-              <Route path="ajuda" element={<Help />} />
-              <Route path="perfil" element={<ProfilePage />} />
-              <Route path="configuracoes" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-          </Routes>
+          <AppRoutes />
         </WelcomeProvider>
       </TimerSessionProvider>
     </StoreProvider>

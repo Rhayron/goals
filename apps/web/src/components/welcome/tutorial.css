@@ -1,0 +1,15 @@
+.tutorial-shell { position: relative; display: grid; grid-template-rows: auto minmax(0, 1fr); height: 100dvh; overflow: hidden; }
+.tutorial-viewport { position: relative; overflow: hidden; transform: translateZ(0); }
+.tutorial-screen { height: 100%; overflow: auto; overscroll-behavior: contain; }
+.tutorial-screen > div { min-height: 100%; }
+.tutorial-screen main { padding-bottom: 24rem; }
+.tutorial-screen [role="dialog"] { margin-block: 1rem; }
+.tutorial-screen [role="dialog"] > div { max-height: 60dvh; }
+.tutorial-highlight { outline: 2px solid var(--color-brand-500); outline-offset: 5px; border-radius: 8px; scroll-margin: 16px; }
+.tutorial-guide { position: absolute; z-index: 80; right: 20px; bottom: 20px; width: min(380px, calc(100% - 24px)); max-height: calc(100dvh - 88px); overflow: auto; }
+@media (max-width: 639px) {
+  .tutorial-guide { right: 12px; bottom: 12px; max-height: 45dvh; padding: 16px; }
+  .tutorial-screen [role="dialog"] { margin-bottom: 46dvh; }
+  .tutorial-screen [role="dialog"] > div { max-height: 30dvh; }
+}
+@media (max-height: 550px) { .tutorial-guide { max-height: 65dvh; } }

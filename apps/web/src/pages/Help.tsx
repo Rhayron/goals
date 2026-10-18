@@ -1,3 +1,4 @@
+import { useWelcome } from '../components/welcome/Welcome'
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { PageHeader } from '../components/Layout'
@@ -129,6 +130,7 @@ const guides = [
   },
 ]
 export default function Help() {
+  const { openWelcome } = useWelcome()
   const { hash } = useLocation()
   useEffect(() => {
     if (hash) document.getElementById(hash.slice(1))?.scrollIntoView({ block: 'start' })
@@ -138,6 +140,10 @@ export default function Help() {
   return (
     <>
       <PageHeader title="Ajuda" hidePlan />
+      <Card title="Conheça o Coado" className="mb-5">
+        <p className="text-sm text-muted">Passeie pelas telas com planos, estudos e revisões de exemplo. Os dados do tutorial são temporários e não entram na sua conta.</p>
+        <button onClick={openWelcome} className="mt-4 rounded-xl bg-brand-700 px-4 py-2 text-sm font-semibold text-brand-50 hover:bg-brand-800">Abrir tutorial de boas-vindas</button>
+      </Card>
       <Card title="Vault acadêmica de demonstração">
         <p className="text-sm text-muted">
           O Coado continua o app. A vault demo traz só o sistema acadêmico: painel, widgets, templates de disciplina e semestre, e uma disciplina de exemplo. Não inclui o resto da vault pessoal.

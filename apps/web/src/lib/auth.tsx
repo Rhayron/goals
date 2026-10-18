@@ -24,6 +24,23 @@ interface Auth {
 
 const Ctx = createContext<Auth | null>(null)
 
+/** The tutorial has a fictional identity, with no auth/session requests. */
+export function TutorialAuthProvider({ initial, onExit, children }: { initial: Me; onExit: () => void; children: ReactNode }) {
+  const [me, setMe] = useState(initial)
+  const value: Auth = {
+    state: { status: 'authenticated', me }, me,
+    signInWithGoogle: onExit, devLogin: async () => undefined, logout: async () => onExit(),
+    updateProfile: async (patch) => {
+      const next = { ...me, ...(patch.name ? { name: patch.name } : {}) }
+      setMe(next)
+      return next
+    },
+    deleteAccount: async () => { throw new Error('A conta do tutorial é fictícia.') },
+    expire: onExit, reload: () => undefined,
+  }
+  return <Ctx.Provider value={value}>{children}</Ctx.Provider>
+}
+
 const loadConfig = () => api.get<AuthConfig>('/auth/config').catch(() => null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
