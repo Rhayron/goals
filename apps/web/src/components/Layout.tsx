@@ -33,7 +33,7 @@ import { CatWindowArt } from './art'
 import { BRAND_SLUG } from '../lib/brand'
 import { useFrases } from '../lib/frases'
 import { RadioPlayer } from './RadioPlayer'
-import { YoutubeRadioCard } from './YoutubeRadioCard'
+import { YoutubePlayerDock, YoutubeRadioCard } from './YoutubeRadioCard'
 import { Avatar, SyncBadge } from './account'
 import { useTermos } from '../lib/modo'
 import { useAuth, useMe } from '../lib/auth'
@@ -180,6 +180,7 @@ export function Layout() {
 
       <StudyModal />
       <TimerOverlay />
+      <YoutubePlayerDock />
     </div>
   )
 }
