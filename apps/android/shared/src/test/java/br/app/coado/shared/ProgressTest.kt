@@ -5,6 +5,7 @@ import br.app.coado.shared.model.Dates
 import br.app.coado.shared.model.Overview
 import br.app.coado.shared.model.Pending
 import br.app.coado.shared.model.PlanLite
+import br.app.coado.shared.model.PlanningConfigLite
 import br.app.coado.shared.model.PlanningLite
 import br.app.coado.shared.model.Snapshot
 import br.app.coado.shared.model.Study
@@ -15,6 +16,8 @@ import br.app.coado.shared.model.cycleProgress
 import br.app.coado.shared.model.fmtClock
 import br.app.coado.shared.model.fmtDuration
 import br.app.coado.shared.model.json
+import br.app.coado.shared.model.nextSessions
+import br.app.coado.shared.model.weeklySchedule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
@@ -121,5 +124,50 @@ class ProgressTest {
         val text = json.encodeToString(Study.serializer(), study)
         assertFalse(text.contains("topicId"))
         assertTrue(text.contains("\"pages\":[]"))
+    }
+
+    // ---------- modo semanal e a opção de empurrar (os mesmos casos de apps/web/src/lib/next-sessions.test.ts) ----------
+
+    /** seg, ter e qua, 3 sessões de 60 min por dia: a1-a3 na segunda, b1-b3 na terça, c1-c3 na quarta */
+    private fun semanal(type: String, carryOver: Boolean = true) = PlanningLite(
+        type = type,
+        cycle = listOf("a1", "a2", "a3", "b1", "b2", "b3", "c1", "c2", "c3").map { CycleItem(it, it, 60) },
+        cycleStartedAt = "2026-10-12",
+        config = PlanningConfigLite(weeklyMinutes = 540, days = listOf(false, true, true, true, false, false, false), carryOver = carryOver),
+    )
+
+    /** segunda feita só pela metade (a1) */
+    private fun ordem(p: PlanningLite, hoje: String) =
+        nextSessions(p, cycleProgress(p, listOf(study("s1", "a1", "2026-10-12", 3600))), hoje).map { it.id }
+
+    @Test
+    fun `a grade semanal distribui a sequência pelos dias marcados`() {
+        val g = weeklySchedule(semanal("weekly"))
+        assertEquals(listOf(listOf("a1", "a2", "a3"), listOf("b1", "b2", "b3"), listOf("c1", "c2", "c3")), (1..3).map { g[it] })
+    }
+
+    @Test
+    fun `no ciclo a ordem é a da sequência`() {
+        assertEquals("a2", ordem(semanal("cycle", carryOver = false), "2026-10-14").first())
+    }
+
+    @Test
+    fun `semanal empurrando a sessão que ficou de segunda vem primeiro`() {
+        assertEquals(listOf("a2", "a3", "b1"), ordem(semanal("weekly"), "2026-10-14").take(3))
+    }
+
+    @Test
+    fun `semanal sem empurrar primeiro as de hoje depois as demais`() {
+        assertEquals(listOf("c1", "c2", "c3", "a2", "a3", "b1", "b2", "b3"), ordem(semanal("weekly", carryOver = false), "2026-10-14"))
+        assertEquals(listOf("b1", "b2", "b3", "a2"), ordem(semanal("weekly", carryOver = false), "2026-10-13").take(4))
+        assertEquals("a2", ordem(semanal("weekly", carryOver = false), "2026-10-17").first())
+    }
+
+    @Test
+    fun `servidor antigo sem config lê o planejamento e empurra`() {
+        val p = json.decodeFromString(PlanningLite.serializer(), """{"type":"weekly","cycle":[],"cycleStartedAt":"2026-10-12"}""")
+        assertNull(p.config)
+        val q = json.decodeFromString(PlanningLite.serializer(), """{"type":"weekly","cycle":[],"cycleStartedAt":"2026-10-12","config":{"weeklyMinutes":540,"days":[false,true,true,true,false,false,false],"carryOver":false}}""")
+        assertFalse(q.config!!.carryOver)
     }
 }

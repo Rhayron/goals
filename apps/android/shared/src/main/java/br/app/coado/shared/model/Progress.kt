@@ -158,6 +158,35 @@ fun cycleProgress(planning: PlanningLite, studies: List<WatchStudy>): List<Cycle
     return planning.cycle.mapIndexed { i, item -> CycleProgressItem(item, studied[i]) }
 }
 
+/** Modo semanal: a sequência do ciclo distribuída pelos dias marcados (weeklySchedule do site). Ids por dia, dom..sáb. */
+fun weeklySchedule(planning: PlanningLite): List<List<String>> {
+    val days = (planning.config?.days.orEmpty() + List(7) { false }).take(7)
+    val buckets = List(7) { mutableListOf<String>() }
+    val minutes = IntArray(7)
+    val active = (0 until 7).filter { days[it] }
+    if (active.isEmpty()) return buckets
+    val perDay = (planning.config?.weeklyMinutes ?: 0).toDouble() / active.size
+    var idx = 0
+    for (item in planning.cycle) {
+        while (idx < active.size - 1 && minutes[active[idx]] + item.duration / 2.0 > perDay) idx++
+        buckets[active[idx]].add(item.id)
+        minutes[active[idx]] += item.duration
+    }
+    return buckets
+}
+
+/**
+ * Sessões não feitas na ordem de estudo (nextSessions do site); a primeira é a próxima. No ciclo, e no semanal com
+ * carryOver (padrão), a ordem da sequência: a sessão que ficou de um dia passado vem primeiro. No semanal com
+ * carryOver = false, primeiro as do dia de hoje, depois as demais.
+ */
+fun nextSessions(planning: PlanningLite, items: List<CycleProgressItem>, today: String): List<CycleProgressItem> {
+    val pending = items.filter { !it.done }
+    if (planning.type != "weekly" || planning.config?.carryOver != false) return pending
+    val ofToday = weeklySchedule(planning)[Dates.weekday(today)].toSet()
+    return pending.filter { it.id in ofToday } + pending.filter { it.id !in ofToday }
+}
+
 // ---------- visão combinada ----------
 
 /**
@@ -179,7 +208,9 @@ class Overview(val snapshot: Snapshot?, val pending: Pending, val today: String 
     }
 
     val cycle: List<CycleProgressItem> = snapshot?.planning?.let { cycleProgress(it, studies) }.orEmpty()
-    val next: CycleProgressItem? = cycle.firstOrNull { !it.done }
+    /** sessões não feitas na ordem de estudo (respeita a opção de empurrar do modo semanal) */
+    val pendingInOrder: List<CycleProgressItem> = snapshot?.planning?.let { nextSessions(it, cycle, today) } ?: cycle.filter { !it.done }
+    val next: CycleProgressItem? = pendingInOrder.firstOrNull()
     val cycleDone get() = cycle.isNotEmpty() && cycle.all { it.done }
     val plannedSeconds get() = cycle.sumOf { it.duration * 60 }
     val cycleStudiedSeconds get() = cycle.sumOf { minOf(it.studied, it.duration * 60) }

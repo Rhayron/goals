@@ -151,7 +151,7 @@ private fun PickPane(
 ) {
     var selected by rememberSaveable(request.subjectId) { mutableStateOf(request.subjectId ?: view.next?.subjectId) }
     val category = request.categoryId ?: "teoria"
-    val pendingItems = view.cycle.filter { !it.done }
+    val pendingItems = view.pendingInOrder
 
     Column(Modifier.fillMaxSize().systemBarsPadding()) {
         TopBar("Pomodoro", onClose)

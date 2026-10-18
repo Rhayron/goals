@@ -27,7 +27,7 @@ fun SubjectsScreen(
     onMode: (Mode) -> Unit,
     onStart: (SubjectLite, String?) -> Unit,
 ) {
-    val pendingItems = view.cycle.filter { !it.done }
+    val pendingItems = view.pendingInOrder
     val doneCount = view.cycle.size - pendingItems.size
 
     WheelScreen {

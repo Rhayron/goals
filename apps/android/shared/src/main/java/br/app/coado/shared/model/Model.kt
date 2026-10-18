@@ -67,6 +67,17 @@ data class PlanningLite(
     /** estudos com data >= esta contam para o ciclo atual */
     val cycleStartedAt: String,
     val completedCycles: Int = 0,
+    /** grade do modo semanal e ordem das sessões; servidores antigos não mandam */
+    val config: PlanningConfigLite? = null,
+)
+
+@Serializable
+data class PlanningConfigLite(
+    val weeklyMinutes: Int = 0,
+    /** dom..sáb */
+    val days: List<Boolean> = emptyList(),
+    /** modo semanal: a sessão não feita num dia vem primeiro no dia seguinte (padrão); false = a de hoje primeiro */
+    val carryOver: Boolean = true,
 )
 
 /** Estudo como vem no recorte (sem material, páginas, vídeos e comentário) */
