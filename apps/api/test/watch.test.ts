@@ -107,6 +107,7 @@ describe.skipIf(!DB_URL)('relógio', () => {
     expect(snap.subjects.map((s) => s.id)).toEqual(['s1', 's2'])
     expect(snap.categories.map((c) => c.id)).toEqual(['teoria', 'revisao', 'questoes'])
     expect(snap.planning).toMatchObject({ type: 'cycle', cycleStartedAt: '2026-05-01', completedCycles: 1 })
+    expect(snap.planning?.config).toEqual({ weeklyMinutes: planning.config.weeklyMinutes, days: planning.config.days, carryOver: true })
     expect(snap.planning?.cycle.map((c) => c.id)).toEqual(['c1', 'c2'])
     expect(snap.studies).toEqual([
       { id: 'st1', subjectId: 's1', categoryId: 'teoria', date: '2026-05-01', time: '08:30', duration: 3600, hits: 8, misses: 2, countInPlanning: true },

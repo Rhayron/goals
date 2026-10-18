@@ -5,6 +5,7 @@ import {
   type CycleItem,
   type DateStr,
   type PairResponse,
+  type PlanningConfig,
   type TimerPrefs,
   type WatchSnapshot,
 } from '@coado/shared'
@@ -117,13 +118,19 @@ export async function watchRoutes(app: FastifyInstance, { pool }: Deps) {
     ).rows
 
     const planningRow = (
-      await pool.query<{ type: 'cycle' | 'weekly'; cycle: CycleItem[]; cycle_started_at: string; completed_cycles: number }>(
-        'select type, cycle, cycle_started_at, completed_cycles from plannings where user_id = $1 and plan_id = $2',
+      await pool.query<{ type: 'cycle' | 'weekly'; cycle: CycleItem[]; cycle_started_at: string; completed_cycles: number; config: PlanningConfig }>(
+        'select type, cycle, cycle_started_at, completed_cycles, config from plannings where user_id = $1 and plan_id = $2',
         [userId, plan.id],
       )
     ).rows[0]
     const planning = planningRow
-      ? { type: planningRow.type, cycle: planningRow.cycle, cycleStartedAt: planningRow.cycle_started_at, completedCycles: planningRow.completed_cycles }
+      ? {
+          type: planningRow.type,
+          cycle: planningRow.cycle,
+          cycleStartedAt: planningRow.cycle_started_at,
+          completedCycles: planningRow.completed_cycles,
+          config: { weeklyMinutes: planningRow.config.weeklyMinutes, days: planningRow.config.days, carryOver: planningRow.config.carryOver ?? true },
+        }
       : null
 
     // o ciclo atual e a semana atual: o que o relógio soma para progresso e metas

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { Play } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import { firstName, useMe } from '../../lib/auth'
-import { constancy, cycleProgress, fmtMinutes, today } from '../../lib/utils'
+import { constancy, cycleProgress, fmtMinutes, nextSessions, today } from '../../lib/utils'
 import { PomodoroScene } from './PomodoroScene'
 
 const greeting = () => {
@@ -19,7 +19,7 @@ export function CozyBanner() {
   const me = useMe()
   const c = constancy(studies)
   const due = reviews.filter((r) => r.status === 'pending' && r.dueDate <= today()).length
-  const next = planning ? cycleProgress(planning, studies).find((i) => !i.done) : undefined
+  const next = planning ? nextSessions(planning, cycleProgress(planning, studies))[0] : undefined
   const nextSubject = next && subjects.find((s) => s.id === next.subjectId)
 
   const line =

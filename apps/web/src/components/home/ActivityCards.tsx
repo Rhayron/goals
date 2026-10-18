@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { CalendarRange, Check, PencilLine, Play, Plus } from 'lucide-react'
 import { useStore } from '../../lib/store'
 import type { Study, Subject } from '../../lib/types'
-import { cycleProgress, fmtDuration, fmtMinutes, startOfMonth, startOfWeek, today } from '../../lib/utils'
+import { cycleProgress, fmtDuration, fmtMinutes, nextSessions, startOfMonth, startOfWeek, today } from '../../lib/utils'
 import { Button, Card, ColorDot, IconButton, ProgressBar, Tabs } from '../ui'
 import { editDraft, groupBy, plural, sortRecent } from '../charts/filters'
 import { DateBadge } from './DateBadge'
@@ -91,7 +91,7 @@ export function PlanningCard({ className }: { className?: string }) {
 
   const items = cycleProgress(planning, studies)
   const done = items.filter((i) => i.done).length
-  const next = items.filter((i) => !i.done).slice(0, 5)
+  const next = nextSessions(planning, items).slice(0, 5)
 
   return (
     <Card title="Planejamento" className={className} actions={<CardLink to="/planejamento">ver ciclo</CardLink>}>

@@ -1,4 +1,4 @@
-import type { AssessmentKind, CycleItem, DateStr, ID, PlanKind, Planning, TimerPrefs } from './types'
+import type { AssessmentKind, CycleItem, DateStr, ID, PlanKind, Planning, PlanningConfig, TimerPrefs } from './types'
 
 /*
  * Contrato HTTP entre web e api (prefixo /api).
@@ -157,7 +157,13 @@ export interface WatchSnapshot {
   categories: { id: ID; name: string }[]
   timerPrefs: TimerPrefs
   reviewIntervals: number[]
-  planning: Pick<Planning, 'type' | 'cycleStartedAt' | 'completedCycles'> & { cycle: CycleItem[] } | null
+  /** config: o que os apps precisam para a grade do modo semanal e para a ordem das sessões (carryOver) */
+  planning:
+    | (Pick<Planning, 'type' | 'cycleStartedAt' | 'completedCycles'> & {
+        cycle: CycleItem[]
+        config: Pick<PlanningConfig, 'weeklyMinutes' | 'days' | 'carryOver'>
+      })
+    | null
   studies: WatchStudy[]
   studiedDates: DateStr[]
   /** revisões pendentes até hoje */

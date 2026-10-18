@@ -116,6 +116,7 @@ export const PlanningSchema = z.object({
     minSession: int(0, 24 * 60),
     maxSession: int(0, 24 * 60),
     subjects: z.array(z.object({ subjectId: IdSchema, importance: num(0, 100), knowledge: num(0, 100) })).max(500),
+    carryOver: z.boolean().optional(),
   }),
   cycle: z.array(z.object({ id: IdSchema, subjectId: IdSchema, topicId: IdSchema.optional(), duration: int(0, 24 * 60) })).max(2000),
   completedCycles: int(0, 1_000_000),

@@ -259,6 +259,16 @@ export const weeklySchedule = (planning: Planning) => {
   return buckets
 }
 
+/** Sessões não feitas na ordem de estudo; a primeira é a próxima sessão. No ciclo, e no semanal com carryOver
+ *  (padrão), a ordem da sequência: a sessão que ficou de um dia passado vem primeiro. No semanal com
+ *  carryOver === false, primeiro as do dia de hoje (pela grade do weeklySchedule), depois as demais. */
+export const nextSessions = (planning: Planning, items: CycleProgressItem[], ref: DateStr = today()): CycleProgressItem[] => {
+  const pending = items.filter((i) => !i.done)
+  if (planning.type !== 'weekly' || planning.config.carryOver !== false) return pending
+  const ofToday = new Set(weeklySchedule(planning)[parseDate(ref).getDay()].items.map((i) => i.id))
+  return [...pending.filter((i) => ofToday.has(i.id)), ...pending.filter((i) => !ofToday.has(i.id))]
+}
+
 // ---------- cores ----------
 
 export const SUBJECT_COLORS = [

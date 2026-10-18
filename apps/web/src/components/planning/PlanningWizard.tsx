@@ -42,6 +42,7 @@ export function PlanningWizard({ existing, onClose }: { existing: Planning | nul
   const [days, setDays] = useState<boolean[]>(() => cfg?.days ?? [false, true, true, true, true, true, true])
   const [minSession, setMinSession] = useState(cfg?.minSession ?? 30)
   const [maxSession, setMaxSession] = useState(cfg?.maxSession ?? 120)
+  const [carryOver, setCarryOver] = useState(cfg?.carryOver ?? true)
 
   const chosen = subjects.filter((s) => selected.has(s.id))
   const weightOf = (id: string) => weights[id] ?? DEFAULT_WEIGHT
@@ -75,6 +76,7 @@ export function PlanningWizard({ existing, onClose }: { existing: Planning | nul
       minSession,
       maxSession,
       subjects: chosen.map((s) => ({ subjectId: s.id, ...weightOf(s.id) })),
+      carryOver,
     }
     savePlanning({
       planId: plan.id,
@@ -260,6 +262,19 @@ export function PlanningWizard({ existing, onClose }: { existing: Planning | nul
               ))}
             </div>
           </div>
+          {type === 'weekly' && (
+            <label className="flex items-start gap-2 text-sm">
+              <input type="checkbox" className="mt-0.5 h-4 w-4" checked={carryOver} onChange={(e) => setCarryOver(e.target.checked)} />
+              <span>
+                Empurrar a sessão não feita
+                <span className="block text-xs text-muted">
+                  {carryOver
+                    ? 'O que ficou de um dia vem primeiro no dia seguinte.'
+                    : 'A sugestão é sempre a sessão de hoje; as que ficaram de dias anteriores vêm depois.'}
+                </span>
+              </span>
+            </label>
+          )}
           <div>
             <p className="label">Duração mínima e máxima de uma sessão</p>
             <div className="flex flex-wrap items-center gap-2">

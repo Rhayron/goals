@@ -125,6 +125,9 @@ export interface PlanningConfig {
   /** minutos */
   maxSession: number
   subjects: SubjectWeight[]
+  /** Modo semanal: a sessão não feita num dia passa para a frente da fila no dia seguinte (padrão, quando ausente).
+   *  Com false, a sugestão é a sessão do dia de hoje e as atrasadas ficam para depois. */
+  carryOver?: boolean
 }
 
 export interface CycleItem {
