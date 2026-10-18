@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { BookOpen, ChevronDown, CloudMoon, ExternalLink, Headphones, Leaf, Moon, Music2, Play, X, Youtube } from 'lucide-react'
 import { useRadio } from '../lib/radio-context'
@@ -23,44 +23,19 @@ export function youtubeStation(videoId: string | null) {
   return STATIONS.find((item) => item.videoId === videoId) ?? null
 }
 
-/** The iframe is removed when hidden, so YouTube never becomes an audio-only player. */
-function YoutubeStream({ videoId, title, keepAlive = false }: { videoId: string; title: string; keepAlive?: boolean }) {
-  const container = useRef<HTMLDivElement>(null)
-  const [inView, setInView] = useState(keepAlive)
-  const [pageVisible, setPageVisible] = useState(!document.hidden)
-
-  useEffect(() => {
-    if (keepAlive) return
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting))
-    if (container.current) observer.observe(container.current)
-    return () => observer.disconnect()
-  }, [keepAlive])
-
-  useEffect(() => {
-    const onVisibility = () => setPageVisible(!document.hidden)
-    document.addEventListener('visibilitychange', onVisibility)
-    return () => document.removeEventListener('visibilitychange', onVisibility)
-  }, [])
-
-  const show = keepAlive ? pageVisible : inView && pageVisible
-
+/** Preserve o iframe ao rolar, recolher o card ou trocar de aba. */
+function YoutubeStream({ videoId, title }: { videoId: string; title: string }) {
   return (
-    <div ref={container} className="aspect-video min-h-[120px] w-full bg-black">
-      {show ? (
-        <iframe
-          key={videoId}
-          src={`https://www.youtube.com/embed/${videoId}?playsinline=1&autoplay=0`}
-          title={`Rádio ${title} no YouTube`}
-          className="h-full min-h-[120px] w-full border-0"
-          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-          referrerPolicy="strict-origin-when-cross-origin"
-          allowFullScreen
-        />
-      ) : (
-        <div className="flex h-full min-h-[120px] items-center justify-center px-6 text-center text-sm text-white/70">
-          Volte ao vídeo para dar play na rádio.
-        </div>
-      )}
+    <div className="aspect-video min-h-[120px] w-full bg-black">
+      <iframe
+        key={videoId}
+        src={`https://www.youtube.com/embed/${videoId}?playsinline=1&autoplay=0`}
+        title={`Rádio ${title} no YouTube`}
+        className="h-full min-h-[120px] w-full border-0"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        referrerPolicy="strict-origin-when-cross-origin"
+        allowFullScreen
+      />
     </div>
   )
 }
@@ -81,7 +56,7 @@ export function YoutubePlayerDock() {
   }, [onTimer, youtubeVideoId])
 
   if (!station || !slot) return null
-  return createPortal(<YoutubeStream videoId={station.videoId} title={station.name} keepAlive={onTimer} />, slot)
+  return createPortal(<YoutubeStream videoId={station.videoId} title={station.name} />, slot)
 }
 
 export function YoutubeMiniSlot() {
@@ -113,7 +88,6 @@ export function YoutubeRadioCard() {
   const station = youtubeStation(youtubeVideoId)
   const coadoOn = status === 'playing' || status === 'loading'
   const onTimer = !!timer && !minimized && !!station && !coadoOn
-  const Icon = station?.icon
 
   return (
     <section aria-labelledby="youtube-radio-heading" className="mb-6 overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
@@ -139,11 +113,11 @@ export function YoutubeRadioCard() {
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
-          aria-controls="youtube-radio-stations"
+          aria-controls="youtube-radio-stations youtube-radio-player"
           className="rounded-full p-2 text-muted hover:bg-surface-2 hover:text-ink"
         >
           <ChevronDown size={18} className={clsx('transition', open && 'rotate-180')} aria-hidden />
-          <span className="sr-only">{open ? 'Recolher estações' : 'Abrir estações'}</span>
+          <span className="sr-only">{open ? 'Recolher rádio do YouTube' : 'Expandir rádio do YouTube'}</span>
         </button>
       </div>
 
@@ -174,9 +148,9 @@ export function YoutubeRadioCard() {
       )}
 
       {station && !onTimer && (
-        <div className="border-t border-line bg-surface-2/40 p-4 sm:p-5">
-          <div className={clsx(open && 'grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-center')}>
-            <div id={CARD_SLOT} className={clsx(!open && 'mx-auto w-full max-w-72 overflow-hidden rounded-xl')} />
+        <div id="youtube-radio-player" hidden={!open} className="border-t border-line bg-surface-2/40 p-4 sm:p-5">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-center">
+            <div id={CARD_SLOT} />
             {open && (
               <div className="space-y-3 md:px-2">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{station.channel} · canal oficial</p>
@@ -186,18 +160,12 @@ export function YoutubeRadioCard() {
                   Abrir no YouTube <ExternalLink size={13} aria-hidden />
                 </a>
                 <div className="border-t border-line pt-3">
-                  <p className="mb-2 text-xs leading-relaxed text-muted">Para continuar ouvindo ao rolar a página ou trocar de aba, use o disco do Coado.</p>
+                  <p className="mb-2 text-xs leading-relaxed text-muted">Prefere uma trilha instrumental? Use o disco do Coado.</p>
                   <button type="button" onClick={toggle} className="inline-flex items-center gap-2 rounded-lg border border-line bg-surface px-3 py-2 text-xs font-bold text-ink transition-colors hover:bg-surface-2">
                     <Headphones size={14} aria-hidden /> Ouvir Rádio Coado · {trackCount} faixas
                   </button>
                 </div>
               </div>
-            )}
-            {!open && Icon && (
-              <p className="mt-2 text-center text-xs text-muted">
-                <Icon size={14} className="mr-1 inline" aria-hidden />
-                {station.subtitle}
-              </p>
             )}
           </div>
         </div>
