@@ -94,8 +94,8 @@ export function Layout() {
             <X size={20} />
           </button>
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-          <nav className="space-y-0.5 px-3 py-2">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
+          <nav className="shrink-0 space-y-0.5 px-3 py-2">
             {nav.map(({ to, label, icon: Icon, end }) => (
               <NavLink
                 key={to}
@@ -116,9 +116,9 @@ export function Layout() {
               </NavLink>
             ))}
           </nav>
-          <div className="px-4 pb-4 pt-3">
-            <CatWindowArt className="w-full" showCat={false} />
-            <p className="mt-1 text-center font-display text-xs italic text-muted">{frases.tagline}</p>
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-end gap-1 overflow-hidden px-4">
+            <CatWindowArt className="min-h-0 max-h-24 w-32 max-w-full flex-1" showCat={false} />
+            <p className="shrink-0 pb-2 text-center font-display text-xs italic text-muted">{frases.tagline}</p>
           </div>
         </div>
         <div className="shrink-0 space-y-0.5 border-t border-line px-3 py-3">
