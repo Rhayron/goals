@@ -158,7 +158,7 @@ export function Layout() {
       </div>
 
       <main className="mx-auto max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-8">
-        <YoutubeRadioCard />
+        <YoutubeRadioCard compact={pathname === '/'} />
         <Outlet />
       </main>
 
@@ -226,10 +226,10 @@ function UserCard({ onNavigate }: { onNavigate: () => void }) {
 }
 
 /** Cabeçalho padrão das páginas: título + seletor de plano + ações */
-export function PageHeader({ title, children, hidePlan }: { title: string; children?: ReactNode; hidePlan?: boolean }) {
+export function PageHeader({ title, children, hidePlan, compact = false }: { title: string; children?: ReactNode; hidePlan?: boolean; compact?: boolean }) {
   const { state, plan, setActivePlan, openStudy } = useStore()
   return (
-    <div className="mb-6 flex flex-wrap items-center gap-3 border-b border-line pb-4">
+    <div className={clsx('flex flex-wrap items-center gap-3 border-b border-line', compact ? 'mb-3 pb-3' : 'mb-6 pb-4')}>
       <h1 className="mr-auto text-2xl font-bold tracking-tight">{title}</h1>
       {title !== 'Ajuda' && (
         <NavLink

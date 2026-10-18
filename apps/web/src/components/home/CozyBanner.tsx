@@ -30,8 +30,8 @@ export function CozyBanner() {
         : `Faz ${c.daysSinceLast} ${c.daysSinceLast === 1 ? 'dia' : 'dias'} desde o último estudo. Retome por uma sessão curta.`
 
   return (
-    <section className="mb-6 grid overflow-hidden rounded-2xl border border-line bg-surface shadow-sm xl:grid-cols-[.8fr_1.2fr]">
-      <div className="min-w-0 self-center p-5 sm:p-6">
+    <section className="mb-3 grid overflow-hidden rounded-2xl border border-line bg-surface shadow-sm xl:grid-cols-[.8fr_1.2fr]">
+      <div className="min-w-0 self-center p-4 sm:p-5">
         <p className="mb-2 text-[10px] font-extrabold uppercase tracking-[0.18em] text-brand-700 dark:text-brand-300">Seu espaço de estudo</p>
         <h2 className="font-display text-2xl font-bold">
           {greeting()}, {firstName(me.name)}.

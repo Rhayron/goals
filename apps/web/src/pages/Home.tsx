@@ -25,7 +25,7 @@ export default function HomePage() {
   if (!plan)
     return (
       <>
-        <PageHeader title="Início" />
+        <PageHeader title="Início" compact />
         <Card>
           <Empty
             icon={<FolderOpen size={40} />}
@@ -49,9 +49,9 @@ export default function HomePage() {
 
   return (
     <>
-      <PageHeader title="Início" />
+      <PageHeader title="Início" compact />
       <CozyBanner />
-      <div className="grid gap-5 lg:grid-cols-3">
+      <div className="grid gap-3 lg:grid-cols-3 [&>section]:p-4 [&>section>header]:mb-3">
         <Card>
           <p className={label}>Tempo de estudo</p>
           <p className="mt-3 text-3xl font-semibold tabular">{fmtDuration(t.duration)}</p>

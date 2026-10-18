@@ -54,7 +54,7 @@ function YoutubeMiniInfo() {
   )
 }
 
-export function YoutubeRadioCard() {
+export function YoutubeRadioCard({ compact = false }: { compact?: boolean }) {
   const { youtubeVideoId, selectYoutube, trackCount, toggle, status } = useRadio()
   const { timer } = useStore()
   const { minimized } = useTimerSession()
@@ -64,8 +64,8 @@ export function YoutubeRadioCard() {
   const onTimer = !!timer && !minimized && !!station && !coadoOn
 
   return (
-    <section aria-labelledby="youtube-radio-heading" className="mb-6 overflow-hidden rounded-2xl border border-line bg-surface shadow-sm">
-      <div className="flex items-center gap-3 p-4 sm:p-5">
+    <section aria-labelledby="youtube-radio-heading" className={clsx('overflow-hidden rounded-2xl border border-line bg-surface shadow-sm', compact ? 'mb-3' : 'mb-6')}>
+      <div className={clsx('flex items-center gap-3', compact ? 'p-3 sm:p-4' : 'p-4 sm:p-5')}>
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-kraft text-brand-700 dark:text-brand-300">
           <Headphones size={22} aria-hidden />
         </span>
