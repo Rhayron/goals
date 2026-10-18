@@ -17,7 +17,7 @@ export function PomodoroScene() {
   const phaseLabel = phase === 'study' ? 'Hora de focar' : phase === 'short' ? 'Pausa para um café' : 'Respira, pausa longa'
 
   return (
-    <LofiScene embedded withBreakScene activity={resting ? 'break' : 'study'} className="order-first self-center xl:order-last">
+    <LofiScene embedded withBreakScene activity={resting ? 'break' : 'study'} className="order-first self-center xl:order-last xl:max-h-88">
       {showing ? (
         <div className="coado-pomodoro absolute bottom-3 left-3 w-[180px] rounded-2xl border border-white/20 bg-[#201b16]/90 p-2.5 text-[#fff2d9] shadow-lg backdrop-blur sm:w-[218px] sm:p-3" role="region" aria-label="Pomodoro na capa">
           <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest text-[#e0b88a]" aria-live="polite">

@@ -51,17 +51,17 @@ export default function HomePage() {
     <>
       <PageHeader title="Início" compact />
       <CozyBanner />
-      <div className="grid gap-3 lg:grid-cols-3 [&>section]:p-4 [&>section>header]:mb-3">
+      <div className="grid gap-3 lg:grid-cols-3 [&>section]:px-4 [&>section]:py-3 [&>section>header]:mb-3">
         <Card>
           <p className={label}>Tempo de estudo</p>
-          <p className="mt-3 text-3xl font-semibold tabular">{fmtDuration(t.duration)}</p>
+          <p className="mt-2 text-3xl font-semibold tabular">{fmtDuration(t.duration)}</p>
           <p className="mt-1 text-sm text-muted">{plural(t.days, 'dia estudado', 'dias estudados')}</p>
         </Card>
         <Card>
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className={label}>Desempenho</p>
-              <p className="mt-3 text-sm">
+              <p className="mt-2 text-sm">
                 <b className="tabular text-ok">{t.hits}</b> <span className="text-muted">acertos</span>
               </p>
               <p className="text-sm">
@@ -74,8 +74,8 @@ export default function HomePage() {
         </Card>
         <Card>
           <p className={label}>{termos.progresso}</p>
-          <p className="mt-3 text-3xl font-semibold tabular">{progress}%</p>
-          <ProgressBar value={progress} className="mt-3" />
+          <p className="mt-2 text-3xl font-semibold tabular">{progress}%</p>
+          <ProgressBar value={progress} className="mt-2" />
           <p className="mt-2 text-sm text-muted">
             {finished} de {plural(topics.length, 'tópico concluído', 'tópicos concluídos')}
           </p>
