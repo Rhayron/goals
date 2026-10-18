@@ -7,7 +7,7 @@ import { clsx, fmtClock } from '../lib/utils'
 import { Logo } from './Layout'
 import { CupArt, RainWindowArt } from './art'
 import { RadioPlayer } from './RadioPlayer'
-import { YoutubeMiniSlot } from './YoutubeRadioCard'
+import { youtubeStation } from './YoutubeRadioCard'
 import { useRadio } from '../lib/radio-context'
 
 /** Chuva ambiente gerada com ruído filtrado (sem arquivos de áudio) */
@@ -66,7 +66,7 @@ export function TimerOverlay() {
     start, pause, resetClock, advancePhase, finish, close, setSound,
   } = session
   const [showPrefs, setShowPrefs] = useState(false)
-  const { status: radioStatus } = useRadio()
+  const { status: radioStatus, youtubeVideoId } = useRadio()
   const coadoOn = radioStatus === 'playing' || radioStatus === 'loading'
   const rain = useRainSound()
   const navigate = useNavigate()
@@ -256,9 +256,10 @@ export function TimerOverlay() {
 
       {coadoOn ? (
         <RadioPlayer className="relative z-10 m-4 mt-auto w-[calc(100%-2rem)] max-w-72 shrink-0 sm:absolute sm:bottom-4 sm:left-4 sm:m-0 sm:w-72" compact />
-      ) : (
-        <YoutubeMiniSlot />
-      )}
+      ) : youtubeStation(youtubeVideoId) ? (
+        // Reserva espaço no celular para o player fixo que continua montado no card.
+        <div aria-hidden className="h-64 shrink-0 sm:hidden" />
+      ) : null}
 
       {showPrefs && (
         <div className="absolute right-4 top-16 w-72 rounded-xl border border-white/10 bg-[#30251d] p-4 text-sm shadow-2xl">

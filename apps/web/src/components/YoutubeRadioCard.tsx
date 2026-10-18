@@ -1,13 +1,9 @@
-import { useEffect, useState } from 'react'
-import { createPortal } from 'react-dom'
+import { useState } from 'react'
 import { BookOpen, ChevronDown, CloudMoon, ExternalLink, Headphones, Leaf, Moon, Music2, Play, X, Youtube } from 'lucide-react'
 import { useRadio } from '../lib/radio-context'
 import { useTimerSession } from '../lib/timer-session'
 import { useStore } from '../lib/store'
 import { clsx } from '../lib/utils'
-
-const CARD_SLOT = 'youtube-radio-slot'
-const MINI_SLOT = 'youtube-mini-slot'
 
 // Transmissões dos canais @LofiGirl e @ChillhopMusic, conferidas em 17/10/2026.
 const STATIONS = [
@@ -40,42 +36,20 @@ function YoutubeStream({ videoId, title }: { videoId: string; title: string }) {
   )
 }
 
-/** Um iframe só. No pomodoro em tela cheia ele vai para o canto. Fora disso, fica no card. */
-export function YoutubePlayerDock() {
-  const { youtubeVideoId, status } = useRadio()
-  const { timer } = useStore()
-  const { minimized } = useTimerSession()
-  const station = youtubeStation(youtubeVideoId)
-  const coadoOn = status === 'playing' || status === 'loading'
-  const onTimer = !!timer && !minimized && !!station && !coadoOn
-  const [slot, setSlot] = useState<HTMLElement | null>(null)
-
-  useEffect(() => {
-    const id = onTimer ? MINI_SLOT : CARD_SLOT
-    setSlot(document.getElementById(id))
-  }, [onTimer, youtubeVideoId])
-
-  if (!station || !slot) return null
-  return createPortal(<YoutubeStream videoId={station.videoId} title={station.name} />, slot)
-}
-
-export function YoutubeMiniSlot() {
+function YoutubeMiniInfo() {
   const { youtubeVideoId, status, selectYoutube } = useRadio()
   const station = youtubeStation(youtubeVideoId)
   const coadoOn = status === 'playing' || status === 'loading'
   if (!station || coadoOn) return null
   return (
-    <div className="relative z-10 m-4 mt-auto w-[calc(100%-2rem)] max-w-72 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-black/50 sm:absolute sm:bottom-4 sm:left-4 sm:m-0 sm:w-72">
-      <div id={MINI_SLOT} />
-      <div className="flex items-center gap-2 px-3 py-2">
-        <div className="min-w-0 flex-1">
-          <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">{station.channel}</p>
-          <p className="truncate text-sm font-semibold">{station.name}</p>
-        </div>
-        <button type="button" onClick={() => selectYoutube(null)} aria-label="Fechar canal" title="Fechar canal" className="rounded-full p-1.5 text-white/60 hover:bg-white/10 hover:text-white">
-          <X size={16} />
-        </button>
+    <div className="flex items-center gap-2 px-3 py-2">
+      <div className="min-w-0 flex-1">
+        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">{station.channel}</p>
+        <p className="truncate text-sm font-semibold">{station.name}</p>
       </div>
+      <button type="button" onClick={() => selectYoutube(null)} aria-label="Fechar canal" title="Fechar canal" className="rounded-full p-1.5 text-white/60 hover:bg-white/10 hover:text-white">
+        <X size={16} />
+      </button>
     </div>
   )
 }
@@ -147,11 +121,15 @@ export function YoutubeRadioCard() {
         </div>
       )}
 
-      {station && !onTimer && (
-        <div id="youtube-radio-player" hidden={!open} className="border-t border-line bg-surface-2/40 p-4 sm:p-5">
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-center">
-            <div id={CARD_SLOT} />
-            {open && (
+      {station && (
+        <div id="youtube-radio-player" hidden={!open && !onTimer} className={onTimer ? 'contents' : 'border-t border-line bg-surface-2/40 p-4 sm:p-5'}>
+          <div className={onTimer ? 'contents' : 'grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-center'}>
+            {/* Só a posição muda: trocar o pai DOM/portal reinicia o vídeo. */}
+            <div className={onTimer ? 'dark fixed bottom-4 left-4 z-[60] w-[calc(100vw-2rem)] max-w-72 overflow-hidden rounded-2xl border border-white/15 bg-[#1b1410] text-white shadow-xl' : undefined}>
+              <YoutubeStream videoId={station.videoId} title={station.name} />
+              {onTimer && <YoutubeMiniInfo />}
+            </div>
+            {open && !onTimer && (
               <div className="space-y-3 md:px-2">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{station.channel} · canal oficial</p>
                 <h3 className="font-display text-xl font-semibold">{station.subtitle}</h3>
