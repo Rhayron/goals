@@ -1,12 +1,11 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
-import { CalendarDays, Check, Laptop, Loader2, LogOut, Pencil, Smartphone, Sparkles, Trash2, Watch } from 'lucide-react'
+import { CalendarDays, Check, Laptop, Loader2, LogOut, Pencil, Smartphone, Trash2, Watch } from 'lucide-react'
 import { BRAND } from '../lib/brand'
 import type { SessionInfo, StorageUsage, FilesResponse } from '@coado/shared'
 import { PageHeader } from '../components/Layout'
 import { Button, Card, Modal } from '../components/ui'
 import { Avatar } from '../components/account'
-import { useWelcome } from '../components/welcome/Welcome'
 import { api } from '../lib/api'
 import { firstName, useAuth, useMe } from '../lib/auth'
 import { useStore } from '../lib/store'
@@ -69,7 +68,6 @@ export default function ProfilePage() {
 function IdentityCard() {
   const me = useMe()
   const { updateProfile } = useAuth()
-  const { openWelcome } = useWelcome()
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(me.name)
   const [saving, setSaving] = useState(false)
@@ -125,9 +123,6 @@ function IdentityCard() {
             <CalendarDays size={13} className="text-brand-600" /> estudando desde {since}
           </p>
         </div>
-        <Button variant="secondary" size="sm" onClick={openWelcome}>
-          <Sparkles size={14} /> Rever apresentação
-        </Button>
       </div>
     </section>
   )

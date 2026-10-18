@@ -1,4 +1,3 @@
-import { TutorialDialog } from '../components/welcome/Welcome'
 import { useEffect, useState } from 'react'
 import { Loader2, RefreshCcw } from 'lucide-react'
 import type { AuthConfig, AuthErrorCode } from '@coado/shared'
@@ -41,7 +40,6 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
   const authError = useAuthError()
   const [busy, setBusy] = useState<'google' | 'dev' | null>(null)
   const [devError, setDevError] = useState('')
-  const [tutorial, setTutorial] = useState(false)
   const frases = useFrases()
   const moment = MOMENTS.find((m) => new Date().getHours() < m.until) ?? MOMENTS[3]
 
@@ -149,7 +147,6 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
             )}
           </div>
 
-          <button type="button" onClick={() => setTutorial(true)} className="mt-3 min-h-11 w-full rounded-xl border border-brand-400/50 px-4 py-2 text-sm font-semibold text-brand-700 transition hover:bg-brand-100/60 dark:text-brand-200">Conhecer o Coado com exemplos</button>
           <section aria-label={frases.quadroLabel} className="chalkboard mt-10 rounded-2xl border-[6px] border-brand-700 p-5 shadow-[inset_0_0_30px_rgba(0,0,0,0.35)] animate-rise" style={{ animationDelay: '300ms' }}>
             <p className="text-center font-display text-lg italic tracking-wide">{frases.quadro}</p>
             <ul className="mt-3 space-y-1.5 text-sm">
@@ -169,7 +166,6 @@ export default function LoginPage({ config, reason }: { config: AuthConfig | nul
           </p>
         </div>
       </main>
-      {tutorial && <TutorialDialog onClose={() => setTutorial(false)} />}
     </div>
   )
 }
