@@ -1,5 +1,5 @@
-import { Link } from 'react-router-dom'
-import { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { CalendarDays, Check, Laptop, Loader2, LogOut, Pencil, Smartphone, Trash2, Watch } from 'lucide-react'
 import { BRAND } from '../lib/brand'
 import type { SessionInfo, StorageUsage, FilesResponse } from '@coado/shared'
@@ -12,8 +12,19 @@ import { useStore } from '../lib/store'
 import { addDays, clsx, fmtBytes, fmtDuration, today } from '../lib/utils'
 
 const LOYALTY_DAYS = 10
+const profileSections = [
+  { id: 'identidade', label: 'Minha conta' },
+  { id: 'atividade', label: 'Minha atividade' },
+  { id: 'conquistas', label: 'Conquistas', to: '/conquistas' },
+  { id: 'comunidade', label: 'Meus grupos e ranking', to: '/comunidade' },
+  { id: 'aparelhos', label: 'Aparelhos conectados' },
+  { id: 'conta', label: 'Gerenciar conta' },
+]
 
 export default function ProfilePage() {
+  const { hash } = useLocation()
+  const selected = profileSections.find((section) => !section.to && `#${section.id}` === hash) ?? profileSections[0]
+
   return (
     <>
       <PageHeader title="Perfil" hidePlan />
@@ -22,44 +33,29 @@ export default function ProfilePage() {
           aria-label="Navegação do perfil"
           className="flex flex-wrap gap-2 self-start rounded-2xl border border-line bg-surface p-3 xl:sticky xl:top-6 xl:flex-col"
         >
-          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#identidade">
-            Minha conta
-          </a>
-          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#atividade">
-            Minha atividade
-          </a>
-          <Link className="rounded-lg p-2 text-sm hover:bg-surface-2" to="/conquistas">
-            Conquistas
-          </Link>
-          <Link className="rounded-lg p-2 text-sm hover:bg-surface-2" to="/comunidade">
-            Meus grupos e ranking
-          </Link>
-          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#aparelhos">
-            Aparelhos conectados
-          </a>
-          <a className="rounded-lg p-2 text-sm hover:bg-surface-2" href="#conta">
-            Gerenciar conta
-          </a>
+          {profileSections.map((section) => (
+            <Link
+              key={section.id}
+              to={section.to ?? `#${section.id}`}
+              aria-current={selected.id === section.id ? 'page' : undefined}
+              className={clsx(
+                'rounded-lg p-2 text-sm transition',
+                selected.id === section.id
+                  ? 'bg-brand-50 font-semibold text-brand-700 dark:bg-brand-600/15 dark:text-brand-300'
+                  : 'text-muted hover:bg-surface-2 hover:text-ink',
+              )}
+            >
+              {section.label}
+            </Link>
+          ))}
         </nav>
-        <div className="grid gap-6 lg:grid-cols-2">
-          <div className="space-y-6">
-            <section id="identidade" className="scroll-mt-20">
-              <IdentityCard />
-            </section>
-            <LoyaltyCard />
-            <section id="atividade" className="scroll-mt-20">
-              <NumbersCard />
-            </section>
-          </div>
-          <div className="space-y-6">
-            <section id="aparelhos" className="scroll-mt-20">
-              <SessionsCard />
-            </section>
-            <section id="conta" className="scroll-mt-20">
-              <DangerCard />
-            </section>
-          </div>
-        </div>
+        <section className="min-w-0 space-y-6" aria-labelledby="profile-section-title">
+          <h2 id="profile-section-title" className="font-display text-xl font-bold">{selected.label}</h2>
+          {selected.id === 'identidade' && <IdentityCard />}
+          {selected.id === 'atividade' && <><LoyaltyCard /><NumbersCard /></>}
+          {selected.id === 'aparelhos' && <SessionsCard />}
+          {selected.id === 'conta' && <DangerCard />}
+        </section>
       </div>
     </>
   )
@@ -71,15 +67,20 @@ function IdentityCard() {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(me.name)
   const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const since = new Date(me.createdAt).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
 
   const save = async () => {
     const n = name.trim()
-    if (!n || n === me.name) return setEditing(false)
+    if (!n) return setError('Digite seu nome.')
+    if (n === me.name) return setEditing(false)
     setSaving(true)
+    setError('')
     try {
       await updateProfile({ name: n })
       setEditing(false)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Não foi possível salvar seu nome.')
     } finally {
       setSaving(false)
     }
@@ -92,7 +93,7 @@ function IdentityCard() {
         <div className="min-w-0 basis-52 flex-1">
           {editing ? (
             <form
-              className="flex gap-2"
+              className="flex flex-wrap gap-2"
               onSubmit={(e) => {
                 e.preventDefault()
                 void save()
@@ -103,17 +104,21 @@ function IdentityCard() {
                 className="field max-w-xs"
                 value={name}
                 maxLength={120}
+                disabled={saving}
+                required
                 onChange={(e) => setName(e.target.value)}
                 aria-label="Seu nome"
               />
               <Button type="submit" disabled={saving}>
                 {saving && <Loader2 size={14} className="animate-spin" />} Salvar
               </Button>
+              <Button type="button" variant="secondary" disabled={saving} onClick={() => { setEditing(false); setError('') }}>Cancelar</Button>
+              {error && <p role="alert" className="w-full text-sm text-bad">{error}</p>}
             </form>
           ) : (
             <h2 className="flex items-center gap-2 font-display text-2xl font-bold">
               {me.name}
-              <button onClick={() => setEditing(true)} className="text-muted hover:text-ink" title="Editar nome" aria-label="Editar nome">
+              <button onClick={() => { setName(me.name); setError(''); setEditing(true) }} className="text-muted hover:text-ink" title="Editar nome" aria-label="Editar nome">
                 <Pencil size={15} />
               </button>
             </h2>
@@ -187,12 +192,31 @@ function LoyaltyCard() {
 function NumbersCard() {
   const { state } = useStore()
   const [storage, setStorage] = useState<{ usage: StorageUsage; files: number } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const storageRequest = useRef(0)
+
+  const loadStorage = async () => {
+    const request = ++storageRequest.current
+    setLoading(true)
+    setError('')
+    try {
+      const r = await api.get<FilesResponse>('/files')
+      if (request === storageRequest.current) setStorage({ usage: r.usage, files: r.files.length })
+    } catch (e) {
+      if (request === storageRequest.current) {
+        setStorage(null)
+        setError(e instanceof Error ? e.message : 'Não foi possível carregar seus arquivos.')
+      }
+    } finally {
+      if (request === storageRequest.current) setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    api
-      .get<FilesResponse>('/files')
-      .then((r) => setStorage({ usage: r.usage, files: r.files.length }))
-      .catch(() => undefined)
+    const requests = storageRequest
+    void loadStorage()
+    return () => { requests.current++ }
   }, [])
 
   const t = useMemo(() => {
@@ -212,7 +236,7 @@ function NumbersCard() {
       sub: t.total ? `${Math.round((t.hits / t.total) * 100)}% de acerto` : undefined,
     },
     { label: 'Planos', value: state.plans.length },
-    { label: 'Arquivos', value: storage?.files ?? 'Não informado', sub: storage ? fmtBytes(storage.usage.used) : undefined },
+    { label: 'Arquivos', value: loading ? 'Carregando…' : storage?.files ?? 'Indisponível', sub: storage ? fmtBytes(storage.usage.used) : undefined },
   ]
 
   return (
@@ -226,6 +250,11 @@ function NumbersCard() {
           </div>
         ))}
       </dl>
+      {error && <div className="mt-4 flex flex-wrap items-center gap-2">
+        <p role="alert" className="text-sm text-bad">{error}</p>
+        <Button variant="ghost" size="sm" disabled={loading} onClick={() => void loadStorage()}>Tentar novamente</Button>
+      </div>}
+      <Link to="/historico" className="mt-4 inline-block text-sm font-semibold text-brand-700 dark:text-brand-300">Ver histórico de estudos</Link>
     </Card>
   )
 }
@@ -255,23 +284,40 @@ const ago = (iso: string) => {
 function SessionsCard() {
   const [sessions, setSessions] = useState<SessionInfo[] | null>(null)
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [revoking, setRevoking] = useState(false)
+  const sessionsRequest = useRef(0)
 
-  const load = () =>
-    api
-      .get<SessionInfo[]>('/me/sessions')
-      .then(setSessions)
-      .catch((e: Error) => setError(e.message))
+  const load = async () => {
+    const request = ++sessionsRequest.current
+    setLoading(true)
+    setError('')
+    try {
+      const data = await api.get<SessionInfo[]>('/me/sessions')
+      if (request === sessionsRequest.current) setSessions(data)
+    } catch (e) {
+      if (request === sessionsRequest.current) setError(e instanceof Error ? e.message : 'Não foi possível carregar os aparelhos.')
+    } finally {
+      if (request === sessionsRequest.current) setLoading(false)
+    }
+  }
 
   useEffect(() => {
+    const requests = sessionsRequest
     void load()
+    return () => { requests.current++ }
   }, [])
 
   const revoke = async (id?: string) => {
+    setRevoking(true)
+    setError('')
     try {
       await api.delete(id ? `/me/sessions/${id}` : '/me/sessions')
       await load()
     } catch (e) {
       setError((e as Error).message)
+    } finally {
+      setRevoking(false)
     }
   }
 
@@ -282,18 +328,21 @@ function SessionsCard() {
       title="Onde você está conectado"
       actions={
         others > 0 && (
-          <Button variant="ghost" size="sm" onClick={() => void revoke()}>
+          <Button variant="ghost" size="sm" disabled={loading || revoking} onClick={() => void revoke()}>
             <LogOut size={13} /> Sair dos outros
           </Button>
         )
       }
     >
-      {error && <p className="mb-2 text-sm text-bad">{error}</p>}
-      {!sessions ? (
+      {error && <div className="mb-2 flex flex-wrap items-center gap-2">
+        <p role="alert" className="text-sm text-bad">{error}</p>
+        <Button variant="ghost" size="sm" disabled={loading || revoking} onClick={() => void load()}>Atualizar aparelhos</Button>
+      </div>}
+      {loading ? (
         <p className="flex items-center gap-2 text-sm text-muted">
           <Loader2 size={14} className="animate-spin" /> carregando…
         </p>
-      ) : (
+      ) : sessions?.length ? (
         <ul className="divide-y divide-line">
           {sessions.map((s) => {
             const a = describeAgent(s.userAgent)
@@ -315,7 +364,7 @@ function SessionsCard() {
                   </p>
                 </div>
                 {!s.current && (
-                  <Button variant="ghost" size="sm" onClick={() => void revoke(s.id)}>
+                  <Button variant="ghost" size="sm" disabled={revoking} onClick={() => void revoke(s.id)}>
                     Encerrar
                   </Button>
                 )}
@@ -323,7 +372,7 @@ function SessionsCard() {
             )
           })}
         </ul>
-      )}
+      ) : !error && <p className="text-sm text-muted">Nenhum aparelho conectado.</p>}
     </Card>
   )
 }
