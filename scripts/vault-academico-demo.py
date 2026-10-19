@@ -44,8 +44,9 @@ TEMPLATES = [
 ]
 BASES = [
     "System/TaskNotes/Views/kanban-academico.base",
-    "Disciplinas.base",
-    "calendar-default.base",
+    "System/TaskNotes/Views/calendar-default.base",
+    "System/Templates/Bases/Disciplinas.base",           # embutida no semestre (Por Semestre)
+    "System/Templates/Bases/Trabalhos de Curso.base",    # embutida na disciplina (Por Disciplina)
 ]
 
 DASHBOARD = """---
@@ -69,16 +70,19 @@ DISC_PASTA = f"System/Academico/Disciplinas/{DISC_NOME}"
 # A ponte do Coado e o backend do Kindle só leem semestre com status active e disciplina dentro de uma
 # subpasta de Disciplinas/, com `semestre` igual ao nome da nota do semestre.
 SEMESTRE = f"""---
+tags:
+  - semestre
+  - academico
 type: semestre
 status: active
 start: 2026-08-03
 end: 2026-12-12
-tags:
-  - semestre
 ---
 # 2026/2
 
 Semestre de exemplo da vault demo do Coado. Troque as datas e as disciplinas.
+
+![[Disciplinas.base#Por Semestre]]
 """
 
 DISCIPLINA = f"""---
@@ -94,6 +98,9 @@ semestre: {SEMESTRE_NOME}
 type: disciplina
 status: open
 priority: normal
+cssclasses:
+  - dashboard
+  - wide-page
 natureza: conteudo
 conteudo_programatico:
   - id: t01
@@ -106,16 +113,29 @@ conteudo_programatico:
     nome: Estabilidade
     aula: 8
 ---
-# {DISC_NOME}
+
+# DEMO01 - Sistemas de exemplo
+
+```datacorejsx
+const {{ ClassView }} = await dc.require(dc.fileLink("System/Scripts/Widgets/dc-classView.jsx"));
+return <ClassView />;
+```
+
+```datacorejsx
+const {{ SubjectDashboard }} = await dc.require(dc.fileLink("System/Scripts/Widgets/dc-subjectMetrics.jsx"));
+return <SubjectDashboard />;
+```
 
 Disciplina fictícia para o painel acadêmico abrir com dados. Não é uma matéria real.
 
-## Avaliações
+### Avaliações
 
-| Avaliação | Data | Peso |
+| Data | Avaliação | Conteúdo cobrado |
 |---|---|---|
-| **Prova 1** | 24/09/2026 | 40% |
-| **Prova 2** | 26/11/2026 | 60% |
+| 24/09/2026 | **Prova 1** (40%) | Introdução e modelagem; Resposta no tempo |
+| 26/11/2026 | **Prova 2** (60%) | Estabilidade |
+
+![[Trabalhos de Curso.base#Por Disciplina|embed-clean]]
 """
 
 # Tarefa do TaskNotes que recebe o tempo de estudo da disciplina (a mesma que a ponte criaria).
