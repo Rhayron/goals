@@ -62,8 +62,15 @@ return <PainelAcademico />;
 ```
 """
 
-SEMESTRE = """---
+SEMESTRE_NOME = "2026-2"
+DISC_NOME = "DEMO01 Sistemas de exemplo"
+DISC_PASTA = f"System/Academico/Disciplinas/{DISC_NOME}"
+
+# A ponte do Coado e o backend do Kindle só leem semestre com status active e disciplina dentro de uma
+# subpasta de Disciplinas/, com `semestre` igual ao nome da nota do semestre.
+SEMESTRE = f"""---
 type: semestre
+status: active
 start: 2026-08-03
 end: 2026-12-12
 tags:
@@ -74,20 +81,120 @@ tags:
 Semestre de exemplo da vault demo do Coado. Troque as datas e as disciplinas.
 """
 
-DISCIPLINA = """---
-type: disciplina
-categories:
-  - Disciplinas
+DISCIPLINA = f"""---
 tags:
-  - disciplina
-  - class
+  - academico
+categories:
+  - "[[Disciplinas]]"
 codigo: DEMO01
-credits: 4
+disciplina: Sistemas de exemplo
+professor: ""
+creditos: 4
+semestre: {SEMESTRE_NOME}
+type: disciplina
+status: open
+priority: normal
+natureza: conteudo
+conteudo_programatico:
+  - id: t01
+    nome: Introdução e modelagem
+    aula: 1
+  - id: t02
+    nome: Resposta no tempo
+    aula: 4
+  - id: t03
+    nome: Estabilidade
+    aula: 8
 ---
-# DEMO01 Sistemas de exemplo
+# {DISC_NOME}
 
 Disciplina fictícia para o painel acadêmico abrir com dados. Não é uma matéria real.
+
+## Avaliações
+
+| Avaliação | Data | Peso |
+|---|---|---|
+| **Prova 1** | 24/09/2026 | 40% |
+| **Prova 2** | 26/11/2026 | 60% |
 """
+
+# Tarefa do TaskNotes que recebe o tempo de estudo da disciplina (a mesma que a ponte criaria).
+ESTUDO_GERAL = f"""---
+tags:
+  - tipo/task
+  - academico
+class: "[[{DISC_NOME}]]"
+project:
+  - "[[{DISC_NOME}]]"
+type: tarefa
+status: in-progress
+priority: normal
+coado_disciplina: demo01
+timeEntries: []
+---
+
+# DEMO01 · Estudo geral
+
+Tarefa do TaskNotes para estudar [[{DISC_NOME}]] quando não é uma entrega específica. Escolha esta tarefa no pomodoro: o tempo fica aqui e soma no projeto da disciplina nas estatísticas do TaskNotes.
+"""
+
+# Nota de estado do semestre no formato que a ponte do Coado grava (estado_inicial em coado_ponte.py).
+ESTADO = f"""---
+cssclasses:
+  - noyaml
+  - dashboard
+  - wide-page
+semestre: "[[{SEMESTRE_NOME}]]"
+coado_plano: demo-{SEMESTRE_NOME}
+data_prova: null
+meta_semanal:
+  minutos: 300
+  questoes: 0
+intervalos_revisao: [1, 7, 30]
+cores:
+  DEMO01: "#a8bfd4"
+planejamento:
+  tipo: ciclo
+  minutos_semana: 300
+  dias: [false, true, true, true, true, true, false]
+  sessao_min: 30
+  sessao_max: 90
+  disciplinas:
+    - codigo: DEMO01
+      importancia: 2
+      conhecimento: 2.5
+  ciclo:
+    - id: c1
+      codigo: DEMO01
+      minutos: 60
+    - id: c2
+      codigo: DEMO01
+      minutos: 60
+  ciclos_completos: 0
+  inicio_ciclo: 2026-08-03
+  empurrar_atrasados: true
+topicos_concluidos: []
+revisoes: []
+---
+
+# Estudo {SEMESTRE_NOME}
+
+```datacorejsx
+const {{ PainelEstudo }} = await dc.require(dc.fileLink("System/Scripts/Widgets/dc-coadoPainel.jsx"));
+return <PainelEstudo />;
+```
+"""
+
+# Estado acumulado do TaskNotes do dono da vault: histórico, índices e impressões digitais da agenda,
+# última tarefa aberta. Não é configuração; sai inteiro do template.
+TASKNOTES_ESTADO = {
+    "pomodoroHistory",
+    "googleCalendarEventIndex",
+    "googleCalendarTaskFingerprints",
+    "microsoftCalendarEventIndex",
+    "microsoftCalendarTaskFingerprints",
+    "lastSelectedTaskPath",
+}
 
 README = """# Vault acadêmica do Coado
 
@@ -136,6 +243,17 @@ def scrub(obj):
     return obj
 
 
+def limpar_tasknotes(data: dict) -> dict:
+    for k in TASKNOTES_ESTADO:
+        if k in data:
+            data[k] = [] if isinstance(data[k], list) else ({} if isinstance(data[k], dict) else "")
+    for k in ("googleCalendarExport", "microsoftCalendarExport"):
+        if isinstance(data.get(k), dict):
+            data[k]["enabled"] = False
+            data[k]["targetCalendarId"] = ""
+    return data
+
+
 def add_plugins(zf: zipfile.ZipFile) -> None:
     import json
 
@@ -151,6 +269,8 @@ def add_plugins(zf: zipfile.ZipFile) -> None:
             rel = f".obsidian/plugins/{plugin_id}/{path.relative_to(src).as_posix()}"
             if path.name == "data.json":
                 data = scrub(json.loads(path.read_text()))
+                if plugin_id == "tasknotes" and isinstance(data, dict):
+                    data = limpar_tasknotes(data)
                 zf.writestr(rel, json.dumps(data, indent=2) + "\n")
             else:
                 zf.write(path, rel)
@@ -214,11 +334,19 @@ def main() -> None:
     with zipfile.ZipFile(OUT, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("README.md", README)
         zf.writestr("System/Dashboards/Painel Academico.md", DASHBOARD)
-        zf.writestr("System/Academico/Semestres/2026-2.md", SEMESTRE)
-        zf.writestr("System/Academico/Disciplinas/DEMO01 Sistemas de exemplo.md", DISCIPLINA)
+        zf.writestr(f"System/Academico/Semestres/{SEMESTRE_NOME}.md", SEMESTRE)
+        zf.writestr(f"System/Academico/Semestres/{SEMESTRE_NOME} Estudo.md", ESTADO)
+        zf.writestr(f"{DISC_PASTA}/{DISC_NOME}.md", DISCIPLINA)
+        zf.writestr(f"{DISC_PASTA}/DEMO01 Estudo geral.md", ESTUDO_GERAL)
         add_plugins(zf)
         for rel in sorted(files):
-            zf.write(VAULT / rel, rel)
+            if rel.endswith(".md"):
+                # o dashboard guarda embaixo o embed da última disciplina aberta: no template é link quebrado
+                texto = (VAULT / rel).read_text(encoding="utf-8")
+                texto = re.sub(r"^!\[\[System/Academico/Disciplinas/[^\]]*\]\]\n?", "", texto, flags=re.M)
+                zf.writestr(rel, texto)
+            else:
+                zf.write(VAULT / rel, rel)
     print(f"files={len(files)} zip={OUT} bytes={OUT.stat().st_size}")
 
 
