@@ -360,7 +360,12 @@ def main() -> None:
         zf.writestr(f"{DISC_PASTA}/DEMO01 Estudo geral.md", ESTUDO_GERAL)
         add_plugins(zf)
         for rel in sorted(files):
-            if rel.endswith(".md"):
+            if rel.endswith(".base"):
+                # as views do TaskNotes guardam uma chave por agenda conectada, com o e-mail da conta no nome
+                texto = (VAULT / rel).read_text(encoding="utf-8")
+                texto = re.sub(r"^[ \t]*[A-Za-z]+_[^\s:]+@[^\s:]+:.*\n", "", texto, flags=re.M)
+                zf.writestr(rel, texto)
+            elif rel.endswith(".md"):
                 # o dashboard guarda embaixo o embed da última disciplina aberta: no template é link quebrado
                 texto = (VAULT / rel).read_text(encoding="utf-8")
                 texto = re.sub(r"^!\[\[System/Academico/Disciplinas/[^\]]*\]\]\n?", "", texto, flags=re.M)
