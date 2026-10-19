@@ -20,6 +20,10 @@ export async function meRoutes(app: FastifyInstance, { config, pool, storage }: 
     if (patch.onboarded !== undefined) {
       sets.push(patch.onboarded ? 'onboarded_at = coalesce(onboarded_at, now())' : 'onboarded_at = null')
     }
+    if (patch.profile !== undefined) {
+      values.push(JSON.stringify(patch.profile))
+      sets.push(`profile = profile || $${values.length}::jsonb`)
+    }
     if (sets.length) await pool.query(`update users set ${sets.join(', ')}, updated_at = now() where id = $1`, values)
     const user = await findUser(pool, request.user.id)
     if (!user) throw notFound('Usuário')

@@ -177,6 +177,40 @@ describe.skipIf(!DB_URL)('perfil e sessões', () => {
   })
   afterAll(() => ctx?.close())
 
+  it('salva os dados privados, preserva campos em patches parciais e mantém após novo login', async () => {
+    const email = 'perfil-detalhes@coado.test'
+    const api = client(ctx.app, await devLogin(ctx.app, email))
+    expect((await api.get('/api/me')).json().profile).toEqual({ bio: '', city: '', region: '', avatarStyle: 'google' })
+    const profile = { bio: ' Estudando engenharia ', city: ' Campinas ', region: 'SP', avatarStyle: 'initials' }
+    const updated = await api.patch('/api/me', { name: 'Ana Silva', profile })
+    expect(updated.statusCode).toBe(200)
+    expect(updated.json().profile).toEqual({ ...profile, bio: 'Estudando engenharia', city: 'Campinas' })
+    await api.patch('/api/me', { profile: { bio: 'Novo objetivo' } })
+    const again = client(ctx.app, await devLogin(ctx.app, email))
+    expect((await again.get('/api/me')).json()).toMatchObject({ name: 'Ana Silva', profile: { bio: 'Novo objetivo', city: 'Campinas', region: 'SP', avatarStyle: 'initials' } })
+    await again.patch('/api/me', { profile: { city: '', region: '' } })
+    expect((await again.get('/api/me')).json().profile).toEqual({ bio: 'Novo objetivo', city: '', region: '', avatarStyle: 'initials' })
+  })
+
+  it('valida campos de perfil e não permite alterar identidade de login pelo PATCH', async () => {
+    const api = client(ctx.app, await devLogin(ctx.app, 'perfil-validacao@coado.test'))
+    for (const profile of [{ bio: 'x'.repeat(161) }, { city: 'x'.repeat(81) }, { region: 'XX' }, { avatarStyle: 'upload' }, { bio: null }]) {
+      expect((await api.patch('/api/me', { profile })).statusCode).toBe(400)
+    }
+    await api.patch('/api/me', { email: 'outro@coado.test', avatarUrl: 'https://outro.invalid/foto', name: 'Nome permitido' })
+    expect((await api.get('/api/me')).json()).toMatchObject({ email: 'perfil-validacao@coado.test', avatarUrl: null, name: 'Nome permitido' })
+  })
+
+  it('não mistura perfis entre contas nem publica dados privados na comunidade', async () => {
+    const ana = client(ctx.app, await devLogin(ctx.app, 'privado-a@coado.test'))
+    const bia = client(ctx.app, await devLogin(ctx.app, 'privado-b@coado.test'))
+    await ana.patch('/api/me', { profile: { bio: 'Apresentação privada', city: 'Cidade privada', region: 'SP' } })
+    expect((await bia.get('/api/me')).json().profile).toEqual({ bio: '', city: '', region: '', avatarStyle: 'google' })
+    expect((await ana.get('/api/community')).json().profile).toEqual({ nickname: 'Ana', globalEnabled: false, focus: '' })
+    expect((await ana.get('/api/community/ranking')).body).not.toContain('Apresentação privada')
+    expect((await ana.get('/api/community/ranking')).body).not.toContain('Cidade privada')
+  })
+
   it('marca e desmarca as boas-vindas', async () => {
     const api = client(ctx.app, await devLogin(ctx.app))
     const on = (await api.patch('/api/me', { onboarded: true })).json()

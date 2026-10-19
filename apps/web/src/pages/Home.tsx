@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { FolderOpen } from 'lucide-react'
-import { PageHeader } from '../components/Layout'
 import { Card, Empty, ProgressBar } from '../components/ui'
 import { useStore } from '../lib/store'
 import { fmtDuration, pct, totals } from '../lib/utils'
@@ -25,7 +24,6 @@ export default function HomePage() {
   if (!plan)
     return (
       <>
-        <PageHeader title="Início" compact />
         <Card>
           <Empty
             icon={<FolderOpen size={40} />}
@@ -49,7 +47,6 @@ export default function HomePage() {
 
   return (
     <>
-      <PageHeader title="Início" compact />
       <CozyBanner />
       <div data-tour="home-summary" className="grid gap-3 lg:grid-cols-3 [&>section]:px-4 [&>section]:py-3 [&>section>header]:mb-3">
         <Card>

@@ -1,4 +1,4 @@
-import { BUILTIN_CATEGORIES, DEFAULT_REVIEW_INTERVALS, DEFAULT_TIMER_PREFS, type Me } from '@coado/shared'
+import { AccountProfileSchema, BUILTIN_CATEGORIES, DEFAULT_REVIEW_INTERVALS, DEFAULT_TIMER_PREFS, type AccountProfile, type Me } from '@coado/shared'
 import type { Db } from '../db'
 
 export interface UserRow {
@@ -8,6 +8,7 @@ export interface UserRow {
   avatar_url: string | null
   created_at: Date
   onboarded_at: Date | null
+  profile: Partial<AccountProfile>
 }
 
 export const toMe = (u: UserRow): Me => ({
@@ -17,6 +18,7 @@ export const toMe = (u: UserRow): Me => ({
   avatarUrl: u.avatar_url,
   createdAt: u.created_at.toISOString(),
   onboardedAt: u.onboarded_at?.toISOString() ?? null,
+  profile: AccountProfileSchema.parse(u.profile ?? {}),
 })
 
 /** Preferências e categorias padrão de uma conta nova */
@@ -47,7 +49,7 @@ export async function ensureUser(
      values ($1, $2, $3, $4, now())
      on conflict (google_sub) do update
        set email = excluded.email, avatar_url = excluded.avatar_url, last_login_at = now(), updated_at = now()
-     returning id, email, name, avatar_url, created_at, onboarded_at, (xmax = 0) as inserted`,
+     returning id, email, name, avatar_url, created_at, onboarded_at, profile, (xmax = 0) as inserted`,
     [identity.googleSub, identity.email, identity.name.slice(0, 120), identity.avatarUrl],
   )
   const user = rows[0]
@@ -57,7 +59,7 @@ export async function ensureUser(
 
 export async function findUser(db: Db, id: string): Promise<UserRow | null> {
   const { rows } = await db.query<UserRow>(
-    'select id, email, name, avatar_url, created_at, onboarded_at from users where id = $1',
+    'select id, email, name, avatar_url, created_at, onboarded_at, profile from users where id = $1',
     [id],
   )
   return rows[0] ?? null

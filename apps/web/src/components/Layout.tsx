@@ -158,11 +158,14 @@ export function Layout() {
       </div>
 
       <main className="mx-auto max-w-7xl px-4 pb-32 pt-6 sm:px-6 lg:px-8">
-        <YoutubeRadioCard compact={pathname === '/'} />
+        {pathname === '/' && <PageHeader title="Início" compact />}
+        <YoutubeRadioCard compact showCard={pathname === '/'} />
         <Outlet />
       </main>
 
-      <RadioPlayer key={pathname} className="fixed bottom-4 left-4 z-30 sm:left-6 lg:left-[17rem]" compact collapsible />
+      {pathname === '/' && (
+        <RadioPlayer className="fixed bottom-4 left-4 z-30 sm:left-6 lg:left-[17rem]" compact collapsible />
+      )}
 
       {/* ações flutuantes */}
       <div className="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-3">
@@ -206,7 +209,7 @@ function UserCard({ onNavigate }: { onNavigate: () => void }) {
           clsx('flex min-w-0 flex-1 items-center gap-3 rounded-xl p-1.5 transition hover:bg-surface-2', isActive && 'bg-surface-2')
         }
       >
-        <Avatar name={me.name} src={me.avatarUrl} className="h-9 w-9 text-sm" />
+        <Avatar name={me.name} src={me.profile?.avatarStyle === 'initials' ? null : me.avatarUrl} className="h-9 w-9 text-sm" />
         <span className="min-w-0">
           <span className="block truncate text-sm font-semibold">{me.name}</span>
           <SyncBadge />
@@ -230,7 +233,7 @@ export function PageHeader({ title, children, hidePlan, compact = false }: { tit
   const { state, plan, setActivePlan, openStudy } = useStore()
   return (
     <div className={clsx('flex flex-wrap items-center gap-3 border-b border-line', compact ? 'mb-3 pb-3' : 'mb-6 pb-4')}>
-      <h1 className="mr-auto text-2xl font-bold tracking-tight">{title}</h1>
+      <h1 className="mr-auto text-2xl font-semibold tracking-tight">{title}</h1>
       {title !== 'Ajuda' && (
         <NavLink
           to={`/ajuda#${({ 'Importar edital': 'importar-edital', 'Base de editais': 'importar-edital', Planejamento: 'planejamento', Revisões: 'revisoes', Estatísticas: 'estatisticas', Simulados: 'simulados', Perfil: 'perfil', 'Ranking e grupos': 'comunidade', Conquistas: 'conquistas' } as Record<string, string>)[title] ?? 'planos'}`}

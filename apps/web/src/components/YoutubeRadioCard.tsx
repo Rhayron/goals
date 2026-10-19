@@ -36,25 +36,16 @@ function YoutubeStream({ videoId, title }: { videoId: string; title: string }) {
   )
 }
 
-function YoutubeMiniInfo() {
-  const { youtubeVideoId, status, selectYoutube } = useRadio()
-  const station = youtubeStation(youtubeVideoId)
-  const coadoOn = status === 'playing' || status === 'loading'
-  if (!station || coadoOn) return null
+function YoutubeMiniClose() {
+  const { selectYoutube } = useRadio()
   return (
-    <div className="flex items-center gap-2 px-3 py-2">
-      <div className="min-w-0 flex-1">
-        <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-white/50">{station.channel}</p>
-        <p className="truncate text-sm font-semibold">{station.name}</p>
-      </div>
-      <button type="button" onClick={() => selectYoutube(null)} aria-label="Fechar canal" title="Fechar canal" className="rounded-full p-1.5 text-white/60 hover:bg-white/10 hover:text-white">
-        <X size={16} />
-      </button>
-    </div>
+    <button type="button" onClick={() => selectYoutube(null)} aria-label="Fechar miniplayer do YouTube" title="Fechar miniplayer do YouTube" className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+      <X size={18} aria-hidden />
+    </button>
   )
 }
 
-export function YoutubeRadioCard({ compact = false }: { compact?: boolean }) {
+export function YoutubeRadioCard({ compact = false, showCard = true }: { compact?: boolean; showCard?: boolean }) {
   const { youtubeVideoId, selectYoutube, trackCount, toggle, status } = useRadio()
   const { timer } = useStore()
   const { minimized } = useTimerSession()
@@ -62,40 +53,43 @@ export function YoutubeRadioCard({ compact = false }: { compact?: boolean }) {
   const station = youtubeStation(youtubeVideoId)
   const coadoOn = status === 'playing' || status === 'loading'
   const onTimer = !!timer && !minimized && !!station && !coadoOn
+  const floating = onTimer || (!showCard && !!station && !coadoOn)
 
   return (
-    <section aria-labelledby="youtube-radio-heading" className={clsx('overflow-hidden rounded-2xl border border-line bg-surface shadow-sm', compact ? 'mb-3' : 'mb-6')}>
-      <div className={clsx('flex items-center gap-3', compact ? 'p-3 sm:p-4' : 'p-4 sm:p-5')}>
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-kraft text-brand-700 dark:text-brand-300">
-          <Headphones size={22} aria-hidden />
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
-            <Youtube size={14} className="text-red-600 dark:text-red-400" aria-hidden /> Rádios do YouTube · {STATIONS.length} estações
+    <section aria-labelledby={showCard ? 'youtube-radio-heading' : undefined} aria-label={floating && !showCard ? 'Rádio do YouTube' : undefined} className={showCard ? clsx('overflow-hidden rounded-2xl border border-line bg-surface shadow-sm', compact ? 'mb-3' : 'mb-6') : 'contents'}>
+      {showCard && (
+        <div className={clsx('flex items-center gap-3', compact ? 'p-3 sm:p-4' : 'p-4 sm:p-5')}>
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-kraft text-brand-700 dark:text-brand-300">
+            <Headphones size={22} aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-[0.16em] text-muted">
+              <Youtube size={14} className="text-red-600 dark:text-red-400" aria-hidden /> Rádios do YouTube · {STATIONS.length} estações
+            </div>
+            <h2 id="youtube-radio-heading" className="font-display text-lg font-semibold">
+              {station && !open ? station.name : 'Trilhas para ler e estudar.'}
+            </h2>
+            {station && !open && <p className="truncate text-xs text-muted">{station.subtitle}</p>}
           </div>
-          <h2 id="youtube-radio-heading" className="font-display text-lg font-semibold">
-            {station && !open ? station.name : 'Trilhas para ler e estudar.'}
-          </h2>
-          {station && !open && <p className="truncate text-xs text-muted">{station.subtitle}</p>}
-        </div>
-        {station && (
-          <button type="button" onClick={() => selectYoutube(null)} aria-label="Fechar rádio do YouTube" title="Fechar rádio do YouTube" className="rounded-full p-2 text-muted hover:bg-surface-2 hover:text-ink">
-            <X size={18} />
+          {station && (
+            <button type="button" onClick={() => selectYoutube(null)} aria-label="Fechar rádio do YouTube" title="Fechar rádio do YouTube" className="rounded-full p-2 text-muted hover:bg-surface-2 hover:text-ink">
+              <X size={18} />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
+            aria-controls="youtube-radio-stations youtube-radio-player"
+            className="rounded-full p-2 text-muted hover:bg-surface-2 hover:text-ink"
+          >
+            <ChevronDown size={18} className={clsx('transition', open && 'rotate-180')} aria-hidden />
+            <span className="sr-only">{open ? 'Recolher rádio do YouTube' : 'Expandir rádio do YouTube'}</span>
           </button>
-        )}
-        <button
-          type="button"
-          onClick={() => setOpen((value) => !value)}
-          aria-expanded={open}
-          aria-controls="youtube-radio-stations youtube-radio-player"
-          className="rounded-full p-2 text-muted hover:bg-surface-2 hover:text-ink"
-        >
-          <ChevronDown size={18} className={clsx('transition', open && 'rotate-180')} aria-hidden />
-          <span className="sr-only">{open ? 'Recolher rádio do YouTube' : 'Expandir rádio do YouTube'}</span>
-        </button>
-      </div>
+        </div>
+      )}
 
-      {open && (
+      {showCard && open && (
         <div id="youtube-radio-stations" className="px-4 pb-4 sm:px-5">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3" role="group" aria-label="Escolher rádio do YouTube">
             {STATIONS.map(({ videoId, name, subtitle, icon: StationIcon }) => (
@@ -122,14 +116,14 @@ export function YoutubeRadioCard({ compact = false }: { compact?: boolean }) {
       )}
 
       {station && (
-        <div id="youtube-radio-player" hidden={!open && !onTimer} className={onTimer ? 'contents' : 'border-t border-line bg-surface-2/40 p-4 sm:p-5'}>
-          <div className={onTimer ? 'contents' : 'grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-center'}>
+        <div id="youtube-radio-player" hidden={!(showCard && open) && !floating} className={floating ? 'contents' : 'border-t border-line bg-surface-2/40 p-4 sm:p-5'}>
+          <div className={floating ? 'contents' : 'grid gap-4 md:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] md:items-center'}>
             {/* Só a posição muda: trocar o pai DOM/portal reinicia o vídeo. */}
-            <div className={onTimer ? 'dark fixed bottom-4 left-4 z-[60] w-[calc(100vw-2rem)] max-w-72 overflow-hidden rounded-2xl border border-white/15 bg-[#1b1410] text-white shadow-xl' : undefined}>
+            <div className={floating ? 'dark fixed right-4 top-20 z-[60] flex w-[calc(100vw-2rem)] max-w-72 flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#1b1410] text-white shadow-xl lg:top-4' : undefined}>
               <YoutubeStream videoId={station.videoId} title={station.name} />
-              {onTimer && <YoutubeMiniInfo />}
+              {floating && <YoutubeMiniClose />}
             </div>
-            {open && !onTimer && (
+            {showCard && open && !floating && (
               <div className="space-y-3 md:px-2">
                 <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted">{station.channel} · canal oficial</p>
                 <h3 className="font-display text-xl font-semibold">{station.subtitle}</h3>

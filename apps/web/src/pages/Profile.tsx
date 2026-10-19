@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { CalendarDays, Check, Laptop, Loader2, LogOut, Pencil, Smartphone, Trash2, Watch } from 'lucide-react'
+import { Check, Laptop, Loader2, LogOut, Smartphone, Trash2, Watch } from 'lucide-react'
 import { BRAND } from '../lib/brand'
 import type { SessionInfo, StorageUsage, FilesResponse } from '@coado/shared'
 import { PageHeader } from '../components/Layout'
 import { Button, Card, Modal } from '../components/ui'
-import { Avatar } from '../components/account'
+import { AccountSecurity, CommunityPreferences, ProfileDetails, ProfilePreferences } from '../components/ProfileDetails'
+import { DataSection, WatchSection } from './Settings'
 import { api } from '../lib/api'
 import { firstName, useAuth, useMe } from '../lib/auth'
 import { useStore } from '../lib/store'
@@ -15,15 +16,16 @@ const LOYALTY_DAYS = 10
 const profileSections = [
   { id: 'identidade', label: 'Minha conta' },
   { id: 'atividade', label: 'Minha atividade' },
-  { id: 'conquistas', label: 'Conquistas', to: '/conquistas' },
-  { id: 'comunidade', label: 'Meus grupos e ranking', to: '/comunidade' },
+  { id: 'preferencias', label: 'Preferências' },
+  { id: 'privacidade', label: 'Privacidade e comunidade' },
+  { id: 'seguranca', label: 'Segurança' },
   { id: 'aparelhos', label: 'Aparelhos conectados' },
   { id: 'conta', label: 'Gerenciar conta' },
 ]
 
 export default function ProfilePage() {
   const { hash } = useLocation()
-  const selected = profileSections.find((section) => !section.to && `#${section.id}` === hash) ?? profileSections[0]
+  const selected = profileSections.find((section) => `#${section.id}` === hash) ?? profileSections[0]
 
   return (
     <>
@@ -36,7 +38,7 @@ export default function ProfilePage() {
           {profileSections.map((section) => (
             <Link
               key={section.id}
-              to={section.to ?? `#${section.id}`}
+              to={`#${section.id}`}
               aria-current={selected.id === section.id ? 'page' : undefined}
               className={clsx(
                 'rounded-lg p-2 text-sm transition',
@@ -49,87 +51,17 @@ export default function ProfilePage() {
             </Link>
           ))}
         </nav>
-        <section className="min-w-0 space-y-6" aria-labelledby="profile-section-title">
-          <h2 id="profile-section-title" className="font-display text-xl font-bold">{selected.label}</h2>
-          {selected.id === 'identidade' && <IdentityCard />}
+        <section className="min-w-0 space-y-6" aria-label={selected.label}>
+          {selected.id === 'identidade' && <ProfileDetails />}
           {selected.id === 'atividade' && <><LoyaltyCard /><NumbersCard /></>}
-          {selected.id === 'aparelhos' && <SessionsCard />}
-          {selected.id === 'conta' && <DangerCard />}
+          {selected.id === 'preferencias' && <ProfilePreferences />}
+          {selected.id === 'privacidade' && <CommunityPreferences />}
+          {selected.id === 'seguranca' && <AccountSecurity />}
+          {selected.id === 'aparelhos' && <><SessionsCard /><WatchSection /></>}
+          {selected.id === 'conta' && <><DataSection /><DangerCard /></>}
         </section>
       </div>
     </>
-  )
-}
-
-function IdentityCard() {
-  const me = useMe()
-  const { updateProfile } = useAuth()
-  const [editing, setEditing] = useState(false)
-  const [name, setName] = useState(me.name)
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const since = new Date(me.createdAt).toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
-
-  const save = async () => {
-    const n = name.trim()
-    if (!n) return setError('Digite seu nome.')
-    if (n === me.name) return setEditing(false)
-    setSaving(true)
-    setError('')
-    try {
-      await updateProfile({ name: n })
-      setEditing(false)
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Não foi possível salvar seu nome.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <section className="relative overflow-hidden rounded-3xl border border-line bg-gradient-to-br from-brand-100 via-surface to-surface p-6 dark:from-brand-900/60">
-      <div className="relative flex flex-wrap items-center gap-5">
-        <Avatar name={me.name} src={me.avatarUrl} className="h-20 w-20 text-2xl shadow-md" />
-        <div className="min-w-0 basis-52 flex-1">
-          {editing ? (
-            <form
-              className="flex flex-wrap gap-2"
-              onSubmit={(e) => {
-                e.preventDefault()
-                void save()
-              }}
-            >
-              <input
-                autoFocus
-                className="field max-w-xs"
-                value={name}
-                maxLength={120}
-                disabled={saving}
-                required
-                onChange={(e) => setName(e.target.value)}
-                aria-label="Seu nome"
-              />
-              <Button type="submit" disabled={saving}>
-                {saving && <Loader2 size={14} className="animate-spin" />} Salvar
-              </Button>
-              <Button type="button" variant="secondary" disabled={saving} onClick={() => { setEditing(false); setError('') }}>Cancelar</Button>
-              {error && <p role="alert" className="w-full text-sm text-bad">{error}</p>}
-            </form>
-          ) : (
-            <h2 className="flex items-center gap-2 font-display text-2xl font-bold">
-              {me.name}
-              <button onClick={() => { setName(me.name); setError(''); setEditing(true) }} className="text-muted hover:text-ink" title="Editar nome" aria-label="Editar nome">
-                <Pencil size={15} />
-              </button>
-            </h2>
-          )}
-          <p className="break-all text-sm text-muted">{me.email}</p>
-          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-surface/80 px-3 py-1 text-xs font-semibold">
-            <CalendarDays size={13} className="text-brand-600" /> estudando desde {since}
-          </p>
-        </div>
-      </div>
-    </section>
   )
 }
 

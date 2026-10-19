@@ -249,9 +249,23 @@ export const SyncRequestSchema = z.object({
 })
 export type SyncRequest = z.infer<typeof SyncRequestSchema>
 
+export const AccountProfileSchema = z.object({
+  bio: z.string().trim().max(160).default(''),
+  city: z.string().trim().max(80).default(''),
+  region: z.enum(['', 'AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO']).default(''),
+  avatarStyle: z.enum(['google', 'initials']).default('google'),
+})
+export type AccountProfile = z.infer<typeof AccountProfileSchema>
+
 export const ProfilePatchSchema = z.object({
   name: z.string().trim().min(1).max(120).optional(),
   onboarded: z.boolean().optional(),
+  profile: z.object({
+    bio: AccountProfileSchema.shape.bio.removeDefault().optional(),
+    city: AccountProfileSchema.shape.city.removeDefault().optional(),
+    region: AccountProfileSchema.shape.region.removeDefault().optional(),
+    avatarStyle: AccountProfileSchema.shape.avatarStyle.removeDefault().optional(),
+  }).optional(),
 })
 export type ProfilePatch = z.infer<typeof ProfilePatchSchema>
 

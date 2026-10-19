@@ -1,12 +1,12 @@
-import { useState, type FormEvent } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Ban, Check, FolderOpen, Info, NotebookPen, Plus, RefreshCcw, RotateCcw, X } from 'lucide-react'
+import { Ban, Check, FolderOpen, NotebookPen, Plus, RefreshCcw, RotateCcw, X } from 'lucide-react'
 import { PageHeader } from '../components/Layout'
 import { Button, Card, Empty, Tabs } from '../components/ui'
 import { useStore } from '../lib/store'
 import type { DateStr, Review } from '../lib/types'
 import { addDays, clsx, diffDays, fmtDate, parseDate, today, WEEKDAYS_LONG } from '../lib/utils'
-import { BRAND } from '../lib/brand'
+import { ReviewIntervalsSection } from '../components/ReviewIntervalsSection'
 
 type Tab = 'scheduled' | 'late' | 'ignored' | 'done'
 
@@ -157,7 +157,7 @@ export default function ReviewsPage() {
           )}
         </div>
 
-        <IntervalsCard />
+        <ReviewIntervalsSection />
       </div>
     </>
   )
@@ -227,63 +227,5 @@ function ReviewCard({ review: r, late }: { review: Review; late: number }) {
         </div>
       </div>
     </div>
-  )
-}
-
-function IntervalsCard() {
-  const { state, update } = useStore()
-  const [value, setValue] = useState('')
-  const intervals = state.reviewIntervals
-
-  const save = (next: number[]) => update((s) => ({ ...s, reviewIntervals: [...new Set(next)].sort((a, b) => a - b) }))
-
-  const add = (e: FormEvent) => {
-    e.preventDefault()
-    const n = Math.round(Number(value))
-    if (n >= 1) save([...intervals, n])
-    setValue('')
-  }
-
-  return (
-    <Card title="Revisão espaçada" className="self-start">
-      <div className="flex gap-3 text-sm text-muted">
-        <Info size={18} className="mt-0.5 shrink-0 text-brand-500" />
-        <p>
-          Revisar o conteúdo em intervalos crescentes combate a curva do esquecimento e fixa a matéria na memória de longo prazo. Ao
-          registrar um estudo, o {BRAND} agenda revisões automaticamente nos intervalos abaixo.
-        </p>
-      </div>
-
-      <p className="label mt-5">Intervalos padrão</p>
-      <div className="flex flex-wrap gap-2">
-        {intervals.length === 0 && <span className="text-sm text-muted">Nenhum intervalo definido.</span>}
-        {intervals.map((n) => (
-          <span key={n} className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-1 pl-3 pr-1 text-sm font-medium text-brand-700 dark:bg-brand-600/15 dark:text-brand-300">
-            {intervalLabel(n)}
-            <button
-              onClick={() => save(intervals.filter((x) => x !== n))}
-              className="rounded-full p-0.5 hover:bg-brand-100 dark:hover:bg-brand-600/30"
-              aria-label={`Remover intervalo de ${intervalLabel(n)}`}
-            >
-              <X size={12} />
-            </button>
-          </span>
-        ))}
-      </div>
-      <form onSubmit={add} className="mt-3 flex gap-2">
-        <input
-          type="number"
-          min={1}
-          className="field"
-          placeholder="Dias (ex.: 15)"
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          aria-label="Novo intervalo em dias"
-        />
-        <Button type="submit" variant="secondary" disabled={!(Number(value) >= 1)}>
-          <Plus size={14} /> Adicionar
-        </Button>
-      </form>
-    </Card>
   )
 }

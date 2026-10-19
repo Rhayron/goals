@@ -69,7 +69,7 @@ export function requireUser(pool: Pool, config: Config) {
     if (!token) throw unauthorized()
     const { rows } = await pool.query<UserRow & { session_id: string; kind: SessionKind; last_seen_at: Date; expires_at: Date }>(
       `select s.id as session_id, s.kind, s.last_seen_at, s.expires_at,
-              u.id, u.email, u.name, u.avatar_url, u.created_at, u.onboarded_at
+              u.id, u.email, u.name, u.avatar_url, u.created_at, u.onboarded_at, u.profile
          from sessions s join users u on u.id = s.user_id
         where s.token_hash = $1 and s.expires_at > now()`,
       [hashToken(token)],

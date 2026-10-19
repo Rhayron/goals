@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { AuthConfig, Me, ProfilePatch } from '@coado/shared'
+import { AccountProfileSchema, type AuthConfig, type Me, type ProfilePatch } from '@coado/shared'
 import { api, ApiError } from './api'
 import { native } from './native'
 
@@ -31,7 +31,7 @@ export function TutorialAuthProvider({ initial, onExit, children }: { initial: M
     state: { status: 'authenticated', me }, me,
     signInWithGoogle: onExit, devLogin: async () => undefined, logout: async () => onExit(),
     updateProfile: async (patch) => {
-      const next = { ...me, ...(patch.name ? { name: patch.name } : {}) }
+      const next = { ...me, ...(patch.name ? { name: patch.name } : {}), profile: AccountProfileSchema.parse({ ...me.profile, ...patch.profile }) }
       setMe(next)
       return next
     },

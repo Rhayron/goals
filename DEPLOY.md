@@ -71,6 +71,18 @@ da API e `/api/health`. Um build local e um healthcheck não comprovam OAuth,
 persistência do volume nem o limite de upload através do proxy da Vercel; esses
 fluxos precisam ser exercitados no ambiente publicado.
 
+### Dados adicionais do perfil
+
+A migração `006_account_profile.sql` adiciona a apresentação, cidade, estado e
+escolha entre foto Google e iniciais à conta. São campos privados, fora do ranking
+e do backup de estudos. O apelido, área de estudo e participação global continuam
+usando `community_profiles`, sem uma segunda cópia desses dados.
+
+A API deve concluir o pre-deploy com essa migração antes de liberar o novo
+formulário do frontend. Confira salvar e recarregar o perfil e editar preferências
+da comunidade com uma conta de teste. O e-mail e a foto original continuam vindo
+do Google; o formulário não altera credenciais de acesso.
+
 
 ## 5. Atualização de comunidade e rotina
 

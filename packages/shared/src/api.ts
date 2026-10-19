@@ -1,4 +1,5 @@
 import type { AssessmentKind, CycleItem, DateStr, ID, PlanKind, Planning, PlanningConfig, TimerPrefs } from './types'
+import type { AccountProfile } from './schemas'
 
 /*
  * Contrato HTTP entre web e api (prefixo /api).
@@ -56,6 +57,8 @@ export interface Me {
   avatarUrl: string | null
   createdAt: string
   onboardedAt: string | null
+  /** Dados privados do perfil; não são enviados ao ranking. */
+  profile?: AccountProfile
 }
 
 export interface SessionInfo {

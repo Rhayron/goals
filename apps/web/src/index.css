@@ -5,6 +5,7 @@
 @theme {
   --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+  --font-heading: "Outfit", "Nunito", ui-sans-serif, system-ui, sans-serif;
 
   /* âmbar (paleta original) */
   --color-brand-50: #f9f1e7;
@@ -303,6 +304,11 @@ body,
   min-height: 100%;
 }
 
+/* Mantém a largura do conteúdo ao alternar entre páginas com e sem rolagem. */
+html {
+  overflow-y: scroll;
+}
+
 body {
   background-color: var(--app-bg);
   /* grão de papel bem sutil */
@@ -323,12 +329,18 @@ body {
     linear-gradient(145deg, #242c32 0%, #2a2525 56%, #1b1719 100%);
 }
 
-h1,
-h2.display,
 .font-display {
   font-family: var(--font-display);
   font-variation-settings: "SOFT" 100, "WONK" 1;
   letter-spacing: -0.01em;
+}
+
+h1, h2, h3, h4, h5, h6,
+h2.display,
+:is(h1, h2, h3, h4, h5, h6).font-display {
+  font-family: var(--font-heading);
+  font-variation-settings: normal;
+  letter-spacing: -0.02em;
 }
 
 input[type="range"],

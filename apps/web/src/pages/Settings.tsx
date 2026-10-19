@@ -2,6 +2,7 @@ import { isTutorial, tutorialOnlyMessage } from '../lib/tutorial-mode'
 import { useEffect, useRef, useState, type ChangeEvent, type FormEvent, type ReactNode } from 'react'
 import { Database, Download, Monitor, Moon, Plus, RotateCcw, Sun, Trash2, Upload, Watch } from 'lucide-react'
 import type { PairCode } from '@coado/shared'
+import { ReviewIntervalsSection } from '../components/ReviewIntervalsSection'
 import { PageHeader } from '../components/Layout'
 import { Button, Card, confirmAction, IconButton } from '../components/ui'
 import { api } from '../lib/api'
@@ -49,6 +50,7 @@ export default function SettingsPage() {
         <div className="space-y-6">
           <CategoriesSection />
           <TimerSection />
+          <ReviewIntervalsSection />
           <WatchSection />
         </div>
       </div>
@@ -56,7 +58,7 @@ export default function SettingsPage() {
   )
 }
 
-function AppearanceSection() {
+export function AppearanceSection() {
   const { state, setTheme } = useStore()
   const [palette, setPaletteState] = useState<Palette>(cachedPalette)
   const setPalette = (p: Palette) => {
@@ -121,7 +123,7 @@ const isBackup = (v: unknown): v is AppState => {
   return Array.isArray(o.plans) && Array.isArray(o.subjects) && Array.isArray(o.studies)
 }
 
-function DataSection() {
+export function DataSection() {
   const { state, importState, resetAll } = useStore()
   const fileRef = useRef<HTMLInputElement>(null)
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null)
@@ -178,7 +180,7 @@ function DataSection() {
   return (
     <Card title="Dados">
       <div className="space-y-3">
-        <DataRow title="Exportar backup" desc="Baixe um arquivo .json com todos os seus dados.">
+        <DataRow title="Exportar backup" desc="Baixe seus planos, estudos e preferências. Perfil, comunidade e arquivos anexados ficam fora deste backup.">
           <Button variant="secondary" size="sm" onClick={exportBackup}>
             <Download size={14} /> Exportar backup (.json)
           </Button>
@@ -217,7 +219,7 @@ function DataRow({ title, desc, children }: { title: string; desc: string; child
   )
 }
 
-function CategoriesSection() {
+export function CategoriesSection() {
   const { state, update } = useStore()
   const [name, setName] = useState('')
 
@@ -288,13 +290,13 @@ function CategoriesSection() {
   )
 }
 
-function TimerSection() {
+export function TimerSection() {
   const { state, update } = useStore()
   const prefs = state.timerPrefs
   const set = (patch: Partial<TimerPrefs>) => update((s) => ({ ...s, timerPrefs: { ...s.timerPrefs, ...patch } }))
 
   return (
-    <Card title="Relógio">
+    <Card title="Pomodoro e temporizador">
       <div className="grid gap-4 sm:grid-cols-2">
         {TIMER_FIELDS.map((f) => (
           <NumberField key={f.key} label={f.label} suffix={f.suffix} max={f.max} value={prefs[f.key]} onCommit={(v) => set({ [f.key]: v })} />
@@ -351,7 +353,7 @@ function NumberField({
 }
 
 /** Pareamento do app de relógio (apps/watch): código curto, de uso único, que vira um token de aparelho */
-function WatchSection() {
+export function WatchSection() {
   const [code, setCode] = useState<PairCode | null>(null)
   const [left, setLeft] = useState(0)
   const [busy, setBusy] = useState(false)
