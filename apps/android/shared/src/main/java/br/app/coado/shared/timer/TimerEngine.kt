@@ -14,6 +14,7 @@ import br.app.coado.shared.model.Dates
 import br.app.coado.shared.model.Draft
 import br.app.coado.shared.model.Mode
 import br.app.coado.shared.model.Review
+import br.app.coado.shared.model.SEM_DISCIPLINA
 import br.app.coado.shared.model.Study
 import br.app.coado.shared.model.SubjectLite
 import br.app.coado.shared.model.uid
@@ -38,6 +39,9 @@ class TimerEngine(private val app: CoadoCore) {
         apply(next)
         haptic(TICK)
     }
+
+    /** Pomodoro livre: sem disciplina e sem plano. O tempo só vira estudo se, no registro, a pessoa escolher uma */
+    suspend fun startLivre(mode: Mode) = start(SubjectLite("", SEM_DISCIPLINA, ""), null, mode)
 
     suspend fun toggle() {
         val s = state.value
@@ -119,6 +123,8 @@ class TimerEngine(private val app: CoadoCore) {
         scheduleReviews: Boolean,
         assessmentId: String? = draft.assessmentId,
     ) {
+        // um estudo sem disciplina seria recusado pela api e travaria a fila de envio
+        check(!draft.semDisciplina) { "Escolha a disciplina do estudo." }
         val snapshot = app.store.snapshot.value
         val planId = snapshot?.plan?.id ?: throw IllegalStateException("Sem plano ativo.")
         val id = uid()

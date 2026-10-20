@@ -27,6 +27,7 @@ import br.app.coado.shared.model.Overview
 import br.app.coado.shared.model.Transport
 import br.app.coado.shared.model.fmtDuration
 import br.app.coado.shared.model.fmtMinutes
+import br.app.coado.shared.ui.Badge
 import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.Tipo
 import br.app.coado.shared.ui.StudyArt
@@ -53,13 +54,14 @@ fun HomeScreen(
     timerActive: Boolean,
     onStartNext: (CycleProgressItem) -> Unit,
     onStartAssessment: (WatchAssessment) -> Unit,
+    /** pomodoro sem disciplina */
+    onStartLivre: () -> Unit,
     onSubjects: () -> Unit,
     onProgress: () -> Unit,
     onSettings: () -> Unit,
     onTimer: () -> Unit,
     onSync: () -> Unit,
 ) {
-    val animate = LocalAnimations.current
     val c = view.constancy
     val line = when {
         c.current > 0 -> "${c.current} ${if (c.current == 1) "dia" else "dias"} seguidos"
@@ -72,8 +74,8 @@ fun HomeScreen(
     WheelScreen {
         item {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                StudyArt(Modifier.size(54.dp), level = 1f, resting = true, animate = animate)
-                Text(Marca.SLUG, style = Tipo.title.copy(fontSize = 20.sp), color = Cores.Ink)
+                Badge(Modifier.size(44.dp))
+                Text(Marca.SLUG, style = Tipo.title.copy(fontSize = 20.sp), color = Cores.Ink, modifier = Modifier.padding(top = 2.dp))
                 Text("${greeting()}. $line", style = Tipo.bodySmall, color = Cores.Muted, textAlign = TextAlign.Center, modifier = Modifier.padding(horizontal = 16.dp, vertical = 2.dp))
             }
         }
@@ -92,8 +94,10 @@ fun HomeScreen(
                 )
             }
             item { PillButton("Buscar agora", onSync, icon = R.drawable.ic_sync, primary = false, enabled = syncStatus !is SyncStatus.Syncing) }
+            if (!timerActive) item { PillButton("Pomodoro livre", onStartLivre, icon = R.drawable.ic_play, primary = false) }
         } else if (view.plan == null) {
             note("Crie um plano de estudos no site para começar.")
+            if (!timerActive) item { PillButton("Pomodoro livre", onStartLivre, icon = R.drawable.ic_play, primary = false) }
         } else {
             // modo universidade: a avaliação mais próxima vem antes do ciclo; tocar começa a estudar para ela
             val prox = view.nextAssessment
@@ -147,6 +151,7 @@ fun HomeScreen(
                 }
             }
             if (next != null) item { PillButton("Outra disciplina", onSubjects, icon = R.drawable.ic_list, primary = false) }
+            if (!timerActive) item { PillButton("Pomodoro livre", onStartLivre, icon = R.drawable.ic_play, primary = false) }
             item { PillButton("Progresso", onProgress, icon = R.drawable.ic_chart, primary = false) }
         }
 

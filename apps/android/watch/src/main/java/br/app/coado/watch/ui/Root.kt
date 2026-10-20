@@ -24,6 +24,7 @@ import androidx.wear.compose.material3.TimeText
 import androidx.wear.compose.material3.Typography
 import androidx.wear.compose.navigation3.rememberSwipeDismissableSceneStrategy
 import br.app.coado.shared.model.Dates
+import br.app.coado.shared.model.Mode
 import br.app.coado.shared.model.Overview
 import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.Nunito
@@ -151,6 +152,10 @@ fun CoadoWatchRoot(
                                             ensureNotifications()
                                             scope.launch { app.engine.start(subject, null, prefs.mode, assessmentId = a.id) }
                                         },
+                                        onStartLivre = {
+                                            ensureNotifications()
+                                            scope.launch { app.engine.startLivre(Mode.POMODORO) }
+                                        },
                                         onSubjects = { backStack.add(SubjectsRoute) },
                                         onProgress = { backStack.add(ProgressRoute) },
                                         onSettings = { backStack.add(SettingsRoute) },
@@ -166,6 +171,11 @@ fun CoadoWatchRoot(
                                         onStart = { subject, cycleItemId ->
                                             ensureNotifications()
                                             scope.launch { app.engine.start(subject, cycleItemId, prefs.mode, topicId = view.cycle.firstOrNull { it.id == cycleItemId }?.topicId) }
+                                            if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
+                                        },
+                                        onStartLivre = {
+                                            ensureNotifications()
+                                            scope.launch { app.engine.startLivre(prefs.mode) }
                                             if (backStack.size > 1) backStack.removeAt(backStack.lastIndex)
                                         },
                                     )
@@ -185,9 +195,9 @@ fun CoadoWatchRoot(
                                         FinishScreen(
                                             draft = d,
                                             view = view,
-                                            onSave = { category, hits, misses, counts, reviews, assessmentId ->
+                                            onSave = { final, category, hits, misses, counts, reviews, assessmentId ->
                                                 scope.launch {
-                                                    runCatching { app.engine.register(d, category, hits, misses, counts, reviews, assessmentId) }
+                                                    runCatching { app.engine.register(final, category, hits, misses, counts, reviews, assessmentId) }
                                                     backStack.add(SavedRoute)
                                                 }
                                             },

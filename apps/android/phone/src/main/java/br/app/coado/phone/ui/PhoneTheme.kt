@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.sp
 import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.Fraunces
 import br.app.coado.shared.ui.Nunito
+import br.app.coado.shared.ui.Outfit
 
 /** O tema do site no celular: a paleta escolhida, clara de dia e noturna à noite. Funções, não vals: acompanham a troca de paleta */
 private fun dark() = darkColorScheme(
@@ -58,11 +59,13 @@ private fun light() = lightColorScheme(
     onError = Cores.Brand50,
 )
 
+/** Como no site: Outfit nos títulos, Nunito no texto e Fraunces nos números do relógio */
 private val PhoneTypography = Typography(
     displayLarge = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.Bold, fontSize = 64.sp, letterSpacing = (-1.5).sp, fontFeatureSettings = "tnum"),
-    headlineMedium = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.Bold, fontSize = 26.sp),
-    headlineSmall = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.SemiBold, fontSize = 22.sp),
-    titleLarge = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.SemiBold, fontSize = 20.sp),
+    headlineLarge = TextStyle(fontFamily = Outfit, fontWeight = FontWeight.Bold, fontSize = 34.sp, lineHeight = 38.sp, letterSpacing = (-0.7).sp),
+    headlineMedium = TextStyle(fontFamily = Outfit, fontWeight = FontWeight.Bold, fontSize = 26.sp, letterSpacing = (-0.5).sp),
+    headlineSmall = TextStyle(fontFamily = Outfit, fontWeight = FontWeight.SemiBold, fontSize = 22.sp, letterSpacing = (-0.4).sp),
+    titleLarge = TextStyle(fontFamily = Outfit, fontWeight = FontWeight.SemiBold, fontSize = 20.sp, letterSpacing = (-0.4).sp),
     titleMedium = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 16.sp),
     titleSmall = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 14.sp),
     bodyLarge = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Medium, fontSize = 16.sp),

@@ -59,7 +59,7 @@ class TimerService : Service() {
         val open = PendingIntent.getActivity(this, 0, app.timerIntent(), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val phase = if (state.mode == Mode.FREE) "Livre" else state.phase.label
         val builder = NotificationCompat.Builder(this, CHANNEL)
-            .setSmallIcon(R.drawable.ic_cup)
+            .setSmallIcon(R.drawable.ic_badge)
             .setContentTitle(state.subjectName.ifBlank { Marca.NOME })
             .setContentIntent(open)
             .setOngoing(true)

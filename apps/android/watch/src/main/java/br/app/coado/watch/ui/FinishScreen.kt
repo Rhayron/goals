@@ -26,21 +26,26 @@ import br.app.coado.shared.R
 import br.app.coado.shared.model.Dates
 import br.app.coado.shared.model.Draft
 import br.app.coado.shared.model.Overview
+import br.app.coado.shared.model.SubjectLite
 import br.app.coado.shared.model.fmtDuration
 import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.Tipo
 import br.app.coado.shared.ui.StudyArt
 import br.app.coado.shared.ui.parseColor
 
-/** O formulário de registro do site, reduzido ao que cabe no pulso: categoria, questões, revisões */
+/**
+ * O formulário de registro do site, reduzido ao que cabe no pulso: categoria, questões, revisões.
+ * Depois de um pomodoro livre, primeiro a disciplina em que o tempo entra (ou encerrar sem registrar).
+ */
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun FinishScreen(
     draft: Draft,
     view: Overview,
-    onSave: (categoryId: String, hits: Int, misses: Int, countInPlanning: Boolean, scheduleReviews: Boolean, assessmentId: String?) -> Unit,
+    onSave: (draft: Draft, categoryId: String, hits: Int, misses: Int, countInPlanning: Boolean, scheduleReviews: Boolean, assessmentId: String?) -> Unit,
     onDiscard: () -> Unit,
 ) {
+    var picked by rememberSaveable { mutableStateOf<String?>(null) }
     var category by rememberSaveable { mutableStateOf(draft.categoryId) }
     var hits by rememberSaveable { mutableIntStateOf(0) }
     var misses by rememberSaveable { mutableIntStateOf(0) }
@@ -48,25 +53,16 @@ fun FinishScreen(
     var reviews by rememberSaveable { mutableStateOf(false) }
     var confirmDiscard by rememberSaveable { mutableStateOf(false) }
     var assessment by rememberSaveable { mutableStateOf(draft.assessmentId) }
-    val assessments = if (view.universidade) view.assessmentsOf(draft.subjectId) else emptyList()
-    val color = parseColor(draft.subjectColor)
+    val subject = picked?.let { view.subject(it) }
+    if (draft.semDisciplina && subject == null) {
+        PickSubject(draft, view, onPick = { picked = it.id }, onDiscard = onDiscard)
+        return
+    }
+    val final = if (subject != null) draft.comDisciplina(subject) else draft
+    val assessments = if (view.universidade) view.assessmentsOf(final.subjectId) else emptyList()
 
     WheelScreen {
-        item {
-            Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(top = 6.dp)) {
-                StudyArt(Modifier.size(44.dp), level = 1f, resting = true, animate = LocalAnimations.current, sand = color)
-                Text(fmtDuration(draft.seconds), style = Tipo.numeral.copy(fontSize = 26.sp), color = Cores.Ink)
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    ColorDot(color, 8.dp)
-                    Text(draft.subjectName, style = Tipo.subtitle, color = Cores.Ink, textAlign = TextAlign.Center)
-                }
-                Text(
-                    "${Dates.fmtDayMonth(Dates.dateOf(draft.startedAt))} · ${Dates.timeOf(draft.startedAt)}" + if (draft.rounds > 0) " · ${draft.rounds} ${if (draft.rounds == 1) "pomodoro" else "pomodoros"}" else "",
-                    style = Tipo.bodySmall,
-                    color = Cores.Muted,
-                )
-            }
-        }
+        item { Summary(final) }
 
         section("Categoria")
         item {
@@ -108,7 +104,7 @@ fun FinishScreen(
         }
 
         gap()
-        item { PillButton("Salvar estudo", { onSave(category, hits, misses, counts, reviews, assessment) }, icon = R.drawable.ic_check) }
+        item { PillButton("Salvar estudo", { onSave(final, category, hits, misses, counts, reviews, assessment) }, icon = R.drawable.ic_check) }
         item {
             if (confirmDiscard) {
                 PillButton("Descartar mesmo?", onDiscard, icon = R.drawable.ic_close, color = Cores.Bad, textColor = Cores.Bg)
@@ -116,6 +112,44 @@ fun FinishScreen(
                 PillButton("Descartar", { confirmDiscard = true }, icon = R.drawable.ic_close, primary = false, textColor = Cores.Bad)
             }
         }
+        gap(12.dp)
+    }
+}
+
+/** O tempo, a disciplina (ou "Sem disciplina"), o dia e quantos pomodoros */
+@Composable
+private fun Summary(draft: Draft) {
+    val color = if (draft.semDisciplina) Cores.Brand400 else parseColor(draft.subjectColor)
+    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth().padding(top = 6.dp)) {
+        StudyArt(Modifier.size(44.dp), level = 1f, resting = true, animate = LocalAnimations.current, sand = color)
+        Text(fmtDuration(draft.seconds), style = Tipo.numeral.copy(fontSize = 26.sp), color = Cores.Ink)
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            ColorDot(color, 8.dp)
+            Text(draft.subjectName, style = Tipo.subtitle, color = Cores.Ink, textAlign = TextAlign.Center)
+        }
+        Text(
+            "${Dates.fmtDayMonth(Dates.dateOf(draft.startedAt))} · ${Dates.timeOf(draft.startedAt)}" + if (draft.rounds > 0) " · ${draft.rounds} ${if (draft.rounds == 1) "pomodoro" else "pomodoros"}" else "",
+            style = Tipo.bodySmall,
+            color = Cores.Muted,
+        )
+    }
+}
+
+/** Depois do pomodoro livre: em qual disciplina o tempo entra, ou encerrar sem virar estudo */
+@Composable
+private fun PickSubject(draft: Draft, view: Overview, onPick: (SubjectLite) -> Unit, onDiscard: () -> Unit) {
+    WheelScreen {
+        item { Summary(draft) }
+        if (view.plan != null && view.subjects.isNotEmpty()) {
+            section("Registrar em")
+            items(view.subjects, key = { "s-" + it.id }) { subject ->
+                Pill(title = subject.name, leading = { ColorDot(parseColor(subject.color), 12.dp) }, onClick = { onPick(subject) })
+            }
+        } else {
+            note("Sem disciplinas no plano ativo: o tempo não vira estudo.")
+        }
+        gap()
+        item { PillButton("Encerrar sem registrar", onDiscard, icon = R.drawable.ic_close, primary = false) }
         gap(12.dp)
     }
 }

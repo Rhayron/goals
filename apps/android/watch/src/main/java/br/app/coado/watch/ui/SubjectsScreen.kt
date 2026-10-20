@@ -13,6 +13,7 @@ import androidx.wear.compose.material3.Icon
 import br.app.coado.shared.R
 import br.app.coado.shared.model.Mode
 import br.app.coado.shared.model.Overview
+import br.app.coado.shared.model.SEM_DISCIPLINA
 import br.app.coado.shared.model.SubjectLite
 import br.app.coado.shared.model.fmtDuration
 import br.app.coado.shared.model.fmtMinutes
@@ -26,6 +27,7 @@ fun SubjectsScreen(
     mode: Mode,
     onMode: (Mode) -> Unit,
     onStart: (SubjectLite, String?) -> Unit,
+    onStartLivre: () -> Unit,
 ) {
     val pendingItems = view.pendingInOrder
     val doneCount = view.cycle.size - pendingItems.size
@@ -36,6 +38,15 @@ fun SubjectsScreen(
                 Chip("Pomodoro", mode == Mode.POMODORO, { onMode(Mode.POMODORO) })
                 Chip("Livre", mode == Mode.FREE, { onMode(Mode.FREE) })
             }
+        }
+        item {
+            Pill(
+                title = SEM_DISCIPLINA,
+                subtitle = "escolha a disciplina ao registrar",
+                leading = { ColorDot(Cores.Brand400, 12.dp) },
+                trailing = { Icon(painterResource(R.drawable.ic_play), "Iniciar", tint = Cores.Muted, modifier = Modifier.size(18.dp)) },
+                onClick = onStartLivre,
+            )
         }
 
         if (pendingItems.isNotEmpty()) {

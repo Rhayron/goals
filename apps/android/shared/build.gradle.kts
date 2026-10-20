@@ -14,16 +14,17 @@ android {
         minSdk = 26
     }
 
-    // o servidor padrão do build de debug: o npm run dev visto do emulador, ou o que vier em
-    // ./gradlew -Pcoado.server=http://192.168.3.2:5173 (o computador na rede de casa)
-    val devServer = (project.findProperty("coado.server") as String?)?.takeIf { it.isNotBlank() } ?: "http://10.0.2.2:5173"
+    // o site publicado. O build de debug aponta para outro servidor com
+    // ./gradlew -Pcoado.server=http://10.0.2.2:5173 (o npm run dev visto do emulador)
+    val production = "https://coado.app.br"
+    val devServer = (project.findProperty("coado.server") as String?)?.takeIf { it.isNotBlank() } ?: production
 
     buildTypes {
         debug {
             buildConfigField("String", "DEFAULT_SERVER", "\"$devServer\"")
         }
         release {
-            buildConfigField("String", "DEFAULT_SERVER", "\"https://coado.app.br\"")
+            buildConfigField("String", "DEFAULT_SERVER", "\"$production\"")
             consumerProguardFiles("consumer-rules.pro")
         }
     }
@@ -58,6 +59,8 @@ dependencies {
     api(libs.androidx.datastore.preferences)
     api(libs.androidx.work.runtime)
     api(libs.play.wearable)
+    // o Play Services e o androidx.wear ainda puxam o fragment 1.2.4, anterior às ActivityResult APIs
+    api(libs.androidx.fragment)
     api(libs.kotlinx.coroutines.android)
     api(libs.kotlinx.coroutines.play)
     api(libs.kotlinx.serialization.json)

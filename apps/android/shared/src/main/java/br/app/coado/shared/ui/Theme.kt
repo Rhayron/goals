@@ -8,6 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
@@ -20,7 +21,13 @@ data class Tons(
 )
 
 /** Uma paleta do site: a escala da marca (50 a 900) e os tons claro e noturno */
-data class Paleta(val id: String, val nome: String, val marca: List<Color>, val claro: Tons, val escuro: Tons)
+data class Paleta(val id: String, val nome: String, val marca: List<Color>, val claro: Tons, val escuro: Tons) {
+    /**
+     * O preto total da tela OLED: fundo preto puro (pixel apagado) e superfícies em cinza neutro
+     * quase preto, só para separar os blocos. Texto e destaques continuam os da paleta.
+     */
+    val preto: Tons by lazy { escuro.copy(bg = Color.Black, surface = c(0x101010), surface2 = c(0x1a1a1a), line = c(0x2a2a2a), kraft = c(0x1a1a1a)) }
+}
 
 private fun c(hex: Long) = Color(0xFF000000L or hex)
 private fun escala(vararg h: Long) = h.map(::c)
@@ -68,21 +75,35 @@ val PALETAS = listOf(
 )
 
 /**
- * As cores em uso: as do modo noturno da paleta escolhida (o fundo quase preto do AMOLED), e as do
- * modo claro em [Light]. A escolha é por aparelho, como no site: cada um guarda a sua.
+ * As cores em uso: as do modo noturno da paleta escolhida (ou o [preto] total, para a tela OLED),
+ * e as do modo claro em [Light]. A escolha é por aparelho, como no site: cada um guarda a sua.
  * Ler uma cor durante a composição a inscreve na troca de paleta: trocar redesenha tudo.
  */
 object Cores {
     private const val PREFS = "aparencia"
     private const val CHAVE = "paleta"
+    private const val CHAVE_PRETO = "preto"
 
     var paleta by mutableStateOf(PALETAS[0])
         private set
 
+    /** fundo preto puro no lugar do quase preto da paleta */
+    var preto by mutableStateOf(false)
+        private set
+
     fun carregar(context: Context) {
-        val id = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(CHAVE, null)
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val id = prefs.getString(CHAVE, null)
         paleta = PALETAS.firstOrNull { it.id == id } ?: PALETAS[0]
+        preto = prefs.getBoolean(CHAVE_PRETO, false)
     }
+
+    fun usarPreto(context: Context, on: Boolean) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(CHAVE_PRETO, on).apply()
+        preto = on
+    }
+
+    private val noturno: Tons get() = if (preto) paleta.preto else paleta.escuro
 
     fun escolher(context: Context, id: String) {
         val p = PALETAS.firstOrNull { it.id == id } ?: return
@@ -90,16 +111,16 @@ object Cores {
         paleta = p
     }
 
-    val Bg get() = paleta.escuro.bg
-    val Surface get() = paleta.escuro.surface
-    val Surface2 get() = paleta.escuro.surface2
-    val Line get() = paleta.escuro.line
-    val Ink get() = paleta.escuro.ink
-    val Muted get() = paleta.escuro.muted
-    val Kraft get() = paleta.escuro.kraft
-    val Ok get() = paleta.escuro.ok
-    val Bad get() = paleta.escuro.bad
-    val Warn get() = paleta.escuro.warn
+    val Bg get() = noturno.bg
+    val Surface get() = noturno.surface
+    val Surface2 get() = noturno.surface2
+    val Line get() = noturno.line
+    val Ink get() = noturno.ink
+    val Muted get() = noturno.muted
+    val Kraft get() = noturno.kraft
+    val Ok get() = noturno.ok
+    val Bad get() = noturno.bad
+    val Warn get() = noturno.warn
 
     val Brand50 get() = paleta.marca[0]
     val Brand100 get() = paleta.marca[1]
@@ -160,11 +181,21 @@ private fun fraunces(weight: Int, w: FontWeight) = Font(
     ),
 )
 
-/** Fraunces, a fonte de título do site */
+/** Fraunces, a fonte de destaque do site (font-display): números do relógio e frases em itálico */
 val Fraunces = FontFamily(
     fraunces(500, FontWeight.Medium),
     fraunces(600, FontWeight.SemiBold),
     fraunces(700, FontWeight.Bold),
+)
+
+private fun outfit(weight: Int, w: FontWeight) = Font(R.font.outfit, w, variationSettings = FontVariation.Settings(FontVariation.weight(weight)))
+
+/** Outfit, a fonte dos títulos do site (h1 a h6, --font-heading) */
+val Outfit = FontFamily(
+    outfit(500, FontWeight.Medium),
+    outfit(600, FontWeight.SemiBold),
+    outfit(700, FontWeight.Bold),
+    outfit(800, FontWeight.ExtraBold),
 )
 
 /** Os estilos de texto comuns; cada app ajusta o tamanho à tela */
@@ -172,7 +203,10 @@ object Tipo {
     /** o relógio da sessão */
     val display = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.Bold, fontSize = 44.sp, letterSpacing = (-1).sp, fontFeatureSettings = "tnum")
     val numeral = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.Bold, fontSize = 24.sp, fontFeatureSettings = "tnum")
-    val title = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.SemiBold, fontSize = 18.sp)
+    /** os títulos, como os h1 a h6 do site */
+    val title = TextStyle(fontFamily = Outfit, fontWeight = FontWeight.SemiBold, fontSize = 18.sp, letterSpacing = (-0.3).sp)
+    /** a frase em itálico do site (saudação, tagline) */
+    val accent = TextStyle(fontFamily = Fraunces, fontWeight = FontWeight.Medium, fontStyle = FontStyle.Italic, fontSize = 13.sp)
     val subtitle = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Bold, fontSize = 14.sp)
     val body = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Medium, fontSize = 13.sp)
     val bodySmall = TextStyle(fontFamily = Nunito, fontWeight = FontWeight.Medium, fontSize = 11.sp)

@@ -24,13 +24,13 @@ Dois apps Android com o mesmo pacote (`br.app.coado`), num projeto Gradle só:
 
 ## Como a conta chega aos aparelhos
 
-- **Celular.** O Sign in with Google (Credential Manager) entrega um `id_token` no aparelho; a api o valida (`POST /api/auth/google/token`) e abre uma *sessão de aparelho* (token Bearer, 1 ano, aparece em Perfil → "Onde você está conectado"). Para a WebView, o app carrega `GET /api/auth/web-session` com o Bearer: a api abre uma sessão web comum (cookie) e redireciona para o site. O site reconhece o app por `window.CoadoNative` e manda o botão de iniciar estudo para o pomodoro nativo.
+- **Celular.** O Sign in with Google (Credential Manager) entrega um `id_token` no aparelho; a api o valida (`POST /api/auth/google/token`) e abre uma *sessão de aparelho* (token Bearer, 1 ano, aparece em Perfil → "Onde você está conectado"). Sem o Google no aparelho (sem Play Services, ou o cliente Android ainda não cadastrado), "Entrar com código do site" troca o código de **Configurações → Relógio** por essa mesma sessão (`POST /api/watch/pair`). Para a WebView, o app carrega `GET /api/auth/web-session` com o Bearer: a api abre uma sessão web comum (cookie) e redireciona para o site. O site reconhece o app por `window.CoadoNative` e manda o botão de iniciar estudo para o pomodoro nativo.
 - **Relógio, pelo celular (padrão).** O celular publica um recorte da conta (`/api/watch/snapshot`: plano ativo, disciplinas, ciclo e progresso, durações, constância) como item de dados do Wear OS. O relógio registra estudos como itens `/coado/study/<id>`; o celular sobe, apaga o item e republica o recorte. Itens de dados ficam guardados: um estudo registrado sem o celular por perto sobe assim que ele aparecer.
 - **Relógio, direto.** Sem celular, Ajustes → Conta → *Direto* e o código de **Configurações → Relógio** do site (`POST /api/watch/pair`).
 
 ## Energia
 
-Nada conta segundos em segundo plano. O estado do timer são carimbos de tempo; o fim de cada etapa é um alarme exato (`setExactAndAllowWhileIdle`) que acorda o processo só para vibrar e passar à etapa seguinte. A notificação da sessão usa o cronômetro do sistema (no relógio, a *atividade em andamento* com `TimerPart`): o chip no mostrador conta sozinho. Com a tela acesa há um tique por segundo; no modo ambiente o relógio mostra um quadro parado (contornos, preto, uma atualização por minuto, deslocamento contra marcação). Vapor e café pingando só rodam com a tela acesa e as animações ligadas (Ajustes). A sincronização é em lote, pelo WorkManager, com rede.
+Nada conta segundos em segundo plano. O estado do timer são carimbos de tempo; o fim de cada etapa é um alarme exato (`setExactAndAllowWhileIdle`) que acorda o processo só para vibrar e passar à etapa seguinte. A notificação da sessão usa o cronômetro do sistema (no relógio, a *atividade em andamento* com `TimerPart`): o chip no mostrador conta sozinho. Com a tela acesa há um tique por segundo; no modo ambiente o relógio mostra um quadro parado (contornos, preto, uma atualização por minuto, deslocamento contra marcação). Na sessão, o relógio mostra só os números e o anel da etapa, e o **Preto total** (Ajustes → Tema) troca o fundo quase preto da paleta por preto puro, com o pixel apagado na tela OLED. A sincronização é em lote, pelo WorkManager, com rede.
 
 ## Compilar e instalar
 
@@ -38,12 +38,20 @@ Pré-requisitos: JDK 17+ (o do Android Studio serve), Android SDK com a platafor
 
 ```sh
 cd apps/android
-./gradlew :shared:testDebugUnitTest :phone:assembleDebug :watch:assembleDebug
+./gradlew :shared:testDebugUnitTest :phone:assembleRelease :watch:assembleRelease
+adb -s <celular>  install -r phone/build/outputs/apk/release/phone-release.apk
+adb -s <relógio>  install -r watch/build/outputs/apk/release/watch-release.apk
+```
+
+O `release` ainda é assinado com a chave de depuração (instala por cima do `debug` e vice-versa). Para desenvolver contra o computador:
+
+```sh
+./gradlew -Pcoado.server=http://10.0.2.2:5173 :phone:assembleDebug :watch:assembleDebug
 adb -s <celular>  install -r phone/build/outputs/apk/debug/phone-debug.apk
 adb -s <relógio>  install -r watch/build/outputs/apk/debug/watch-debug.apk
 ```
 
-O build `debug` fala `http` e aponta para `http://10.0.2.2:5173` (o `npm run dev` do monorepo, visto do emulador); `-Pcoado.server=http://192.168.0.10:5173` troca esse endereço na compilação. Em `release`, o servidor é `https://coado.app.br`; o endereço também pode ser trocado na tela de entrada do celular ("Outro servidor") e nos Ajustes do relógio.
+Os dois builds falam com o site publicado, `https://coado.app.br`. Para desenvolver, `-Pcoado.server=http://10.0.2.2:5173` aponta o build `debug` (que também aceita `http`) para o `npm run dev` do monorepo, visto do emulador. O endereço também pode ser trocado na tela de entrada do celular ("Outro servidor") e nos Ajustes do relógio.
 
 Para o emulador enxergar o Vite, suba o front ouvindo em todas as interfaces (no Windows, `localhost` fica só no IPv6, que o emulador não alcança):
 
@@ -54,7 +62,7 @@ npm run dev -w @coado/web -- --host 0.0.0.0
 
 ### Login com o Google no celular
 
-Além do *ID do cliente OAuth* **Aplicativo da Web** que a api já usa (`GOOGLE_CLIENT_ID`), crie no mesmo projeto do Google Cloud um cliente do tipo **Android** com o pacote `br.app.coado` e o SHA-1 da chave que assina o app (`./gradlew :phone:signingReport`). O app pede o `id_token` com o client id web (a api o informa em `/api/auth/config`), e a audiência bate com a validação que o site já faz. Sem Google Play Services (emulador sem Google APIs), o botão **Entrar como visitante** aparece quando a api está com `AUTH_DEV_LOGIN=true`.
+Além do *ID do cliente OAuth* **Aplicativo da Web** que a api já usa (`GOOGLE_CLIENT_ID`), crie no mesmo projeto do Google Cloud um cliente do tipo **Android** com o pacote `br.app.coado` e o SHA-1 da chave que assina o app (`./gradlew :phone:signingReport`). O app pede o `id_token` com o client id web (a api o informa em `/api/auth/config`), e a audiência bate com a validação que o site já faz. Enquanto esse cliente não existe, o Google recusa o login no aparelho e o app oferece o código do site. Sem Google Play Services (emulador sem Google APIs), o botão **Entrar como visitante** aparece quando a api está com `AUTH_DEV_LOGIN=true`.
 
 ### Aparelhos reais (depuração sem fio)
 

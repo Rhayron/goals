@@ -71,9 +71,9 @@ conta e vai para o relógio.
 
 ![O pomodoro no celular: escolha, estudo, pausa e registro](docs/img/phone-pomodoro.png)
 
-- **Entrada nativa.** Sign in with Google pelo aparelho; o servidor valida o `id_token` e abre uma sessão de aparelho (veja [Como os três conversam](#como-os-três-conversam)). O botão "Entrar como visitante" só existe em build de debug, contra um servidor com `AUTH_DEV_LOGIN=true`.
+- **Entrada nativa.** Sign in with Google pelo aparelho; o servidor valida o `id_token` e abre uma sessão de aparelho (veja [Como os três conversam](#como-os-três-conversam)). Sem o Google no aparelho, o código de **Configurações → Relógio** do site também abre a conta. O botão "Entrar como visitante" só aparece contra um servidor com `AUTH_DEV_LOGIN=true`.
 - **O site, sem remendo.** A WebView carrega as mesmas páginas; o botão de iniciar estudo do site abre o pomodoro nativo.
-- **Pomodoro.** Escolhe entre as próximas sessões do ciclo ou qualquer disciplina, em pomodoro (estudo, pausa curta, pausa longa a cada N rodadas) ou cronômetro livre. A xícara enche conforme o café é coado e fumega na pausa.
+- **Pomodoro.** Escolhe entre as próximas sessões do ciclo ou qualquer disciplina, em pomodoro (estudo, pausa curta, pausa longa a cada N rodadas) ou cronômetro livre. A cena lo-fi do site acompanha a etapa: a estudante na mesa durante o estudo e tomando café na pausa.
 - **Registro.** Categoria, acertos e erros, se conta no ciclo e se agenda as revisões (nos intervalos da conta), como o formulário do site.
 
 ## Relógio (Wear OS)
@@ -87,7 +87,7 @@ estudo na conta. As durações (estudo, pausas, rodadas) são as da conta e pode
 
 - **Pelo celular, sem digitar nada.** O relógio recebe um recorte da conta pelo celular pareado (Data Layer do Wear OS) e devolve os estudos por ele. Um estudo registrado sem o celular por perto sobe quando ele aparecer.
 - **Ou direto.** Sem celular, Ajustes → Conta → *Direto* e o código de **Configurações → Relógio** do site.
-- **Baixo consumo.** Nada conta segundos em segundo plano: o timer são carimbos de tempo, o fim de cada etapa é um alarme exato e a contagem regressiva vai numa atividade em andamento do Wear OS, que o sistema atualiza sozinho. Com o pulso abaixado, o modo ambiente é um quadro preto com contornos, atualizado uma vez por minuto. Vapor e café pingando só rodam com a tela acesa e dá para desligá-los.
+- **Baixo consumo.** Nada conta segundos em segundo plano: o timer são carimbos de tempo, o fim de cada etapa é um alarme exato e a contagem regressiva vai numa atividade em andamento do Wear OS, que o sistema atualiza sozinho. Com o pulso abaixado, o modo ambiente é um quadro preto com contornos, atualizado uma vez por minuto. Na sessão, a tela mostra só o relógio e o anel da etapa. Em Ajustes → Tema, o **Preto total** deixa o fundo em preto puro, que não acende na tela OLED.
 - **Progresso na mão.** A rosca do ciclo, a sequência de dias, as metas da semana em horas e questões, a contagem regressiva da prova e as revisões pendentes.
 
 Testado num **TicWatch Pro 5 Enduro** (Wear OS) pareado a um **Galaxy S23 Ultra** (Android 16), e em emuladores:
@@ -213,14 +213,14 @@ docker rm -f coado-test-db
 
 ### Celular e relógio
 
-O projeto Gradle fica em [`apps/android`](apps/android) (JDK 17+ e Android SDK 37). O build de debug fala `http`
-com o `npm run dev`; use `-Pcoado.server=` para apontar para outro endereço.
+O projeto Gradle fica em [`apps/android`](apps/android) (JDK 17+ e Android SDK 37). Os apps falam com
+`https://coado.app.br`; para o `npm run dev`, compile o debug com `-Pcoado.server=http://10.0.2.2:5173`.
 
 ```bash
 cd apps/android
-./gradlew :shared:testDebugUnitTest :phone:assembleDebug :watch:assembleDebug
-adb install -r phone/build/outputs/apk/debug/phone-debug.apk
-adb install -r watch/build/outputs/apk/debug/watch-debug.apk
+./gradlew :shared:testDebugUnitTest :phone:assembleRelease :watch:assembleRelease
+adb install -r phone/build/outputs/apk/release/phone-release.apk
+adb install -r watch/build/outputs/apk/release/watch-release.apk
 ```
 
 Para o login com Google no celular, crie também um cliente OAuth do tipo **Android** (pacote `br.app.coado` e o

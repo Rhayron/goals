@@ -78,6 +78,7 @@ fun SettingsScreen(
                 PALETAS.forEach { p -> Chip(p.nome, Cores.paleta.id == p.id, { Cores.escolher(app, p.id) }, color = p.marca[5]) }
             }
         }
+        item { ToggleRow("Preto total", Cores.preto, { v -> Cores.usarPreto(app, v) }) }
 
         section("Conta")
         item {

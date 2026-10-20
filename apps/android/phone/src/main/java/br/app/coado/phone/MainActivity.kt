@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
                         server = app.server,
                         devBuild = BuildConfig.DEBUG,
                         onGoogle = ::googleSignIn,
+                        onCode = ::codeSignIn,
                         onDev = ::devSignIn,
                         onServer = { s -> lifecycleScope.launch { app.store.updatePrefs { it.copy(server = s) }; loadConfig() } },
                         onRetry = ::loadConfig,
@@ -182,6 +183,26 @@ class MainActivity : ComponentActivity() {
                 signedIn(app.api.googleToken(app.server, idToken, app.deviceName))
             } catch (e: SignInCancelled) {
                 // nada a dizer
+            } catch (e: ApiException) {
+                error.value = if (e.offline) "Sem conexão com ${app.server}." else e.message
+            } catch (e: Exception) {
+                // sem Play Services ou sem o cliente Android no Google Cloud: o código do site resolve
+                error.value = (e.message ?: "O Google não completou o login.") + " Dá para entrar com o código do site."
+            } finally {
+                busy.value = false
+            }
+        }
+    }
+
+    /** O código de Configurações → Relógio do site também abre uma sessão de aparelho (POST /watch/pair) */
+    private fun codeSignIn(code: String) {
+        lifecycleScope.launch {
+            busy.value = true
+            error.value = null
+            try {
+                signedIn(app.api.pair(app.server, code, app.deviceName))
+            } catch (e: ApiException) {
+                error.value = if (e.offline) "Sem conexão com ${app.server}." else e.message
             } catch (e: Exception) {
                 error.value = e.message ?: "Não deu para entrar."
             } finally {

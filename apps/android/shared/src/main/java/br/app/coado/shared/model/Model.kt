@@ -199,6 +199,9 @@ enum class Mode { POMODORO, FREE }
 @Serializable
 enum class Transport { DIRECT, PHONE }
 
+/** O nome da sessão do pomodoro livre, que não tem disciplina (subjectId vazio) */
+const val SEM_DISCIPLINA = "Sem disciplina"
+
 /** Sessão encerrada, esperando o registro (categoria, questões) */
 @Serializable
 data class Draft(
@@ -216,7 +219,12 @@ data class Draft(
     val rounds: Int = 0,
     /** a avaliação escolhida ao começar (modo universidade) */
     val assessmentId: String? = null,
-)
+) {
+    /** pomodoro livre: a disciplina é escolhida no registro, ou o tempo não vira estudo */
+    val semDisciplina get() = subjectId.isEmpty()
+
+    fun comDisciplina(subject: SubjectLite) = copy(subjectId = subject.id, subjectName = subject.name, subjectColor = subject.color)
+}
 
 /** Ajustes que ficam só no aparelho */
 @Serializable

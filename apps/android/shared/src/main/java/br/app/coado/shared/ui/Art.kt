@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -25,10 +26,18 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.drawscope.translate
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import br.app.coado.shared.R
 import kotlin.math.PI
 import kotlin.math.sin
+
+/** O selo do Coado (apps/web/public/assets/badge.png): o couro com o escudo prateado */
+@Composable
+fun Badge(modifier: Modifier = Modifier, contentDescription: String? = null) {
+    Image(painterResource(R.drawable.coado_badge), contentDescription, modifier)
+}
 
 /*
  * As ilustrações em Canvas: a ampulheta que enche enquanto se estuda e o anel de progresso.

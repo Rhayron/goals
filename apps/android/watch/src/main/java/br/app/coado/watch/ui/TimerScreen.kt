@@ -26,7 +26,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,7 +42,6 @@ import br.app.coado.shared.timer.TimerState
 import br.app.coado.shared.timer.label
 import br.app.coado.shared.ui.Cores
 import br.app.coado.shared.ui.Tipo
-import br.app.coado.shared.ui.StudyArt
 import br.app.coado.shared.ui.ProgressRing
 import br.app.coado.shared.ui.RoundDots
 import br.app.coado.shared.ui.parseColor
@@ -52,12 +50,11 @@ import kotlinx.coroutines.delay
 /**
  * O relógio da sessão. Enquanto a tela está acesa, um tique por segundo recompõe o número e o
  * anel; no modo ambiente a MainActivity cobre esta tela com a [AmbientScreen] e o tique para.
- * A areia desce na ampulheta ao longo do estudo; na pausa, ela pulsa de leve.
+ * Só o relógio e o anel da etapa: nada desenhado atrás dos números.
  */
 @Composable
 fun TimerScreen(state: TimerState, onToggle: () -> Unit, onSkip: () -> Unit, onFinish: () -> Unit) {
     val ambient = LocalAmbient.current
-    val animate = LocalAnimations.current
     var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
     LaunchedEffect(state.running, state.phase, state.segmentStartedAt, ambient.on) {
         now = System.currentTimeMillis()
@@ -82,14 +79,6 @@ fun TimerScreen(state: TimerState, onToggle: () -> Unit, onSkip: () -> Unit, onF
             } else {
                 ProgressRing(Modifier.fillMaxSize().padding(3.dp), progress = 0f, color = ringColor, track = Cores.Line, stroke = 4.dp)
             }
-            // a ampulheta ao fundo, discreta: enche com o estudo, pulsa na pausa
-            StudyArt(
-                Modifier.size(82.dp).offset(y = 10.dp).alpha(if (isBreak) 0.5f else 0.32f),
-                level = if (state.mode == Mode.FREE) 1f else if (isBreak) 1f else progress,
-                resting = isBreak || state.mode == Mode.FREE,
-                animate = animate && state.running,
-                sand = subjectColor,
-            )
             Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center, modifier = Modifier.fillMaxSize().padding(horizontal = 26.dp)) {
                 AnimatedContent(
                     targetState = phaseText,
