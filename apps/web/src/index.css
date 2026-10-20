@@ -457,6 +457,9 @@ svg .animate-pop {
 .coado-vinyl { animation: spin 9s linear infinite; }
 .coado-cycle { animation: coado-dash 16s linear infinite; }
 .coado-drip { animation: coado-drip 2s ease-in infinite; }
+.coado-pour { animation: coado-pour 0.6s linear infinite; }
+.coado-fall { opacity: 0; animation: coado-fall 1.35s cubic-bezier(.55,0,1,.45) infinite; }
+.coado-bloom { transform-box: fill-box; transform-origin: center; animation: coado-bloom 2.1s ease-in-out infinite; }
 .coado-coffee-surface { animation: coado-wave 4s ease-in-out infinite; }
 .coado-books-enter { transform-box: fill-box; transform-origin: center bottom; animation: coado-settle 650ms ease both; }
 .coado-equalizer { animation: eq 1.6s ease-in-out infinite; }
@@ -477,6 +480,9 @@ svg .animate-pop {
 @keyframes coado-dash { to { stroke-dashoffset: -78; } }
 @keyframes coado-drip { 0% { opacity: 0; transform: translateY(0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translateY(24px); } }
 @keyframes coado-wave { 0%,100% { transform: translateX(0); } 50% { transform: translateX(-20px); } }
+@keyframes coado-pour { to { stroke-dashoffset: -23; } }
+@keyframes coado-fall { 0% { opacity: 0; transform: translateY(0); } 12% { opacity: 1; } 100% { opacity: 1; transform: translateY(62px); } }
+@keyframes coado-bloom { 0%, 100% { opacity: .25; transform: scale(.6); } 50% { opacity: .9; transform: scale(1); } }
 @keyframes coado-settle { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
 @media (prefers-reduced-motion: reduce) {

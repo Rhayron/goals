@@ -25,6 +25,57 @@ export function FillingCup({ level, className }: { level: number; className?: st
   </ArtFrame>
 }
 
+/**
+ * O café sendo coado, para o carregamento: a chaleira despeja a água no filtro, o café pinga
+ * na jarra de vidro e o nível sobe com [level] (0..1).
+ */
+export function BrewingArt({ level, className }: { level: number; className?: string }) {
+  const glass = useArtId('brew-glass')
+  const amount = Math.max(0, Math.min(1, level))
+  const carafe = 'M79 95h18v8q30 11 30 33q0 22-39 22q-39 0-39-22q0-22 30-33z'
+  return <ArtFrame viewBox="0 0 160 170" title="Café sendo coado" className={className}>
+    <defs><clipPath id={glass}><path d={carafe} /></clipPath></defs>
+    <ellipse cx="88" cy="161" rx="50" ry="6" fill={paint.ink} opacity=".1" />
+
+    {/* a chaleira de bico fino, inclinada sobre o coador */}
+    <g transform="rotate(-14 32 34)">
+      <path d="M13 24q-13 5-4 22" fill="none" {...line} strokeWidth="5" />
+      <path d="M13 24q-13 5-4 22" fill="none" stroke={paint.cream} strokeWidth="2" strokeLinecap="round" />
+      <path d="M50 38c9-1 12-15 22-21q6-3 9 3" fill="none" stroke={paint.ink} strokeWidth="6" strokeLinecap="round" />
+      <path d="M50 38c9-1 12-15 22-21q6-3 9 3" fill="none" stroke={paint.clay} strokeWidth="3" strokeLinecap="round" />
+      <path d="M12 47q-4-30 21-32q25 2 21 32z" fill={paint.clay} {...line} />
+      <rect x="9" y="45" width="48" height="6" rx="3" fill={paint.cream} {...line} />
+      <path d="M21 25q4-6 10-7" fill="none" stroke="#fff9ed" strokeWidth="3" strokeLinecap="round" opacity=".6" />
+      <circle cx="33" cy="14" r="3" fill={paint.cream} {...line} />
+    </g>
+    {/* o fio de água, da ponta do bico (girada com a chaleira) até o filtro */}
+    <path d="M76.5 10c4 9 10 22 11.5 42" fill="none" stroke={paint.blue} strokeWidth="2.5" strokeLinecap="round" strokeDasharray="9 2.5" className="coado-pour" />
+
+    {/* as gotas caem do coador e somem no café */}
+    {[0, 1, 2].map((i) => <ellipse key={i} cx="88" cy="96" rx="1.8" ry="2.6" fill="#7a4a32" className="coado-fall" style={{ animationDelay: `${i * -0.45}s` }} />)}
+
+    {/* a jarra de vidro e o café subindo */}
+    <path d={carafe} fill={paint.paper} fillOpacity=".35" />
+    <g clipPath={`url(#${glass})`}>
+      <g style={{ transform: `translateY(${158 - amount * 46}px)`, transition: 'transform 900ms ease-out' }}>
+        <path d="M-10 0q15-4 30 0t30 0t30 0t30 0t30 0t30 0v80H-10z" fill="#7a4a32" className="coado-coffee-surface" />
+        <path d="M-10 4h190v76H-10" fill="#5c3826" opacity=".35" />
+      </g>
+    </g>
+    <path d={carafe} fill="none" {...line} />
+    <path d="M58 122q-6 8-4 20" fill="none" stroke="#fff9ed" strokeWidth="4" strokeLinecap="round" opacity=".6" />
+
+    {/* o coador: cone de cerâmica com o filtro de papel e o pó molhado */}
+    <rect x="68" y="88" width="40" height="7" rx="3" fill={paint.cream} {...line} />
+    <path d="M58 52l22 36h16l22-36z" fill={paint.sage} {...line} />
+    <path d="M70 60l13 24m-4-24l7 24m15-24l-8 24m19-24l-12 24" fill="none" stroke={paint.sageDark} strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M60 52l4-6l5 4l5-5l5 4l5-5l5 4l5-5l5 4l5-5l5 4l5-5l4 7" fill={paint.paper} {...line} strokeWidth="1.5" />
+    <ellipse cx="88" cy="53" rx="29" ry="5.5" fill={paint.paper} {...line} />
+    <ellipse cx="88" cy="54" rx="23" ry="3.6" fill="#6b4630" />
+    {[[80, 54], [90, 53], [97, 55]].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="1.6" fill={paint.cream} className="coado-bloom" style={{ animationDelay: `${i * -0.7}s` }} />)}
+  </ArtFrame>
+}
+
 export function BeanJarArt({ className, title = 'Grãos de café, cadernos e matérias para organizar' }: ArtProps) {
   return <ArtFrame title={title} className={className}>
     <Ground />
